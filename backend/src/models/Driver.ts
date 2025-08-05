@@ -20,6 +20,11 @@ export class Driver extends Model<Driver> {
     @Column({
         allowNull: false
     })
+    shortName?: string
+
+    @Column({
+        allowNull: false
+    })
     active?: boolean
 
     @ForeignKey(() => Team)

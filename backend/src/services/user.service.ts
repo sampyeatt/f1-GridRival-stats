@@ -9,9 +9,8 @@ export async function addUser(name: string, email: string) {
     const user = new User()
     user.name = name
     user.email = email
-    user.password = ''
+    user.password = '1'
     console.log('category: ', user)
-    await user.save()
-    console.log('category saved', user)
-    return user
+    return User.build(user).save()
+
 }
