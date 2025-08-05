@@ -10,7 +10,7 @@ export class User extends Model<User> {
     @Column({
         allowNull: false
     })
-    test: string = ''
+    name: string = ''
 
     @Column({
         unique: true,

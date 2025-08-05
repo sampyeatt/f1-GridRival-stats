@@ -3,8 +3,6 @@ dotenv.config({
     path: './src/.env'
 })
 
-console.log(process.env.PG_USER_NAME)
-
 import express from 'express'
 import './database/index'
 import categoryRoutes from './routes/category.routes'
