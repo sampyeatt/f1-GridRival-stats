@@ -8,7 +8,7 @@ export class Results extends Model<Results> {
     @Column({
         allowNull: false,
     })
-    raceid: string = ''
+    raceid?: string
 
     @Column({
         allowNull: false,
@@ -29,18 +29,18 @@ export class Results extends Model<Results> {
     @Column({
         allowNull: false,
     })
-    driverid: string = ''
+    driverid?: string
 
     @ForeignKey(() => Team)
     @Column({
         allowNull: false,
     })
-    teamid: string = ''
+    teamid?: string
 
     @BelongsTo(() => Driver, 'driverid')
     driver?: Driver
 
-    @BelongsTo(() => Driver, 'teamid')
+    @BelongsTo(() => Team, 'teamid')
     team?: Team
 
 

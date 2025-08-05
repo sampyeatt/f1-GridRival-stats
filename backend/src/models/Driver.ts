@@ -10,12 +10,12 @@ export class Driver extends Model<Driver> {
         allowNull: false,
         unique: true
     })
-    driverId: string = ''
+    driverId?: string
 
     @Column({
         allowNull: false
     })
-    driverName: string = ''
+    driverName?: string
 
     @Column({
         allowNull: false
@@ -26,7 +26,7 @@ export class Driver extends Model<Driver> {
     @Column({
         allowNull: false
     })
-    teamId: string = ''
+    teamId?: string
 
     @HasMany(() => Results)
     results?: Results[] = []

@@ -1,5 +1,6 @@
 import {Column, HasMany, Model, PrimaryKey, Table} from 'sequelize-typescript'
 import {Driver} from './Driver'
+import {Results} from './Results'
 
 @Table
 export class Team extends Model<Team> {
@@ -9,13 +10,16 @@ export class Team extends Model<Team> {
         allowNull: false,
         unique: true
     })
-    teamId: string = ''
+    teamId?: string
 
     @Column({
         allowNull: false
     })
-    teamName: string = ''
+    teamName?: string
 
     @HasMany(() => Driver)
     drivers?: Driver[] = []
+
+    @HasMany(() => Results)
+    results?: Results[] = []
 }

@@ -8,7 +8,7 @@ export class Tag extends Model<Tag> {
     @Column({
         allowNull: false
     })
-    name: string = ''
+    name?: string
 
     @ForeignKey(() => User)
     @Column({

@@ -9,9 +9,8 @@ export const getCategories = async (req: Request, res: Response) => {
 
 export const addCategoriesController = async (req: Request, res: Response) => {
     const {name} = req.body
-    const userId = 1
 
-    const category = await addCategory(name, userId)
+    const category = await addCategory(name, 1)
 
     res.json(category)
 }

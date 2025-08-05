@@ -7,7 +7,7 @@ export class Token extends Model<Token> {
     @Column({
         allowNull: false
     })
-    token: string = ''
+    token?: string
 
     @Column({
         type: DataType.ENUM('activation', 'reset')

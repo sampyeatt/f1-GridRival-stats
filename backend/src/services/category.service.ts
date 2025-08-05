@@ -2,14 +2,17 @@ import {Category} from '../models/Category'
 
 
 export async function getAllCategories() {
-    const categories = await Category.findAll()
-    return categories
+    return await Category.findAll()
 }
 
 export async function addCategory(name: string, userId: number) {
-    const category = new Category()
-    category.name = name
-    category.userId = userId
-    await category.save()
-    return category
+    console.log('name: ', name, ' userId: ', userId, '')
+    const cat = new Category()
+    cat.name = name
+    cat.userId = userId
+    cat.slug = 'test'
+    console.log('category: ', cat)
+    await cat.save()
+    console.log('category saved', cat)
+    return cat
 }

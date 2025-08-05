@@ -7,7 +7,7 @@ export class Comment extends Model<Comment> {
     @Column({
         allowNull: false
     })
-    content: string = ''
+    content?: string
 
     @ForeignKey(() => User)
     @Column({
