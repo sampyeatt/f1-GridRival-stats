@@ -1,10 +1,11 @@
-import { Sequelize } from "sequelize-typescript"
+import {Sequelize} from 'sequelize-typescript'
+
 export const connection = new Sequelize({
     dialect: 'postgres',
-    host: '192.168.0.151',
-    username: 'postgres',
-    password: 'goodscout',
-    database: 'postgres',
-    port: 5431,
-    models: [__dirname + '/../models'],
+    host: process.env.PG_HOST as string,
+    username: process.env.PG_USER_NAME as string,
+    password: process.env.PG_PASSWORD as string,
+    database: process.env.PG_DATABASE as string,
+    port: process.env.PG_PORT as any || 5432,
+    models: [__dirname + '/../models']
 })
