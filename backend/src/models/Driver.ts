@@ -17,6 +17,11 @@ export class Driver extends Model<Driver> {
     })
     driverName: string = ''
 
+    @Column({
+        allowNull: false
+    })
+    active?: boolean
+
     @ForeignKey(() => Team)
     @Column({
         allowNull: false
