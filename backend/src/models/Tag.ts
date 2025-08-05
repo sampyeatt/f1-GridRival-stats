@@ -1,6 +1,7 @@
-import {BelongsTo, Column, Model, Table, BelongsToMany} from 'sequelize-typescript'
+import {BelongsTo, Column, Model, Table, BelongsToMany, ForeignKey} from 'sequelize-typescript'
 import {PostTag} from './PostTag'
 import {Post} from './Post'
+import {User} from './User'
 
 @Table
 export class Tag extends Model<Tag> {
@@ -9,6 +10,15 @@ export class Tag extends Model<Tag> {
     })
     name: string = ''
 
+    @ForeignKey(() => User)
+    @Column({
+        allowNull: false
+    })
+    userId?: number
+
     @BelongsToMany(() => Post, ()=> PostTag)
     posts?: Post[] = []
+
+    @BelongsTo(() => User)
+    user?: User
 }

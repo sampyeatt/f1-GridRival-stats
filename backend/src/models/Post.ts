@@ -29,11 +29,11 @@ export class Post extends Model<Post> {
     })
     userId?: number
 
-    @BelongsTo(() => User)
-    user?: User
-
     @HasMany(() => Comment)
     comments?: Comment[] = []
+
+    @BelongsTo(() => User)
+    user?: User
 
     @BelongsToMany(() => Tag, () => PostTag)
     tags?: Tag[] = []

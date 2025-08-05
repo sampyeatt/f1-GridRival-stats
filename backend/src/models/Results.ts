@@ -5,18 +5,6 @@ import {Team} from './Team'
 @Table
 export class Results extends Model<Results> {
 
-    @ForeignKey(() => Driver)
-    @Column({
-        allowNull: false,
-    })
-    driverid: string = ''
-
-    @ForeignKey(() => Team)
-    @Column({
-        allowNull: false,
-    })
-    teamid: string = ''
-
     @Column({
         allowNull: false,
     })
@@ -31,6 +19,23 @@ export class Results extends Model<Results> {
         allowNull: false,
     })
     cost?: number
+
+    @Column({
+        allowNull: false,
+    })
+    seasonId?: number
+
+    @ForeignKey(() => Driver)
+    @Column({
+        allowNull: false,
+    })
+    driverid: string = ''
+
+    @ForeignKey(() => Team)
+    @Column({
+        allowNull: false,
+    })
+    teamid: string = ''
 
     @BelongsTo(() => Driver, 'driverid')
     driver?: Driver

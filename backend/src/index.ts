@@ -1,5 +1,9 @@
 import dotenv from 'dotenv'
-dotenv.config()
+dotenv.config({
+    path: './src/.env'
+})
+
+console.log(process.env.PG_USER_NAME)
 
 import express from 'express'
 import './database/index'
