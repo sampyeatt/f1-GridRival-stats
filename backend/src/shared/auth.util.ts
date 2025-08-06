@@ -1,4 +1,5 @@
 import dotenv from 'dotenv'
+
 dotenv.config({
     path: './src/.env'
 })
@@ -10,11 +11,15 @@ import {User} from '../models/User'
 const secretKey = process.env.JWT_SECRET!
 
 
-export async function generateToken(userId: number): Promise<string> {
+export async function generateToken(userId: number, expiresIn = '1h'): Promise<string> {
     const payload = {
         userId: userId
     }
-    return jwt.sign(payload, secretKey, {expiresIn: '1h'})
+    return jwt.sign(payload, secretKey, {expiresIn: expiresIn as any})
+}
+
+export async function encryptPassword(password: string): Promise<string> {
+    return jwt.sign(password, secretKey)
 }
 
 export async function verifyToken(token: string) {
@@ -31,10 +36,12 @@ export async function authenticateJWT(req: Request, res: Response, next: Functio
     if (!token) {
         return res.status(401).json({message: 'Unauthorized'})
     }
-    const verified = verifyToken(token)
+    const verified = await verifyToken(token)
     if (!verified) {
         return res.status(401).json({message: 'Invalid token'})
     }
+
+    console.log('verified', verified)
 
     User.findByPk((verified as any).userId).then(user => {
         if (user) {
