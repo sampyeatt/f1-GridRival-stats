@@ -10,7 +10,8 @@ import userRoutes from './routes/user.routes'
 import driverRoutes from './routes/driver.routes'
 import teamRoutes from './routes/team.routes'
 import authRoutes from './routes/auth.routes'
-// import { authenticateJWT, generateToken } from './shared/auth.util'
+import logger from './shared/logger.util'
+import {Request, Response} from 'express'
 
 const app = express()
 const port = 3000
@@ -24,11 +25,11 @@ app.use('/api/drivers', driverRoutes)
 app.use('/api/teams', teamRoutes)
 app.use('/api/auth', authRoutes)
 
-app.listen(port, () => console.log(`Example app listening on port http://localhost:${port}!`))
+app.use((err: Error, req: Request, res: Response, next: any) => {
+    logger.error({
+        message: err.message, stack: err.stack,
+    })
+    res.status(500).send({message: 'Internal server error'})
+})
 
-// app.get('/test', authenticateJWT, (req, resp) =>{
-//     resp.json((req as any).user)
-// })
-//
-// console.log(generateToken(2))
-// console.log(require("crypto".randomBytes(64).toString("base64"))
+app.listen(port, () => console.log(`Example app listening on port http://localhost:${port}!`))

@@ -23,7 +23,6 @@ export async function encryptPassword(password: string): Promise<string> {
 }
 
 export async function verifyToken(token: string) {
-    console.log('verifyToken', token)
     try {
         return jwt.verify(token, secretKey)
     } catch (error) {
@@ -40,8 +39,6 @@ export async function authenticateJWT(req: Request, res: Response, next: Functio
     if (!verified) {
         return res.status(401).json({message: 'Invalid token'})
     }
-
-    console.log('verified', verified)
 
     User.findByPk((verified as any).userId).then(user => {
         if (user) {

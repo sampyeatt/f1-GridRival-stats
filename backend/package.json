@@ -21,6 +21,7 @@
     "reflect-metadata": "^0.2.2",
     "sequelize": "^6.37.7",
     "sequelize-typescript": "^2.1.6",
+    "winston": "^3.17.0",
     "zod": "^4.0.14"
   },
   "devDependencies": {
