@@ -1,0 +1,47 @@
+import dotenv from 'dotenv'
+dotenv.config({
+    path: './src/.env'
+})
+
+import jwt from 'jsonwebtoken'
+import {Request, Response} from 'express'
+import {User} from '../models/User'
+
+const secretKey = process.env.JWT_SECRET!
+
+
+export async function generateToken(userId: number): Promise<string> {
+    const payload = {
+        userId: userId
+    }
+    return jwt.sign(payload, secretKey, {expiresIn: '1h'})
+}
+
+export async function verifyToken(token: string) {
+    console.log('verifyToken', token)
+    try {
+        return jwt.verify(token, secretKey)
+    } catch (error) {
+        return null
+    }
+}
+
+export async function authenticateJWT(req: Request, res: Response, next: Function) {
+    const token = req.header('Authorization')?.replace('Bearer ', '')
+    if (!token) {
+        return res.status(401).json({message: 'Unauthorized'})
+    }
+    const verified = verifyToken(token)
+    if (!verified) {
+        return res.status(401).json({message: 'Invalid token'})
+    }
+
+    User.findByPk((verified as any).userId).then(user => {
+        if (user) {
+            (req as any).user = user
+        } else {
+            return res.status(401).json({message: 'User not found'})
+        }
+        next()
+    })
+}

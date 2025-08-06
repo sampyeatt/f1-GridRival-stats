@@ -1,4 +1,5 @@
 import {Results} from '../models/Results'
+import axios from 'axios'
 
 
 export async function getResutls(seasonId: number) {
@@ -7,4 +8,9 @@ export async function getResutls(seasonId: number) {
             seasonId: seasonId
         }
     })
+}
+
+export async function getCurrentRaceeResults (results: Results[]) {
+    const response = await axios.get(`https://f1connectapi.vercel.app/api/current/last/race`)
+    return response.data.teams
 }

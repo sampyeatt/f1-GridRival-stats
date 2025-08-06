@@ -36,6 +36,6 @@ export class Driver extends Model<Driver> {
     @HasMany(() => Results)
     results?: Results[] = []
 
-    @BelongsTo(() => Team, 'teamId')
+    @BelongsTo(() => Team)
     team?: Team
 }

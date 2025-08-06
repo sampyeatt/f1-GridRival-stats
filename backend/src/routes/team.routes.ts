@@ -1,8 +1,9 @@
 import {Router} from 'express'
-import {getTeams} from '../controllers/team.controller'
+import {getTeams, populateTeamTable} from '../controllers/team.controller'
 
 const router = Router()
 
 router.get('/', getTeams)
+router.post('/newSeason', populateTeamTable)
 
 export default router

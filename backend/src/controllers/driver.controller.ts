@@ -1,5 +1,5 @@
 import {Request, Response} from 'express'
-import {addDriver, getActiveDrivers, getCurrentDrivers} from '../services/driver.service'
+import {addDriver, getActiveDrivers, getCurrentDrivers, getDriverById} from '../services/driver.service'
 import z from 'zod'
 import * as _ from 'lodash'
 
@@ -21,6 +21,7 @@ export const populateDriverTable = async (req: Request, res: Response) => {
     const drivers = await getCurrentDrivers(seasonId)
 
     await _.forEach(drivers, (driver) => {
+        const driverExists = getDriverById(driver.driverId)
         addDriver(driver.driverId, driver.name, driver.surname, driver.teamId, driver.shortName)
     })
 

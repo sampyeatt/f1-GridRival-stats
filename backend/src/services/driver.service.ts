@@ -29,11 +29,7 @@ export async function removeDriverById(id: string) {
 }
 
 export async function getDriverById(id: string) {
-    return await Driver.findOne({
-        where: {
-            driverId: id
-        }
-    })
+    return await Driver.findByPk(id)
 }
 
 export async function getCurrentDrivers(seasonId: number) {
