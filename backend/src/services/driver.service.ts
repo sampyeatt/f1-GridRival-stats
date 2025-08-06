@@ -20,14 +20,6 @@ export async function addDriver(driverId: string, name: string, surname: string,
     return Driver.build(driver).save()
 }
 
-export async function removeDriverById(id: string) {
-    return await Driver.destroy({
-        where: {
-            driverId: id
-        }
-    })
-}
-
 export async function getDriverById(id: string) {
     return await Driver.findByPk(id)
 }

@@ -22,3 +22,17 @@ export async function getUserByEmail(email: string) {
         }
     })
 }
+
+export const updateUser = async ({name, status, id, password}: {name?: string, status?: 'active' | 'pending', id: number, password?: string}) => {4
+    console.log('name: ', name, ' status: ', status, ' id: ', id, '')
+    const user = await User.findByPk(id)
+    if (!user) throw new Error('User not found')
+
+    user.userId = id
+    if (name) user.name = name
+    if (status) user.status = status
+    if (password) user.password = password
+    return await User.update(user, {
+        where: { userId: id }
+    })
+}

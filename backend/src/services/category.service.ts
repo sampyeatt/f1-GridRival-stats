@@ -38,9 +38,7 @@ export async function getCategoryById(id: number) {
 
 export async function updateCategory(id: number, name: string, slug: string) {
     const cat = await Category.findByPk(id)
-    if (!cat) {
-        throw new Error('Category not found')
-    }
+    if (!cat) throw new Error('Category not found')
     if(name) cat.name = name
     if(slug) cat.slug = slug
     return Category.build(cat).save()

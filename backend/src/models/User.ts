@@ -1,4 +1,4 @@
-import {Table, Column, Model, HasMany, PrimaryKey, AutoIncrement} from 'sequelize-typescript'
+import {Table, Column, Model, HasMany, PrimaryKey, AutoIncrement, DataType, Default} from 'sequelize-typescript'
 import {Post} from './Post'
 import {Comment} from './Comment'
 import {Token} from './Token'
@@ -25,6 +25,13 @@ export class User extends Model<User> {
         allowNull: false
     })
     email?: string
+
+    @Default('pending')
+    @Column({
+        allowNull: false,
+        type: DataType.ENUM('active', 'pending')
+    })
+    status?: 'active' | 'pending'
 
     @Column({
         allowNull: false
