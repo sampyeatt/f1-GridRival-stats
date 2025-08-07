@@ -11,6 +11,7 @@ import driverRoutes from './routes/driver.routes'
 import teamRoutes from './routes/team.routes'
 import authRoutes from './routes/auth.routes'
 import logger from './shared/logger.util'
+import resultsRoutes from './routes/results.routes'
 import {Request, Response} from 'express'
 
 const app = express()
@@ -24,6 +25,7 @@ app.use('/api/users', userRoutes)
 app.use('/api/drivers', driverRoutes)
 app.use('/api/teams', teamRoutes)
 app.use('/api/auth', authRoutes)
+app.use('/api/result', resultsRoutes)
 
 app.use((err: Error, req: Request, res: Response, next: any) => {
     logger.error({

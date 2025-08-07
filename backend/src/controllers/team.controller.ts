@@ -1,5 +1,6 @@
 import {Request, Response} from 'express'
-import {getAllTeams, getCurrentTeams, addTeam, getTeamById} from '../services/team.service'
+import {getAllTeams, addTeam, getTeamById} from '../services/team.service'
+import {getCurrentTeams} from'../shared/f1api.util'
 import z from 'zod'
 import * as _ from 'lodash'
 

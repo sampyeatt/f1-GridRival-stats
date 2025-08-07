@@ -1,5 +1,6 @@
 import {Request, Response} from 'express'
-import {addDriver, getActiveDrivers, getCurrentDrivers, getDriverById} from '../services/driver.service'
+import {addDriver, getActiveDrivers, getDriverById} from '../services/driver.service'
+import {getCurrentDrivers} from'../shared/f1api.util'
 import z from 'zod'
 import * as _ from 'lodash'
 

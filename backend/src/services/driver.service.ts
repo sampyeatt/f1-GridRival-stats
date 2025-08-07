@@ -1,5 +1,4 @@
 import {Driver} from '../models/Driver'
-import axios from 'axios'
 
 
 export async function getActiveDrivers() {
@@ -22,9 +21,4 @@ export async function addDriver(driverId: string, name: string, surname: string,
 
 export async function getDriverById(id: string) {
     return await Driver.findByPk(id)
-}
-
-export async function getCurrentDrivers(seasonId: number) {
-    const response = await axios.get(`https://f1connectapi.vercel.app/api/current/drivers?seasonId=${seasonId}`)
-    return response.data.drivers
 }
