@@ -1,6 +1,6 @@
-import {Component, OnInit} from '@angular/core'
-import {TableModule} from 'primeng/table'
-import {CommonModule} from '@angular/common'
+import { Component, OnInit } from '@angular/core';
+import { TableModule } from 'primeng/table';
+import { CommonModule } from '@angular/common';
 import {Result, ResultsService} from '../../services/results.service'
 
 @Component({
@@ -9,8 +9,8 @@ import {Result, ResultsService} from '../../services/results.service'
   imports: [
     TableModule, CommonModule
   ],
-  templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.scss'
+  templateUrl: './dashboard.html',
+  styleUrl: './dashboard.css'
 })
 
 export class DashboardComponent {

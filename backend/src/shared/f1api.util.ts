@@ -1,12 +1,14 @@
 import axios from 'axios'
 
 export async function getCurrentRaceResults (seasonId: number) {
-    const response = await axios.get(`https://f1api.dev/api/current/last/race?seasonId=${seasonId}`)
+    // const response = await axios.get(`https://f1api.dev/api/current/last/race?seasonId=${seasonId}`)
+    const response = await axios.get(`https://f1api.dev/api/${seasonId}/1/race`)
     return response.data
 }
 
 export async function getCurrentQualiResults (seasonId: number) {
-    const response = await axios.get(`https://f1api.dev/api/current/last/qualy?seasonId=${seasonId}`)
+    // const response = await axios.get(`https://f1api.dev/api/current/last/qualy?seasonId=${seasonId}`)
+    const response = await axios.get(`https://f1api.dev/api/${seasonId}/1/qualy`)
     return response.data
 }
 

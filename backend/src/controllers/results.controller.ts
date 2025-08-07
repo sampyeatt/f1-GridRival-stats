@@ -30,16 +30,20 @@ export const addResultController = async (req: Request, res: Response) => {
     const race = await getCurrentRaceResults(seasonId)
     const sprintData = (sprint !== null) ? sprint.races.sprintRaceResults : []
     const {raceId, round} = race.races
-    const {totalLaps} = await getRaceByRound(seasonId, round)
+    const totalLaps = await getRaceByRound(seasonId, round)
 
 
 
 
-    const zipped = _(_.concat(quali.races.qualyResults, race.races.results, sprintData)).groupBy('driver.driverId').map((value, key) => {
+    const zipped = _(_.concat(quali.races.qualyResults, race.races.results, sprintData)).groupBy('driver.driverId').map((value, key, index) => {
         const weekendData = _.merge(value[0], value[1], value[2] ?? {})
-        const {gridPosition, position, sprintPosition, time} = weekendData
-        const teammatePos = _.find(race.races.results, (result) => result.driver.driverId !== key && result.team.teamId === weekendData.teamId)
-        const points = getTotalPointsDriver(key, gridPosition,  position, sprintPosition, teammatePos, time, totalLaps, seasonId, round)
+        const { sprintPosition, time} = weekendData
+        let {gridPosition, position} = weekendData
+        if (gridPosition === '-') gridPosition = _.findIndex(quali.races.qualyResults, {driverId: key})+1
+        let teammatePos = _.find(race.races.results, (result) => result.driver.driverId !== key && result.team.teamId === weekendData.teamId).position
+        if (teammatePos === 'NC') teammatePos = _.findIndex(race.races.results, (result: any) => result.driver.driverId !== key && result.team.teamId === weekendData.teamId)+1
+        if (position === 'NC') position = _.findIndex(race.races.results, (result: any) => result.driver.driverId === key)+1
+        const points = getTotalPointsDriver(key, gridPosition,  position, sprintPosition, teammatePos, time, totalLaps[0].laps, seasonId, round)
         const cost = 2
         return {
             driverId: key,
