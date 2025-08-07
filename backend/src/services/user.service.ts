@@ -1,5 +1,4 @@
 import {User} from '../models/User'
-import {Category} from '../models/Category'
 
 
 export async function getAllUsers() {

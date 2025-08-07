@@ -1,0 +1,17 @@
+<h1>Dashboard</h1>
+<div>
+  <p-table [value]="results" [tableStyle]="{ 'min-width': '50rem' }">
+    <ng-template #header>
+      <tr>
+        <th>DriverId</th>
+        <th>Cost</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-result>
+      <tr>
+        <td>{{ result.driverId }}</td>
+        <td>{{ result.cost }}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

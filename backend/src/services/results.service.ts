@@ -1,7 +1,6 @@
 import {Results} from '../models/Results'
 import _ from 'lodash'
 import {BeatingTeammatePoints, QualiPointsDriver, RacePointsDriver, SprintPointsDriver} from '../shared/constants'
-import {regex} from 'zod'
 import {Op} from 'sequelize'
 
 

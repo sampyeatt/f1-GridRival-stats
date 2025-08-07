@@ -8,7 +8,6 @@ import {
     getCurrentSprintResults,
     getRaceByRound
 } from '../shared/f1api.util'
-import {ResultSet} from '../shared/interface.util'
 
 export const getResultsController = async (req: Request, res: Response) => {
     if (_.isNil(req.params.seasonId)) throw new Error('SeasonId parameter is required')

@@ -1,5 +1,4 @@
 import {Team} from '../models/Team'
-import axios from 'axios'
 
 
 export async function getAllTeams() {
