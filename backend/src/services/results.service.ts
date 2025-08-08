@@ -41,7 +41,8 @@ export function addResults(
     finishPosition: number,
     positionDifference: number,
     positionsForMoney: number,
-    easeToGainPoints: number) {
+    easeToGainPoints: number,
+    rank: number) {
     const result = new Results()
     result.raceId = raceId
     result.points = points
@@ -54,6 +55,7 @@ export function addResults(
     result.positionDifference = positionDifference
     result.positionsForMoney = positionsForMoney
     result.easeToGainPoints = easeToGainPoints
+    result.rank = rank
     return Results.build(result).save()
 }
 
@@ -90,7 +92,7 @@ async function getCompletionPoints(percentage: number): Promise<number> {
     else return 12
 }
 
-export async function getTotalSalaryAndPosDiff(driverId: string, seasonId: number, round: number, driverRankAndSalary: any) {
+export async function getTotalSalaryAndPosDiff(driverId: string, seasonId: number, round: number, driverRankAndSalary: number) {
     const results = await Results.findOne({
         where: {
             driverId: driverId,
@@ -98,16 +100,38 @@ export async function getTotalSalaryAndPosDiff(driverId: string, seasonId: numbe
             round: round - 1
         }
     })
-    if (!results) return -1
+    if (!results) return{
+        totalSalary: 0,
+        positionDifference: 0
+    }
 
-    const posDiff = ((BaseSalaryDriver[String(driverRankAndSalary.rank) as keyof typeof BaseSalaryDriver] - results.cost!) / 4)
+    if (driverId === 'norris') {
+
+        console.log('diff', (BaseSalaryDriver[String(driverRankAndSalary) as keyof typeof BaseSalaryDriver] - results.get('cost')!))
+        console.log('diffdiv', ((BaseSalaryDriver[String(driverRankAndSalary) as keyof typeof BaseSalaryDriver] - results.get('cost')!) / 4))
+    }
+
+    const posDiff = Math.max(-2, Math.min(2, (_.floor(((BaseSalaryDriver[String(driverRankAndSalary) as keyof typeof BaseSalaryDriver] - results.get('cost')!) / 4), 1))))
 
     return {
-        totalSalary: ( posDiff + results.cost!),
+        totalSalary: (posDiff + results.get('cost')!),
         positionDifference: posDiff
-}
+    }
 }
 
 export async function bulkAddResults(results: any[]) {
     return await Results.bulkCreate(results)
+}
+
+export async function findSalaryBracket(salary: number) {
+    const entries = Object.entries(BaseSalaryDriver)
+        .map(([key, value]) => [key, Number(value)])
+        .sort((a: any, b: any) => b[1] - a[1]) // Descending order
+
+    const found = _.find(entries, ([key, value], i) => {
+        const prevValue = i === 0 ? Infinity : entries[i - 1]![1]
+        return salary <= +value! && salary > +prevValue!
+    })
+
+    return found ? found[0] as string : '-1'
 }

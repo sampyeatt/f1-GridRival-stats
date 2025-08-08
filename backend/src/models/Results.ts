@@ -17,8 +17,14 @@ export class Results extends Model<Results> {
 
     @Column({
         allowNull: false,
+        type: 'float'
     })
     cost?: number
+
+    @Column({
+        allowNull: false
+    })
+    rank?: number
 
     @Column({
         allowNull: false,
@@ -37,6 +43,7 @@ export class Results extends Model<Results> {
 
     @Column({
         allowNull: false,
+        type: 'float'
     })
     positionDifference?: number
 
