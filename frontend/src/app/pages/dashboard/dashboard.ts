@@ -6,12 +6,13 @@ import {FormsModule} from '@angular/forms'
 import {ResultsService} from '../../services/results.service'
 import {Result} from '../../interface/api-interface'
 import {BadgeModule} from 'primeng/badge'
+import {TabsModule} from 'primeng/tabs'
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [
-    TableModule, CommonModule, ButtonModule, BadgeModule, FormsModule
+    TableModule, CommonModule, ButtonModule, BadgeModule, FormsModule, TabsModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './dashboard.html',
@@ -34,9 +35,9 @@ export class DashboardComponent {
     })
   }
 
-  resultSeverity(result: Result) {
-    if (result.positionsForMoney > 1) return 'danger'
-    else if (result.positionsForMoney <= 1 && result.positionsForMoney >= -1) return 'warning'
+  resultSeverity(result: Result){
+    if (result.easeToGainPoints > 1) return 'danger'
+    else if (result.easeToGainPoints <= 1 && result.easeToGainPoints >= -1) return 'warn'
     else return 'success'
   }
 }

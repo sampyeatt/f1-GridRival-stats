@@ -1,27 +1,49 @@
 <h1>This Weeks Results</h1>
-<div>
-  <p-table [value]="this.resultsService.result()" [tableStyle]="{ 'min-width': '50rem' }">
-    <ng-template #header pTemplate="header">
-      <tr>
-        <th>DriverId</th>
-        <th>Cost</th>
-        <th>Points</th>
-        <th>Positions To Gain $</th>
-        <th>Positions To Gain Points</th>
-      </tr>
-    </ng-template>
-    <ng-template #body let-result pTemplate="body">
-      <tr>
-        <td>{{ result.driverId }}</td>
-        <td>{{ result.cost }}</td>
-        <td>{{ result.points }}</td>
-        <td>
-          <p-badge [value]="result.quantity" [severity]="resultSeverity(result)" />
-        </td>
-        <td>
-          <p-badge [value]="result.quantity" [severity]="resultSeverity(result)" />
-        </td>
-      </tr>
-    </ng-template>
-  </p-table>
-</div>
+<p-tabs value="driver">
+  <p-tablist>
+    <p-tab value="driver">Drivers</p-tab>
+    <p-tab value="team">Teams</p-tab>
+  </p-tablist>
+  <div class="flex justify-center py-6">
+    <p-table [value]="this.resultsService.result()" [tableStyle]="{ 'min-width': '50rem' }">
+      <ng-template #header pTemplate="header">
+        <tr>
+          <th pSortableColumn="criverId">
+            DriverId
+            <p-sortIcon field="driverId"/>
+          </th>
+          <th pSortableColumn="cost">
+            Cost
+            <p-sortIcon field="cost" />
+          </th>
+          <th pSortableColumn="points">
+            Points
+            <p-sortIcon field="points" />
+          </th>
+          <th pSortableColumn="positionsForMoney">
+            Positions To Gain $
+            <p-sortIcon field="positionsForMoney" />
+          </th>
+          <th pSortableColumn="easeToGainPoints">
+            Ease to Gain
+            <p-sortIcon field="easeToGainPoints" />
+          </th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-result pTemplate="body">
+        <tr>
+          <td>{{ result.driverId }}</td>
+          <td>{{ result.cost }}</td>
+          <td>{{ result.points }}</td>
+          <td>
+            <p-badge [value]="result.positionsForMoney" [severity]="resultSeverity(result)"/>
+          </td>
+          <td>
+            <p-badge [value]="result.easeToGainPoints" [severity]="resultSeverity(result)"/>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</p-tabs>
+
