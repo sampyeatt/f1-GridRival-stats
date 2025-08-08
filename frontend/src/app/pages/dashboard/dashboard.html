@@ -1,16 +1,26 @@
-<h1>Dashboard</h1>
+<h1>This Weeks Results</h1>
 <div>
-  <p-table [value]="results" [tableStyle]="{ 'min-width': '50rem' }">
-    <ng-template #header>
+  <p-table [value]="this.resultsService.result()" [tableStyle]="{ 'min-width': '50rem' }">
+    <ng-template #header pTemplate="header">
       <tr>
         <th>DriverId</th>
         <th>Cost</th>
+        <th>Points</th>
+        <th>Positions To Gain $</th>
+        <th>Positions To Gain Points</th>
       </tr>
     </ng-template>
-    <ng-template #body let-result>
+    <ng-template #body let-result pTemplate="body">
       <tr>
         <td>{{ result.driverId }}</td>
         <td>{{ result.cost }}</td>
+        <td>{{ result.points }}</td>
+        <td>
+          <p-badge [value]="result.quantity" [severity]="resultSeverity(result)" />
+        </td>
+        <td>
+          <p-badge [value]="result.quantity" [severity]="resultSeverity(result)" />
+        </td>
       </tr>
     </ng-template>
   </p-table>

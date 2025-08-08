@@ -35,6 +35,21 @@ export class Results extends Model<Results> {
     })
     finishPosition?: number
 
+    @Column({
+        allowNull: false,
+    })
+    positionDifference?: number
+
+    @Column({
+        allowNull: false,
+    })
+    positionsForMoney?: number
+
+    @Column({
+        allowNull: false,
+    })
+    easeToGainPoints?: number
+
     @ForeignKey(() => Driver)
     @Column({
         allowNull: false,

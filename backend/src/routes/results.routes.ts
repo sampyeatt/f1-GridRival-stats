@@ -3,7 +3,7 @@ import {addResultArrayToStart, addResultController, getResultsController} from '
 
 const router = Router()
 
-router.get('/', getResultsController)
+router.get('/:seasonId', getResultsController)
 router.post('/', addResultController)
 router.post('/start', addResultArrayToStart)
 

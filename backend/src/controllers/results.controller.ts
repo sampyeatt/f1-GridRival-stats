@@ -3,7 +3,7 @@ import {
     addResults,
     getResutls,
     getResutlsByRound,
-    getTotalPointsDriver,
+    getTotalPointsDriver, getTotalSalaryAndPosDiff,
     getTotalSalry
 } from '../services/results.service'
 import _ from 'lodash'
@@ -62,17 +62,20 @@ export const addResultController = async (req: Request, res: Response) => {
             if (position === 'NC') position = _.findIndex(race.races.results, (result: any) => result.driver.driverId === key) + 1
             const points = await getTotalPointsDriver(key, gridPosition, position, sprintPosition, teammatePos, time, totalLaps[0].laps, seasonId, round)
             console.log('test',_.find(driversRankAndSalary, {driverId: key}))
-            const cost = await getTotalSalry(key, seasonId, round, 1)
+            const {totalSalary, positionDifference} = await getTotalSalaryAndPosDiff(key, seasonId, round, 1)
             console.log('cost', cost)
             return {
                 driverId: key,
                 raceId: raceId,
                 points: points,
-                cost: cost,
+                cost: totalSalary,
                 seasonId: seasonId,
                 round: round,
                 finishPosition: position,
-                teamId: weekendData.teamId
+                teamId: weekendData.teamId,
+                positionDifference: positionDifference,
+                positionsForMoney: 1, // TODO find what position on the priceTable is just higher than current totalSalary
+                easeToGainPoints: 1 // TODO Current Fantasy Rank Pos - positionsForMoney
             }
         })
 
@@ -88,7 +91,10 @@ export const addResultArrayToStart = async (req: Request, res: Response) => {
         seasonId: z.number(),
         round: z.number(),
         finishPosition: z.number(),
-        teamId: z.string()
+        teamId: z.string(),
+        positionDifference: z.number(),
+        positionsForMoney: z.number(),
+        easeToGainPoints: z.number()
     }))
     const schemaValidator = schema.safeParse(req.body.start)
     if (!schemaValidator.success) return res.status(400).json({
@@ -99,7 +105,7 @@ export const addResultArrayToStart = async (req: Request, res: Response) => {
     const {start} = req.body
 
     const resultsAdded = _.map(start, async (result) => {
-        return await addResults(result.raceId, result.points, result.cost, result.seasonId, result.round, result.driverId, result.teamId, result.finishPosition)
+        return await addResults(result.raceId, result.points, result.cost, result.seasonId, result.round, result.driverId, result.teamId, result.finishPosition, result.positionDifference, result.PositionsForMoney, result.easeToGainPoints)
     })
 
     res.json(resultsAdded)

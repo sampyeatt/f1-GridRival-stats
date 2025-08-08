@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import {computed, inject, Injectable} from '@angular/core'
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment.development';
 interface AuthResponse{
@@ -9,13 +9,11 @@ interface AuthResponse{
   providedIn: 'root'
 })
 export class AuthService {
+  apiUrl = computed(() => `${environment.API_URL}/api/result`)
 
-  apiUrl=`${environment.apiUrl}/api`;
+  private http = inject(HttpClient)
+  private router = inject(Router)
   token: string|null = null;
-
-  constructor(
-    private http: HttpClient, private router: Router
-  ) { }
 
   register(username: string, password: string){
     return this.http.post(`${this.apiUrl}/auth/register`, {username, password});

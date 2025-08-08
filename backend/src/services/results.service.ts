@@ -15,7 +15,8 @@ export async function getResutls(seasonId: number) {
     return await Results.findAll({
         where: {
             seasonId: seasonId
-        }
+        },
+        order: [['cost', 'DESC']]
     })
 }
 
@@ -37,7 +38,10 @@ export function addResults(
     round: number,
     driverId: string,
     teamId: string,
-    finishPosition: number) {
+    finishPosition: number,
+    positionDifference: number,
+    positionsForMoney: number,
+    easeToGainPoints: number) {
     const result = new Results()
     result.raceId = raceId
     result.points = points
@@ -47,6 +51,9 @@ export function addResults(
     result.driverId = driverId
     result.teamId = teamId
     result.finishPosition = finishPosition
+    result.positionDifference = positionDifference
+    result.positionsForMoney = positionsForMoney
+    result.easeToGainPoints = easeToGainPoints
     return Results.build(result).save()
 }
 
@@ -83,7 +90,7 @@ async function getCompletionPoints(percentage: number): Promise<number> {
     else return 12
 }
 
-export async function getTotalSalry(driverId: string, seasonId: number, round: number, driverRankAndSalary: any) {
+export async function getTotalSalaryAndPosDiff(driverId: string, seasonId: number, round: number, driverRankAndSalary: any) {
     const results = await Results.findOne({
         where: {
             driverId: driverId,
@@ -92,12 +99,13 @@ export async function getTotalSalry(driverId: string, seasonId: number, round: n
         }
     })
     if (!results) return -1
-    // if (driverId === 'hulkenberg') {
-        console.log('driverId: ', driverId, ' seasonId: ', seasonId, ' round: ', round, ' driverRankAndSalary: ', driverRankAndSalary)
-        console.log('results: ', results.get('cost'))
-        console.log('BaseSalaryDriver', BaseSalaryDriver[String(driverRankAndSalary.rank) as keyof typeof BaseSalaryDriver])
-    // }
-    return (((BaseSalaryDriver[String(driverRankAndSalary.rank) as keyof typeof BaseSalaryDriver] - results.cost!) / 4) + results.cost!)
+
+    const posDiff = ((BaseSalaryDriver[String(driverRankAndSalary.rank) as keyof typeof BaseSalaryDriver] - results.cost!) / 4)
+
+    return {
+        totalSalary: ( posDiff + results.cost!),
+        positionDifference: posDiff
+}
 }
 
 export async function bulkAddResults(results: any[]) {

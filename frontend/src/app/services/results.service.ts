@@ -1,27 +1,23 @@
 import {HttpClient} from '@angular/common/http'
-import {Injectable} from '@angular/core'
+import {Injectable, inject, computed} from '@angular/core'
 import {environment} from '../../environments/environment.development'
-
-export interface Result {
-  driverId: string
-  raceId: string
-  points: number
-  cost: number
-  seasonId: number
-  round: number
-  finishPosition: number
-  teamId: string
-}
+import {Result} from '../interface/api-interface'
+import {Observable} from 'rxjs'
+import {toSignal} from '@angular/core/rxjs-interop'
 
 @Injectable({
   providedIn: 'root'
 })
 export class ResultsService {
-  apiUrl = `${environment.apiUrl}/api/result`
+  apiUrl = computed(() => `${environment.API_URL}/api/result`)
 
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient)
 
-  getResults() {
-    return this.http.get<Result[]>(this.apiUrl)
+  private results$: Observable<Result[]> = this.getResults()
+
+  public result = toSignal(this.results$, {initialValue: []})
+
+  getResults(): Observable<Result[]> {
+    return this.http.get<Result[]>(`${this.apiUrl()}/2025`)
   }
 }
