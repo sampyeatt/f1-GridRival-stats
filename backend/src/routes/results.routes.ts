@@ -1,9 +1,10 @@
 import {Router} from 'express'
-import {addResultController, getResultsController} from '../controllers/results.controller'
+import {addResultArrayToStart, addResultController, getResultsController} from '../controllers/results.controller'
 
 const router = Router()
 
 router.get('/', getResultsController)
 router.post('/', addResultController)
+router.post('/start', addResultArrayToStart)
 
 export default router

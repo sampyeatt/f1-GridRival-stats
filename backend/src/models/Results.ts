@@ -47,10 +47,10 @@ export class Results extends Model<Results> {
     })
     teamId?: string
 
-    @BelongsTo(() => Driver, 'driverid')
+    @BelongsTo(() => Driver, 'driverId')
     driver?: Driver
 
-    @BelongsTo(() => Team, 'teamid')
+    @BelongsTo(() => Team, 'teamId')
     team?: Team
 
 

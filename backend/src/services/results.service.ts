@@ -1,6 +1,13 @@
 import {Results} from '../models/Results'
 import _ from 'lodash'
-import {BeatingTeammatePoints, QualiPointsDriver, RacePointsDriver, SprintPointsDriver} from '../shared/constants'
+import {
+    BaseSalaryDriver,
+    BeatingTeammatePoints,
+    ImprovedPoints,
+    QualiPointsDriver,
+    RacePointsDriver,
+    SprintPointsDriver
+} from '../shared/constants'
 import {Op} from 'sequelize'
 
 
@@ -12,14 +19,25 @@ export async function getResutls(seasonId: number) {
     })
 }
 
-export async function addResults(
+export async function getResutlsByRound(seasonId: number, round: number) {
+    return await Results.findAll({
+        where: {
+            seasonId: seasonId,
+            round: round
+        },
+        order: [['cost', 'DESC']]
+    })
+}
+
+export function addResults(
     raceId: string,
     points: number,
     cost: number,
     seasonId: number,
     round: number,
     driverId: string,
-    teamId: string) {
+    teamId: string,
+    finishPosition: number) {
     const result = new Results()
     result.raceId = raceId
     result.points = points
@@ -28,48 +46,60 @@ export async function addResults(
     result.round = round
     result.driverId = driverId
     result.teamId = teamId
+    result.finishPosition = finishPosition
     return Results.build(result).save()
 }
 
-export function getTotalPointsDriver(driverId: string, qualiPos: number,  racePos: number, sprintPos = 0, teammatePos: number, completion: string, totalLaps: number, seasonId: number, round: number) {
-    // const eightRaceAvg = await Results.sum('finishPosition', {
-    //     where: {
-    //         driverId: driverId,
-    //         seasonId: seasonId,
-    //         round: {
-    //             [Op.between]: [Math.max(round - 8, 1), round - 1]
-    //         }
-    //     }
-    // }) ?? 0
-    if (driverId === 'hulkenberg') {
-        console.log('***', driverId, '***')
-        console.log('qualiPos: ', qualiPos, ' racePos: ', racePos, ' sprintPos: ', sprintPos, ' teammatePos: ', teammatePos)
-        console.log('completion: ', completion, ' totalLaps: ', totalLaps)
-        console.log('beattmby',String(Math.max(teammatePos - racePos, 0)))
+export async function getTotalPointsDriver(driverId: string, qualiPos: number, racePos: number, sprintPos = 0, teammatePos: number, completion: string, totalLaps: number, seasonId: number, round: number) {
 
-    }
-
-    const eightRaceAvg = 0
+    const eightRaceAvg = (await Results.sum('finishPosition', {
+        where: {
+            driverId: driverId,
+            seasonId: seasonId,
+            round: {
+                [Op.between]: [Math.max(round - 8, 0), round - 1]
+            }
+        }
+    }) ?? 0) / ((round - 1) - Math.max(round - 8, 0) || 1)
     const quailPoints = QualiPointsDriver[String(qualiPos) as keyof typeof QualiPointsDriver]
     const racePoints = RacePointsDriver[String(racePos) as keyof typeof RacePointsDriver]
     const sprintPoints = SprintPointsDriver[String(sprintPos) as keyof typeof SprintPointsDriver]
     const beatTeammatePoints = BeatingTeammatePoints[String(Math.max(teammatePos - racePos, 0)) as keyof typeof BeatingTeammatePoints]
-    const match = completion.match(/\((\d+)\)/);
+    const improvedPoints = ImprovedPoints[String(_.round(eightRaceAvg - racePos, 0)) as keyof typeof ImprovedPoints]
+    const match = completion.match(/\((\d+)\)/)
     let lapsCompleted = totalLaps
     if (match) lapsCompleted = +match[1]!
 
-    const completionPoints = getCompletionPoints((lapsCompleted / totalLaps) * 100)
-    const overtakePoints = Math.max((qualiPos - racePos), 0)*3
-    if (driverId === 'hulkenberg'){
-        console.log('racePoints: ', racePoints, ' quailPoints: ', quailPoints, ' overtakePoints: ', overtakePoints, ' beatTeammatePoints: ', beatTeammatePoints, ' completionPoints: ', completionPoints)
-    }
-    return _.sum([quailPoints, racePoints, sprintPoints, overtakePoints, beatTeammatePoints, completionPoints])
+    const completionPoints = await getCompletionPoints((lapsCompleted / totalLaps) * 100)
+    const overtakePoints = Math.max((qualiPos - racePos), 0) * 3
+    return _.sum([quailPoints, racePoints, sprintPoints, overtakePoints, beatTeammatePoints, completionPoints, improvedPoints])
 }
 
-function getCompletionPoints(percentage: number): number {
+async function getCompletionPoints(percentage: number): Promise<number> {
     if (percentage < 25) return 0
     else if (percentage < 50) return 3
     else if (percentage < 75) return 6
     else if (percentage < 90) return 9
     else return 12
+}
+
+export async function getTotalSalry(driverId: string, seasonId: number, round: number, driverRankAndSalary: any) {
+    const results = await Results.findOne({
+        where: {
+            driverId: driverId,
+            seasonId: seasonId,
+            round: round - 1
+        }
+    })
+    if (!results) return -1
+    // if (driverId === 'hulkenberg') {
+        console.log('driverId: ', driverId, ' seasonId: ', seasonId, ' round: ', round, ' driverRankAndSalary: ', driverRankAndSalary)
+        console.log('results: ', results.get('cost'))
+        console.log('BaseSalaryDriver', BaseSalaryDriver[String(driverRankAndSalary.rank) as keyof typeof BaseSalaryDriver])
+    // }
+    return (((BaseSalaryDriver[String(driverRankAndSalary.rank) as keyof typeof BaseSalaryDriver] - results.cost!) / 4) + results.cost!)
+}
+
+export async function bulkAddResults(results: any[]) {
+    return await Results.bulkCreate(results)
 }

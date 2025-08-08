@@ -13,5 +13,5 @@ export async function addTeam(teamId: string, teamName: string) {
 }
 
 export async function getTeamById(id: string) {
-    return await Team.findByPk(id)
+    return Team.findByPk(id)
 }
