@@ -152,7 +152,7 @@ export const BaseSalaryDriver = {
     "17": 5.8,
     "18": 4.1,
     "19": 2.4,
-    "20": 7.0,
+    "20": 0.7,
 }
 
 export const BaseSalaryTeam = {

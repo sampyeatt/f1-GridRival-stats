@@ -1,6 +1,6 @@
 import {Request, Response} from 'express'
 import {
-    addResults, findSalaryBracket,
+    addResults, bulkAddResults, findSalaryBracket,
     getResutls,
     getResutlsByRound,
     getTotalPointsDriver, getTotalSalaryAndPosDiff
@@ -42,14 +42,6 @@ export const addResultController = async (req: Request, res: Response) => {
     const {raceId, round} = race.races
     const totalLaps = await getRaceByRound(seasonId, round)
 
-    // let lastRaceResults = await getResutlsByRound(seasonId, round-1)
-    // lastRaceResults = lastRaceResults.map(dataRes => dataRes.toJSON())
-    // const driversRankAndSalary = _(lastRaceResults)
-    //     .map((result, index) => {
-    //         return _.set(result, 'Rank', index + 1)
-    //     })
-    //     .keyBy('driverId').values().toJSON()
-
     const zipped = await Promise.all(_(_.concat(quali.races.qualyResults, race.races.results, sprintData))
         .groupBy('driver.driverId')
         .map(async (value, key: string) => {
@@ -76,10 +68,9 @@ export const addResultController = async (req: Request, res: Response) => {
                 easeToGainPoints: -1,
                 rank: -1
             }
-        })
-        .sortBy('points').value())
+        }).value())
 
-    const fullResult = await Promise.all(zipped.map(async (value, key) => {
+    const fullResult = await Promise.all(_.orderBy(zipped, ['points', 'finishPosition'], ['desc', 'asc']).map(async (value, key) => {
         value.rank = key+1
         const {
             totalSalary,
@@ -88,13 +79,15 @@ export const addResultController = async (req: Request, res: Response) => {
 
         value.cost = _.round(totalSalary, 1)
         value.positionDifference = positionDifference
-        value.positionsForMoney = Number(await findSalaryBracket(totalSalary))
+        value.positionsForMoney = Number(await findSalaryBracket(value.cost))
         value.easeToGainPoints = value.rank - value.positionsForMoney
 
         return value
     }).values())
 
-    res.json(fullResult)
+    const created = await bulkAddResults(fullResult as unknown as Results[])
+
+    res.json(created)
 }
 
 export const addResultArrayToStart = async (req: Request, res: Response) => {

@@ -104,14 +104,9 @@ export async function getTotalSalaryAndPosDiff(driverId: string, seasonId: numbe
         totalSalary: 0,
         positionDifference: 0
     }
+    const differ = (BaseSalaryDriver[String(driverRankAndSalary) as keyof typeof BaseSalaryDriver] - results.get('cost')!)
 
-    if (driverId === 'norris') {
-
-        console.log('diff', (BaseSalaryDriver[String(driverRankAndSalary) as keyof typeof BaseSalaryDriver] - results.get('cost')!))
-        console.log('diffdiv', ((BaseSalaryDriver[String(driverRankAndSalary) as keyof typeof BaseSalaryDriver] - results.get('cost')!) / 4))
-    }
-
-    const posDiff = Math.max(-2, Math.min(2, (_.floor(((BaseSalaryDriver[String(driverRankAndSalary) as keyof typeof BaseSalaryDriver] - results.get('cost')!) / 4), 1))))
+    const posDiff = Math.max(-2, Math.min(2, (Math.sign(differ) * _.floor(( Math.sign(differ) * differ / 4), 1))))
 
     return {
         totalSalary: (posDiff + results.get('cost')!),
@@ -119,19 +114,18 @@ export async function getTotalSalaryAndPosDiff(driverId: string, seasonId: numbe
     }
 }
 
-export async function bulkAddResults(results: any[]) {
+export async function bulkAddResults(results: Results[]) {
     return await Results.bulkCreate(results)
 }
 
 export async function findSalaryBracket(salary: number) {
     const entries = Object.entries(BaseSalaryDriver)
-        .map(([key, value]) => [key, Number(value)])
-        .sort((a: any, b: any) => b[1] - a[1]) // Descending order
+        .map(([key, value]) => Number(value)).sort()
 
-    const found = _.find(entries, ([key, value], i) => {
-        const prevValue = i === 0 ? Infinity : entries[i - 1]![1]
-        return salary <= +value! && salary > +prevValue!
+    const found = _.findIndex(entries, (val, i) => {
+        const prevVal = entries[i-1]
+        return salary <= +val! && salary > prevVal!
     })
 
-    return found ? found[0] as string : '-1'
+    return found ? String(found+1) : 'null'
 }
