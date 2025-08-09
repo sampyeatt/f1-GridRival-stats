@@ -11,3 +11,8 @@ export interface Result {
   positionsForMoney: number
   easeToGainPoints: number
 }
+
+export interface Race {
+  raceId: string
+  raceName: string
+}

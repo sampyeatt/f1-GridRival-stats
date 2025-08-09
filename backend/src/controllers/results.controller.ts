@@ -17,11 +17,18 @@ import {BaseSalaryDriver} from '../shared/constants'
 import {Results} from '../models/Results'
 
 export const getResultsController = async (req: Request, res: Response) => {
+    console.log('req.params1', req.params)
+    if (_.isNil(req.params.seasonId)) throw new Error('SeasonId parameter is required')
+    const {seasonId} = req.params
+    const results = await getResutls(+seasonId)
+    res.json(results)
+}
+
+export const getResultsByRoundController = async (req: Request, res: Response) => {
     console.log('req.params', req.params)
     if (_.isNil(req.params.seasonId) || _.isNil(req.params.round)) throw new Error('SeasonId parameter is required')
     const {seasonId, round} = req.params
-    console.log('getResultsController', seasonId, round)
-    const results = await getResutls(+seasonId, +round)
+    const results = await getResutlsByRound(+seasonId, +round)
 
     res.json(results)
 }

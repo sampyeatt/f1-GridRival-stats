@@ -1,19 +1,11 @@
-import {getSeasonBySeasonId} from '../shared/f1api.util'
-import _ from 'lodash'
-import {Request, Response} from 'express'
+import {Results} from '../models/Results'
 
-export const getSeasonBySeasonIdController = async (req: Request, res: Response) => {
-    if(_.isNil(req.params.seasonId)) return res.status(400).json({message: 'SeasonId parameter is required'})
-
-    const {seasonId} = req.params
-
-    const results = await getSeasonBySeasonId(+seasonId)
-
-    console.log('Results: ', results)
-
-    const trimmedResults = _.map(results, race => {
-        return _.pick(race, ['raceName', 'raceId'])
+export async function getUniqueResutls(seasonId: number) {
+    return await Results.findAll({
+        attributes: ['raceId'],
+        where: {
+            seasonId: seasonId
+        },
+        group: ['raceId']
     })
-
-    res.json(trimmedResults)
 }

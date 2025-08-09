@@ -13,11 +13,11 @@ export class ResultsService {
 
   private http = inject(HttpClient)
 
-  private results$: Observable<Result[]> = this.getResults()
-
-  public result = toSignal(this.results$, {initialValue: []})
+  // private results$: Observable<Result[]> = this.getResults()
+  //
+  // public result = toSignal(this.results$, {initialValue: []})
 
   getResults(): Observable<Result[]> {
-    return this.http.get<Result[]>(`${this.apiUrl()}/2025/1`)
+    return this.http.get<Result[]>(`${this.apiUrl()}/2025`)
   }
 }

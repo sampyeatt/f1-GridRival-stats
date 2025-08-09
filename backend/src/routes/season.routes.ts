@@ -1,5 +1,5 @@
 import {Router} from 'express'
-import {getSeasonBySeasonIdController} from '../services/season.services'
+import {getSeasonBySeasonIdController} from '../controllers/season.controller'
 
 const router = Router()
 

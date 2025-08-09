@@ -11,15 +11,15 @@ import {
 import {Op} from 'sequelize'
 
 
-export async function getResutls(seasonId: number, round: number) {
+export async function getResutls(seasonId: number) {
     return await Results.findAll({
         where: {
-            seasonId: seasonId,
-            round: round
+            seasonId: seasonId
         },
         order: [['cost', 'DESC']]
     })
 }
+
 
 export async function getResutlsByRound(seasonId: number, round: number) {
     return await Results.findAll({
