@@ -13,6 +13,7 @@ import authRoutes from './routes/auth.routes'
 import logger from './shared/logger.util'
 import resultsRoutes from './routes/results.routes'
 import {Request, Response} from 'express'
+import seasonRoutes from './routes/season.routes'
 
 const app = express()
 const port = 3000
@@ -26,6 +27,7 @@ app.use('/api/drivers', driverRoutes)
 app.use('/api/teams', teamRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/result', resultsRoutes)
+app.use('/api/season', seasonRoutes)
 
 app.use((err: Error, req: Request, res: Response, next: any) => {
     logger.error({

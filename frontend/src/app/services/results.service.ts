@@ -18,6 +18,6 @@ export class ResultsService {
   public result = toSignal(this.results$, {initialValue: []})
 
   getResults(): Observable<Result[]> {
-    return this.http.get<Result[]>(`${this.apiUrl()}/2025`)
+    return this.http.get<Result[]>(`${this.apiUrl()}/2025/1`)
   }
 }

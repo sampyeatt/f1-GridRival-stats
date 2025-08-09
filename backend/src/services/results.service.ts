@@ -11,10 +11,11 @@ import {
 import {Op} from 'sequelize'
 
 
-export async function getResutls(seasonId: number) {
+export async function getResutls(seasonId: number, round: number) {
     return await Results.findAll({
         where: {
-            seasonId: seasonId
+            seasonId: seasonId,
+            round: round
         },
         order: [['cost', 'DESC']]
     })
@@ -118,14 +119,12 @@ export async function bulkAddResults(results: Results[]) {
     return await Results.bulkCreate(results)
 }
 
-export async function findSalaryBracket(salary: number) {
-    const entries = Object.entries(BaseSalaryDriver)
-        .map(([key, value]) => Number(value)).sort()
+export async function findSalaryBracket(salary: number, entries: number[]) {
 
     const found = _.findIndex(entries, (val, i) => {
-        const prevVal = entries[i-1]
-        return salary <= +val! && salary > prevVal!
+        const prevVal = entries[i+1]
+        return salary <= val! && salary > prevVal!
     })
 
-    return found ? String(found+1) : 'null'
+    return found ? found+1 : 404
 }

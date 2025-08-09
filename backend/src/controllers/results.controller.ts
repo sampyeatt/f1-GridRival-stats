@@ -17,15 +17,19 @@ import {BaseSalaryDriver} from '../shared/constants'
 import {Results} from '../models/Results'
 
 export const getResultsController = async (req: Request, res: Response) => {
-    if (_.isNil(req.params.seasonId)) throw new Error('SeasonId parameter is required')
-    const results = await getResutls(+req.params.seasonId)
+    console.log('req.params', req.params)
+    if (_.isNil(req.params.seasonId) || _.isNil(req.params.round)) throw new Error('SeasonId parameter is required')
+    const {seasonId, round} = req.params
+    console.log('getResultsController', seasonId, round)
+    const results = await getResutls(+seasonId, +round)
 
     res.json(results)
 }
 
 export const addResultController = async (req: Request, res: Response) => {
     const schema = z.object({
-        seasonId: z.number()
+        seasonId: z.number(),
+        round: z.number()
     })
     const schemaValidator = schema.safeParse(req.body)
     if (!schemaValidator.success) return res.status(400).json({
@@ -33,16 +37,16 @@ export const addResultController = async (req: Request, res: Response) => {
         errors: schemaValidator.error
     })
 
-    const {seasonId} = req.body
+    const {seasonId, round} = req.body
 
-    const quali = await getCurrentQualiResults(seasonId)
-    const sprint = await getCurrentSprintResults(seasonId)
-    const race = await getCurrentRaceResults(seasonId)
+    const quali = await getCurrentQualiResults(seasonId, round)
+    const sprint = await getCurrentSprintResults(seasonId, round)
+    const race = await getCurrentRaceResults(seasonId, round)
     const sprintData = (sprint !== null) ? sprint.races.sprintRaceResults : []
-    const {raceId, round} = race.races
+    const {raceId} = race.races
     const totalLaps = await getRaceByRound(seasonId, round)
 
-    const zipped = await Promise.all(_(_.concat(quali.races.qualyResults, race.races.results, sprintData))
+    let fullResult = await Promise.all(_(_.concat(quali.races.qualyResults, race.races.results, sprintData))
         .groupBy('driver.driverId')
         .map(async (value, key: string) => {
             const weekendData = _.merge(value[0], value[1], value[2] ?? {})
@@ -70,7 +74,10 @@ export const addResultController = async (req: Request, res: Response) => {
             }
         }).value())
 
-    const fullResult = await Promise.all(_.orderBy(zipped, ['points', 'finishPosition'], ['desc', 'asc']).map(async (value, key) => {
+    const entries = Object.entries(BaseSalaryDriver)
+        .map(([key, value]) => Number(value))
+
+    fullResult = await Promise.all(_.orderBy(fullResult, ['points', 'finishPosition'], ['desc', 'asc']).map(async (value, key) => {
         value.rank = key+1
         const {
             totalSalary,
@@ -79,11 +86,15 @@ export const addResultController = async (req: Request, res: Response) => {
 
         value.cost = _.round(totalSalary, 1)
         value.positionDifference = positionDifference
-        value.positionsForMoney = Number(await findSalaryBracket(value.cost))
-        value.easeToGainPoints = value.rank - value.positionsForMoney
+        value.positionsForMoney = await findSalaryBracket(value.cost, entries)
 
         return value
     }).values())
+
+    fullResult = await Promise.all(_.orderBy(fullResult, ['cost'], ['desc', 'asc']).map(async (value, key) => {
+        value.easeToGainPoints = key+1 - value.positionsForMoney
+        return value
+    }))
 
     const created = await bulkAddResults(fullResult as unknown as Results[])
 
