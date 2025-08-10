@@ -103,9 +103,9 @@ export const addResultController = async (req: Request, res: Response) => {
         return value
     }))
 
-    const created = await bulkAddResults(fullResult as unknown as Results[])
+    // const created = await bulkAddResults(fullResult as unknown as Results[])
 
-    res.json(created)
+    res.json(fullResult)
 }
 
 export const addResultArrayToStart = async (req: Request, res: Response) => {

@@ -80,6 +80,25 @@ export async function getTotalPointsDriver(driverId: string, qualiPos: number, r
     let lapsCompleted = totalLaps
     if (match) lapsCompleted = +match[1]!
 
+    if(driverId === 'max_verstappen') {
+
+        console.log(`Driver: ${driverId}`)
+        console.log(`QualiPos: ${qualiPos}`)
+        console.log(`RacePos: ${racePos}`)
+        console.log(`SprintPos: ${sprintPos}`)
+        console.log(`TeammatePos: ${teammatePos}`)
+        console.log(`Completion: ${completion}`)
+        console.log(`EightRaceAvg: ${eightRaceAvg}`)
+        console.log(`QuailPoints: ${quailPoints}`)
+        console.log(`RacePoints: ${racePoints}`)
+        console.log(`SprintPoints: ${sprintPoints}`)
+        console.log(`BeatTeammatePoints: ${beatTeammatePoints}`)
+        console.log(`ImprovedPoints: ${improvedPoints}`)
+        console.log(`LapsCompleted: ${lapsCompleted}`)
+        console.log(`TotalLaps: ${totalLaps}`)
+        console.log(`----------------------------------------`)
+    }
+
     const completionPoints = await getCompletionPoints((lapsCompleted / totalLaps) * 100)
     const overtakePoints = Math.max((qualiPos - racePos), 0) * 3
     return _.sum([quailPoints, racePoints, sprintPoints, overtakePoints, beatTeammatePoints, completionPoints, improvedPoints])
@@ -109,6 +128,10 @@ export async function getTotalSalaryAndPosDiff(driverId: string, seasonId: numbe
 
     const posDiff = Math.max(-2, Math.min(2, (Math.sign(differ) * _.floor(( Math.sign(differ) * differ / 4), 1))))
 
+    if(driverId === 'max_verstappen') {
+        console.log(`differ: ${differ}`)
+        console.log(`posDiff: ${posDiff}`)
+    }
     return {
         totalSalary: (posDiff + results.get('cost')!),
         positionDifference: posDiff
