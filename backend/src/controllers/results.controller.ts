@@ -49,9 +49,21 @@ export const addResultController = async (req: Request, res: Response) => {
     const quali = await getCurrentQualiResults(seasonId, round)
     const sprint = await getCurrentSprintResults(seasonId, round)
     const race = await getCurrentRaceResults(seasonId, round)
-    const sprintData = (sprint !== null) ? sprint.races.sprintRaceResults : []
+    const sprintData = (sprint !== null) ? _.map(sprint.races.sprintRaceResults, (result) => {
+        return {
+            driverId: result.driverId,
+            teamId: result.team.teamId,
+            sprintPosition: result.position,
+            driver: {
+                driverId: result.driverId
+            }
+        }
+    }) : []
     const {raceId} = race.races
     const totalLaps = await getRaceByRound(seasonId, round)
+    const sortedWithoutDQs = _.reject(race.races.results, {position: '-'})
+    const dqs = _.filter(race.races.results, {position: '-'})
+    console.log('dqs', dqs)
 
     let fullResult = await Promise.all(_(_.concat(quali.races.qualyResults, race.races.results, sprintData))
         .groupBy('driver.driverId')
@@ -59,11 +71,16 @@ export const addResultController = async (req: Request, res: Response) => {
             const weekendData = _.merge(value[0], value[1], value[2] ?? {})
             const {sprintPosition, time} = weekendData
             let {gridPosition, position} = weekendData
+            let dqed = false
             if (gridPosition === '-') gridPosition = _.findIndex(quali.races.qualyResults, {driverId: key}) + 1
             let teammatePos = _.find(race.races.results, (result) => result.driver.driverId !== key && result.team.teamId === weekendData.teamId).position
             if (teammatePos === 'NC') teammatePos = _.findIndex(race.races.results, (result: any) => result.driver.driverId !== key && result.team.teamId === weekendData.teamId) + 1
-            if (position === 'NC') position = _.findIndex(race.races.results, (result: any) => result.driver.driverId === key) + 1
-            const points = await getTotalPointsDriver(key, gridPosition, position, sprintPosition, teammatePos, time, totalLaps[0].laps, seasonId, round)
+            if (position === 'NC') position = _.findIndex(sortedWithoutDQs, (result: any) => result.driver.driverId === key) + 1
+            if (position === '-') {
+                dqed = true
+                position = _.findIndex(dqs, (result: any) => result.driver.driverId === key) + sortedWithoutDQs.length + 1
+            }
+            const points = await getTotalPointsDriver(key, gridPosition, position, sprintPosition, teammatePos, time, totalLaps[0].laps, seasonId, round, dqed)
 
             return {
                 driverId: key,
@@ -83,6 +100,7 @@ export const addResultController = async (req: Request, res: Response) => {
 
     const entries = Object.entries(BaseSalaryDriver)
         .map(([key, value]) => Number(value))
+    fullResult = _.orderBy(fullResult, ['points', 'finishPosition'], ['desc', 'asc'])
 
     fullResult = await Promise.all(_.orderBy(fullResult, ['points', 'finishPosition'], ['desc', 'asc']).map(async (value, key) => {
         value.rank = key+1
@@ -103,9 +121,9 @@ export const addResultController = async (req: Request, res: Response) => {
         return value
     }))
 
-    // const created = await bulkAddResults(fullResult as unknown as Results[])
+    const created = await bulkAddResults(fullResult as unknown as Results[])
 
-    res.json(fullResult)
+    res.json(created)
 }
 
 export const addResultArrayToStart = async (req: Request, res: Response) => {

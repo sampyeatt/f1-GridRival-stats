@@ -60,7 +60,7 @@ export function addResults(
     return Results.build(result).save()
 }
 
-export async function getTotalPointsDriver(driverId: string, qualiPos: number, racePos: number, sprintPos = 0, teammatePos: number, completion: string, totalLaps: number, seasonId: number, round: number) {
+export async function getTotalPointsDriver(driverId: string, qualiPos: number, racePos: number, sprintPos = 0, teammatePos: number, completion: string, totalLaps: number, seasonId: number, round: number, dqed: boolean) {
 
     const eightRaceAvg = (await Results.sum('finishPosition', {
         where: {
@@ -70,19 +70,23 @@ export async function getTotalPointsDriver(driverId: string, qualiPos: number, r
                 [Op.between]: [Math.max(round - 8, 0), round - 1]
             }
         }
-    }) ?? 0) / ((round - 1) - Math.max(round - 8, 0) || 1)
+    }) ?? 0) / ((round) - Math.max(round - 8, 0))
     const quailPoints = QualiPointsDriver[String(qualiPos) as keyof typeof QualiPointsDriver]
-    const racePoints = RacePointsDriver[String(racePos) as keyof typeof RacePointsDriver]
     const sprintPoints = SprintPointsDriver[String(sprintPos) as keyof typeof SprintPointsDriver]
-    const beatTeammatePoints = BeatingTeammatePoints[String(Math.max(teammatePos - racePos, 0)) as keyof typeof BeatingTeammatePoints]
-    const improvedPoints = ImprovedPoints[String(_.round(eightRaceAvg - racePos, 0)) as keyof typeof ImprovedPoints]
+    const racePoints = (!dqed) ? RacePointsDriver[String(racePos) as keyof typeof RacePointsDriver] : 0
+    const beatTeammatePoints = (!dqed) ? BeatingTeammatePoints[String(Math.max(teammatePos - racePos, 0)) as keyof typeof BeatingTeammatePoints] : 0
+    const improvedPoints = (!dqed) ? ImprovedPoints[String(_.round(eightRaceAvg - racePos, 0)) as keyof typeof ImprovedPoints] : 0
     const match = completion.match(/\((\d+)\)/)
     let lapsCompleted = totalLaps
     if (match) lapsCompleted = +match[1]!
+    const completionPoints = (!dqed) ? await getCompletionPoints((lapsCompleted / totalLaps) * 100) : 0
+    const overtakePoints = (!dqed) ? Math.max((qualiPos - racePos), 0) * 3 : 0
 
-    if(driverId === 'max_verstappen') {
+    if(driverId === 'russell') {
 
+        console.log(`----------------------------------------`)
         console.log(`Driver: ${driverId}`)
+        console.log(`Round: ${round}`)
         console.log(`QualiPos: ${qualiPos}`)
         console.log(`RacePos: ${racePos}`)
         console.log(`SprintPos: ${sprintPos}`)
@@ -96,11 +100,12 @@ export async function getTotalPointsDriver(driverId: string, qualiPos: number, r
         console.log(`ImprovedPoints: ${improvedPoints}`)
         console.log(`LapsCompleted: ${lapsCompleted}`)
         console.log(`TotalLaps: ${totalLaps}`)
+        console.log(`CompletionPoints: ${completionPoints}`)
+        console.log(`OvertakePoints: ${overtakePoints}`)
         console.log(`----------------------------------------`)
     }
 
-    const completionPoints = await getCompletionPoints((lapsCompleted / totalLaps) * 100)
-    const overtakePoints = Math.max((qualiPos - racePos), 0) * 3
+
     return _.sum([quailPoints, racePoints, sprintPoints, overtakePoints, beatTeammatePoints, completionPoints, improvedPoints])
 }
 
@@ -129,8 +134,14 @@ export async function getTotalSalaryAndPosDiff(driverId: string, seasonId: numbe
     const posDiff = Math.max(-2, Math.min(2, (Math.sign(differ) * _.floor(( Math.sign(differ) * differ / 4), 1))))
 
     if(driverId === 'max_verstappen') {
+        console.log(`----------------------------------------`)
+        console.log(`driverId: ${driverId}`)
         console.log(`differ: ${differ}`)
         console.log(`posDiff: ${posDiff}`)
+        console.log(`results.cost: ${results.get('cost')!}`)
+        console.log(`driverRankAndSalary: ${driverRankAndSalary}`)
+        console.log(`BaseSalaryDriver[${driverRankAndSalary}]: ${BaseSalaryDriver[String(driverRankAndSalary) as keyof typeof BaseSalaryDriver]}`)
+        console.log(`----------------------------------------`)
     }
     return {
         totalSalary: (posDiff + results.get('cost')!),

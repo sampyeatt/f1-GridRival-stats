@@ -45,7 +45,8 @@ export const RacePointsDriver = {
     "19": 46,
     "20": 43,
     "21": 40,
-    "22": 37
+    "22": 37,
+    "0": 0
 }
 
 export const SprintPointsDriver = {
