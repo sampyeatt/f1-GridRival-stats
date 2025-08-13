@@ -9,7 +9,7 @@ interface AuthResponse{
   providedIn: 'root'
 })
 export class AuthService {
-  apiUrl = computed(() => `${environment.API_URL}/api/result`)
+  apiUrl = computed(() => `${environment.API_URL}/api`)
 
   private http = inject(HttpClient)
   private router = inject(Router)
