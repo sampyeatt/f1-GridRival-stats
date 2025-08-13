@@ -24,7 +24,8 @@ export async function getSeasonBySeasonId(seasonId: number) {
     return await Race.findAll({
         where: {
             seasonId: seasonId
-        }
+        },
+        order: ['round']
     })
 }
 

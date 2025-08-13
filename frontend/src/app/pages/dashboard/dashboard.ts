@@ -47,7 +47,7 @@ export class DashboardComponent {
     this.resultsService.getResults().subscribe({
       next: (data) => {
         this.results = data
-        this.selectedResult = this.results.filter(result => {this.selectedRace.meeting_key})
+        this.selectedResult = this.results.filter(result => result.meeting_key === this.selectedRace.meeting_key)
       },
       error: (err) => {
         console.error('Error Loading posts: ', err)
@@ -62,7 +62,7 @@ export class DashboardComponent {
   }
 
   filterResults(race: Race) {
-    this.selectedResult = this.results.filter(result => {this.selectedRace.meeting_key})
+    this.selectedResult = this.results.filter(result => result.meeting_key === this.selectedRace.meeting_key)
   }
 
 
