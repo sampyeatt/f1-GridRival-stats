@@ -59,9 +59,7 @@ export class Results extends Model<Results> {
     easeToGainPoints?: number
 
     @ForeignKey(() => Driver)
-    @Column({
-        allowNull: false,
-    })
+    @Column
     driverId?: string
 
     @ForeignKey(() => Team)

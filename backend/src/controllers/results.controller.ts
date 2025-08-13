@@ -180,3 +180,43 @@ export const addResultArrayToStart = async (req: Request, res: Response) => {
 
     res.json(resultsAdded)
 }
+
+export const addTeamResultsController = async (req: Request, res: Response) => {
+    const schema = z.object({
+        seasonId: z.number(),
+        round: z.number()
+    })
+    const schemaValidator = schema.safeParse(req.body)
+    if (!schemaValidator.success) return res.status(400).json({
+        message: 'Invalid request body',
+        errors: schemaValidator.error
+    })
+    const {seasonId, round} = req.body
+
+    const driverResults = await getResutlsByRound(seasonId, round)
+    if(!driverResults) return res.status(404).json({message: 'Results not found'})
+    const driverResultsJSON = driverResults.map(result => result.toJSON())
+
+
+    const resToCreate = _(driverResultsJSON).groupBy('teamId').map( result => {
+        const {raceId, teamId, meeting_key} = result[0]!
+        return {
+            driverId: null,
+            raceId: raceId,
+            points: points,
+            cost: -1,
+            seasonId: seasonId,
+            round: round,
+            finishPosition: racePosition,
+            teamId: teamId,
+            positionDifference: -1,
+            positionsForMoney: -1,
+            easeToGainPoints: -1,
+            rank: -1,
+            meeting_key: meeting_key
+        }
+    })
+    //TODO create resToCrate array with calculation of team points and salary
+    const created = await bulkAddResults(resToCreate as unknown as Results[])
+
+}
