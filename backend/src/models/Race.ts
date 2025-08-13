@@ -21,6 +21,11 @@ export class Race extends Model<Race> {
     @Column({
         allowNull: false
     })
+    meeting_name?: string
+
+    @Column({
+        allowNull: false
+    })
     circuit_short_name?: string
 
     @Column({

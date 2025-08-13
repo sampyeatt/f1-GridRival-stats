@@ -20,7 +20,7 @@ export const getResultsController = async (req: Request, res: Response) => {
     console.log('req.params1', req.params)
     if (_.isNil(req.params.seasonId)) throw new Error('SeasonId parameter is required')
     const {seasonId} = req.params
-    const results = await getResutls(+seasonId)
+    const results = _.map(await getResutls(+seasonId), result => result.toJSON())
     res.json(results)
 }
 

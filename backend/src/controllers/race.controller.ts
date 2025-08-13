@@ -1,7 +1,7 @@
-import {getRaceByMeetingKey, getRacesByYear, getSeasonBySeasonId} from '../shared/f1api.util'
+import {getRaceByMeetingKey, getRacesByYear} from '../shared/f1api.util'
 import _ from 'lodash'
 import {Request, Response} from 'express'
-import {addSeasonRace, getRaceByCircutKey, getUniqueResutls} from '../services/race.services'
+import {addSeasonRace, getRaceByCircutKey, getSeasonBySeasonId} from '../services/race.services'
 import z from 'zod'
 
 export const getSeasonBySeasonIdController = async (req: Request, res: Response) => {
@@ -10,13 +10,8 @@ export const getSeasonBySeasonIdController = async (req: Request, res: Response)
     const {seasonId} = req.params
 
     const results = await getSeasonBySeasonId(+seasonId)
-    const dataResults = await getUniqueResutls(+seasonId)
 
-    const ourRaces = dataResults.map(result => result.get('raceId'))
-
-    const trimmedResults = _.filter(results, function (o) {
-        return _.includes(ourRaces, o.raceId)
-    }).map(result => _.pick(result, ['raceId', 'raceName']))
+    const trimmedResults = _.map(results, result => _.pick(result.toJSON(), ['meeting_key', 'meeting_name']))
 
     res.json(trimmedResults)
 }
@@ -40,8 +35,10 @@ export const addRaceBulkController = async (req: Request, res: Response) => {
             .reject({'session_type': 'Practice'})
             .reject({'session_name': 'Sprint Qualifying'})
             .map(async (race) => {
+                const meetingName = _.find(raceData, {meeting_key: race.meeting_key})
                 return {
                     circuit_key: race.circuit_key,
+                    meeting_name: meetingName.meeting_name,
                     circuit_short_name: race.circuit_short_name,
                     country_code: race.country_code,
                     country_name: race.country_name,
@@ -85,9 +82,10 @@ export const addRaceController = async (req: Request, res: Response) => {
         .reject({'session_type': 'Practice'})
         .reject({'session_name': 'Sprint Qualifying'})
         .map(async (race) => {
-            console.log('race', race)
+            const meetingName = _.find(raceData, {meeting_key: race.meeting_key})
             return {
                 circuit_key: race.circuit_key,
+                meeting_name: meetingName.meeting_name,
                 circuit_short_name: race.circuit_short_name,
                 country_code: race.country_code,
                 country_name: race.country_name,

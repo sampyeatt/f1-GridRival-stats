@@ -30,10 +30,10 @@ export async function getCurrentTeams(seasonId: number) {
     return response.data.teams
 }
 
-export async function getSeasonBySeasonId(seasonId: number) {
-    const response = await axios.get(`https://f1api.dev/api/${seasonId}`)
+export async function getSeasonByYear(seasonId: number) {
+    const response = await axios.get(`https://api.openf1.org/v1/meetings?year=${seasonId}`)
     if(response.data.races.length === 0) throw new Error('No seasons found')
-    return response.data.races
+    return response.data
 }
 
 export async function getRaceByRound(seasonId: number, round: number) {

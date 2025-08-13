@@ -16,7 +16,8 @@ export async function getResutls(seasonId: number) {
         where: {
             seasonId: seasonId
         },
-        order: [['cost', 'DESC']]
+        order: [['cost', 'DESC']],
+        include: ['driver']
     })
 }
 

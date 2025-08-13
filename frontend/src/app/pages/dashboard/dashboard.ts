@@ -37,7 +37,7 @@ export class DashboardComponent {
     this.seasonService.getSeasonList().subscribe({
       next: (data) => {
         this.races = data
-        this.selectedRace = this.races.find(race => race.raceId === 'start_2025') || this.races[0]
+        this.selectedRace = this.races[0]
       },
       error: (err) => {
         console.error('Error Loading posts: ', err)
@@ -47,7 +47,7 @@ export class DashboardComponent {
     this.resultsService.getResults().subscribe({
       next: (data) => {
         this.results = data
-        this.selectedResult = this.results.filter(result => result.raceId === this.selectedRace.raceId)
+        this.selectedResult = this.results.filter(result => {this.selectedRace.meeting_key})
       },
       error: (err) => {
         console.error('Error Loading posts: ', err)
@@ -62,7 +62,7 @@ export class DashboardComponent {
   }
 
   filterResults(race: Race) {
-    this.selectedResult = this.results.filter(result => result.raceId === race.raceId)
+    this.selectedResult = this.results.filter(result => {this.selectedRace.meeting_key})
   }
 
 

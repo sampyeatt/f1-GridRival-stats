@@ -1,7 +1,7 @@
 import { connection } from "./connection"
 
 connection.sync({
-    // force: true,
+    logging: false
 })
 
 export { connection }

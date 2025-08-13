@@ -20,12 +20,21 @@ export async function getRaceByCircutKey(circut_key: number) {
     })
 }
 
+export async function getSeasonBySeasonId(seasonId: number) {
+    return await Race.findAll({
+        where: {
+            seasonId: seasonId
+        }
+    })
+}
+
 export async function getRaceDataByMeetingKey(meeting_key: number) {
     return await Race.findByPk(meeting_key)
 }
 
 export async function addSeasonRace(seasonId: number, data: {
     circuit_key: number,
+    meeting_name: string,
     circuit_short_name: string,
     country_code: string,
     country_name: string,
@@ -39,6 +48,7 @@ export async function addSeasonRace(seasonId: number, data: {
     const race = new Race()
     race.seasonId = seasonId
     race.circut_key = data.circuit_key
+    race.meeting_name = data.meeting_name
     race.circuit_short_name = data.circuit_short_name
     race.country_code = data.country_code
     race.country_name = data.country_name

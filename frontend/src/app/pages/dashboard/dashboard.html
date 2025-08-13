@@ -1,6 +1,6 @@
 <h1>This Weeks Results</h1>
 
-<p-select [options]="this.races" [(ngModel)]="selectedRace" (onChange)=filterResults(selectedRace) optionLabel="raceName" placeholder="Select Race" class="w-full md:w-100"  />
+<p-select [options]="this.races" [(ngModel)]="selectedRace" (onChange)=filterResults(selectedRace) optionLabel="meeting_name" placeholder="Select Race" class="w-full md:w-100"  />
 <p-tabs value="driver">
   <p-tablist class="flex justify-center py-6">
     <p-tab value="driver">Drivers</p-tab>
@@ -36,7 +36,7 @@
           </ng-template>
           <ng-template #body let-result pTemplate="body">
             <tr>
-              <td>{{ result.driverId }}</td>
+              <td>{{ result.driver.driverName }}</td>
               <td>{{ result.cost }}</td>
               <td>{{ result.points }}</td>
               <td>

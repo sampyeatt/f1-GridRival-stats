@@ -10,7 +10,7 @@ import {toSignal} from '@angular/core/rxjs-interop'
 })
 
 export class SeasonService {
-  apiUrl = computed(() => `${environment.API_URL}/api/season`)
+  apiUrl = computed(() => `${environment.API_URL}/api/race`)
 
   private http = inject(HttpClient)
 

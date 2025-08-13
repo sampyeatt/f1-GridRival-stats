@@ -1,18 +1,21 @@
 export interface Result {
+  id: number
   driverId: string
   raceId: string
   points: number
   cost: number
+  rank: number
   seasonId: number
   round: number
   finishPosition: number
-  teamId: string
   positionDifference: number
   positionsForMoney: number
   easeToGainPoints: number
+  teamId: string
+  meeting_key: number
 }
 
 export interface Race {
-  raceId: string
-  raceName: string
+  meeting_name: string
+  meeting_key: number
 }
