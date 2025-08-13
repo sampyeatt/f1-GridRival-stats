@@ -5,5 +5,5 @@ import {authenticateJWT} from '../shared/auth.util'
 const router = Router()
 
 router.get('/', getDrivers)
-router.post('/newSeason', authenticateJWT, populateDriverTable)
+router.post('/newSeason', populateDriverTable)
 export default router

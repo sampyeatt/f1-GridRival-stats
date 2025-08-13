@@ -1,6 +1,7 @@
 import {Table, Column, Model, BelongsTo, ForeignKey} from 'sequelize-typescript'
 import {Driver} from './Driver'
 import {Team} from './Team'
+import {Race} from './Race'
 
 @Table
 export class Results extends Model<Results> {
@@ -68,6 +69,15 @@ export class Results extends Model<Results> {
         allowNull: false,
     })
     teamId?: string
+
+    @ForeignKey(() => Race)
+    @Column({
+        allowNull: false,
+    })
+    meeting_key?: number
+
+    @BelongsTo(() => Race, 'meeting_key')
+    race?: Race
 
     @BelongsTo(() => Driver, 'driverId')
     driver?: Driver

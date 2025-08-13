@@ -21,9 +21,10 @@ export const populateDriverTable = async (req: Request, res: Response) => {
 
     const drivers = await getCurrentDrivers(seasonId)
 
-    await _.forEach(drivers, (driver) => {
-        const driverExists = getDriverById(driver.driverId)
-        addDriver(driver.driverId, driver.name, driver.surname, driver.teamId, driver.shortName)
+    await _.forEach(drivers, async (driver) => {
+        const driverExists = await getDriverById(driver.driverId)
+        if (driverExists) return {message: 'Driver already exists'}
+        await addDriver(driver.driverId, driver.name, driver.surname, driver.teamId, driver.shortName, driver.number)
     })
 
     res.json({message: 'Drivers added successfully'})

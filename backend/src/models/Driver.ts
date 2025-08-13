@@ -18,6 +18,12 @@ export class Driver extends Model<Driver> {
     driverName?: string
 
     @Column({
+        allowNull: false,
+        unique: true
+    })
+    driverNumber?: number
+
+    @Column({
         allowNull: false
     })
     shortName?: string

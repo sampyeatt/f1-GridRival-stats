@@ -9,13 +9,14 @@ export async function getActiveDrivers() {
     })
 }
 
-export async function addDriver(driverId: string, name: string, surname: string, teamId: string, shortName: string) {
+export async function addDriver(driverId: string, name: string, surname: string, teamId: string, shortName: string, driverNumber: number) {
     const driver = new Driver()
     driver.driverId = driverId
     driver.driverName = `${name} ${surname}`
     driver.shortName = shortName
     driver.teamId = teamId
     driver.active = true
+    driver.driverNumber = driverNumber
     return Driver.build(driver).save()
 }
 

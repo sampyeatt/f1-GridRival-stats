@@ -1,9 +1,4 @@
 import {Table, Column, Model, HasMany, PrimaryKey, AutoIncrement, DataType, Default} from 'sequelize-typescript'
-import {Post} from './Post'
-import {Comment} from './Comment'
-import {Token} from './Token'
-import {Category} from './Category'
-import {Tag} from './Tag'
 
 @Table
 export class User extends Model<User> {
@@ -37,19 +32,4 @@ export class User extends Model<User> {
         allowNull: false
     })
     password?: string
-
-    @HasMany(() => Post)
-    posts?: Post[] = []
-
-    @HasMany(() => Comment)
-    comments?: Comment[] = []
-
-    @HasMany(() => Token)
-    tokens?: Token[] = []
-
-    @HasMany(() => Category)
-    categories?: Category[] = []
-
-    @HasMany(() => Tag)
-    tags?: Tag[] = []
 }

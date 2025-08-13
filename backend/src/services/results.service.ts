@@ -31,6 +31,16 @@ export async function getResutlsByRound(seasonId: number, round: number) {
     })
 }
 
+
+export async function getResultByRaceIdDriverId(raceId: string, driverId: string) {
+    return await Results.findOne({
+        where: {
+            raceId: raceId,
+            driverId: driverId
+        }
+    })
+}
+
 export function addResults(
     raceId: string,
     points: number,
@@ -43,7 +53,8 @@ export function addResults(
     positionDifference: number,
     positionsForMoney: number,
     easeToGainPoints: number,
-    rank: number) {
+    rank: number,
+    meeting_key: number) {
     const result = new Results()
     result.raceId = raceId
     result.points = points
@@ -57,12 +68,14 @@ export function addResults(
     result.positionsForMoney = positionsForMoney
     result.easeToGainPoints = easeToGainPoints
     result.rank = rank
+    result.meeting_key = meeting_key
     return Results.build(result).save()
 }
 
-export async function getTotalPointsDriver(driverId: string, qualiPos: number, racePos: number, sprintPos = 0, teammatePos: number, completion: string, totalLaps: number, seasonId: number, round: number, dqed: boolean) {
+export async function getTotalPointsDriver(driverId: string, teamId: string, qualiPos: number, racePos: number, sprintPos = 0, teammatePos: number, lapsCompleted: number, totalLaps: number, seasonId: number, round: number, dqed: boolean) {
 
-    const eightRaceAvg = (await Results.sum('finishPosition', {
+    let eightRaceDB = (await Results.findAll({
+        attributes: ['finishPosition', 'raceId', 'round'],
         where: {
             driverId: driverId,
             seasonId: seasonId,
@@ -70,38 +83,49 @@ export async function getTotalPointsDriver(driverId: string, qualiPos: number, r
                 [Op.between]: [Math.max(round - 8, 0), round - 1]
             }
         }
-    }) ?? 0) / ((round) - Math.max(round - 8, 0))
+    }) ?? 0).map(item => item.toJSON())
+    let eightRaceAvg = Math.ceil(_.sumBy(eightRaceDB, 'finishPosition') / 8)
+    if (round < 8 ) {
+        const originalPos = _.minBy(eightRaceDB, 'round')
+        if (!originalPos) return 0
+        eightRaceDB = _.reject(eightRaceDB, (item => item.round === originalPos.round))
+        eightRaceAvg = Math.ceil((_.sumBy(eightRaceDB, 'finishPosition') + (originalPos.finishPosition! * (8-(round-1))))/8)
+        if(driverId === 'norris') {
+            console.log('eightRaceDB', eightRaceDB)
+            console.log('eightRaceAvg', eightRaceAvg)
+            console.log('originalPos', originalPos)
+            console.log('round', round)
+            console.log('----------------------------------------')
+        }
+    }
     const quailPoints = QualiPointsDriver[String(qualiPos) as keyof typeof QualiPointsDriver]
     const sprintPoints = SprintPointsDriver[String(sprintPos) as keyof typeof SprintPointsDriver]
     const racePoints = (!dqed) ? RacePointsDriver[String(racePos) as keyof typeof RacePointsDriver] : 0
     const beatTeammatePoints = (!dqed) ? BeatingTeammatePoints[String(Math.max(teammatePos - racePos, 0)) as keyof typeof BeatingTeammatePoints] : 0
     const improvedPoints = (!dqed) ? ImprovedPoints[String(_.round(eightRaceAvg - racePos, 0)) as keyof typeof ImprovedPoints] : 0
-    const match = completion.match(/\((\d+)\)/)
-    let lapsCompleted = totalLaps
-    if (match) lapsCompleted = +match[1]!
     const completionPoints = (!dqed) ? await getCompletionPoints((lapsCompleted / totalLaps) * 100) : 0
     const overtakePoints = (!dqed) ? Math.max((qualiPos - racePos), 0) * 3 : 0
 
-    if(driverId === 'russell') {
+    if(driverId === 'norris') {
 
         console.log(`----------------------------------------`)
         console.log(`Driver: ${driverId}`)
         console.log(`Round: ${round}`)
-        console.log(`QualiPos: ${qualiPos}`)
         console.log(`RacePos: ${racePos}`)
-        console.log(`SprintPos: ${sprintPos}`)
-        console.log(`TeammatePos: ${teammatePos}`)
-        console.log(`Completion: ${completion}`)
-        console.log(`EightRaceAvg: ${eightRaceAvg}`)
-        console.log(`QuailPoints: ${quailPoints}`)
-        console.log(`RacePoints: ${racePoints}`)
-        console.log(`SprintPoints: ${sprintPoints}`)
-        console.log(`BeatTeammatePoints: ${beatTeammatePoints}`)
-        console.log(`ImprovedPoints: ${improvedPoints}`)
-        console.log(`LapsCompleted: ${lapsCompleted}`)
+        console.log(`QualiPos: ${qualiPos}`)
+        console.log(`Completion: ${lapsCompleted}`)
         console.log(`TotalLaps: ${totalLaps}`)
+        console.log(`EightRaceAvg: ${eightRaceAvg}`)
+        console.log(`TeammatePos: ${teammatePos}`)
+        console.log(`SprintPos: ${sprintPos}`)
+        console.log('******')
+        console.log(`RacePoints: ${racePoints}`)
+        console.log(`QuailPoints: ${quailPoints}`)
         console.log(`CompletionPoints: ${completionPoints}`)
         console.log(`OvertakePoints: ${overtakePoints}`)
+        console.log(`ImprovedPoints: ${improvedPoints}`)
+        console.log(`BeatTeammatePoints: ${beatTeammatePoints}`)
+        console.log(`SprintPoints: ${sprintPoints}`)
         console.log(`----------------------------------------`)
     }
 
@@ -129,11 +153,11 @@ export async function getTotalSalaryAndPosDiff(driverId: string, seasonId: numbe
         totalSalary: 0,
         positionDifference: 0
     }
-    const differ = (BaseSalaryDriver[String(driverRankAndSalary) as keyof typeof BaseSalaryDriver] - results.get('cost')!)
+    const differ = _.round(BaseSalaryDriver[String(driverRankAndSalary) as keyof typeof BaseSalaryDriver] - results.get('cost')!, 1)
 
     const posDiff = Math.max(-2, Math.min(2, (Math.sign(differ) * _.floor(( Math.sign(differ) * differ / 4), 1))))
 
-    if(driverId === 'max_verstappen') {
+    if(driverId === 'colapinto') {
         console.log(`----------------------------------------`)
         console.log(`driverId: ${driverId}`)
         console.log(`differ: ${differ}`)

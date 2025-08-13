@@ -1,6 +1,6 @@
 import {Request, Response} from 'express'
 import {
-    addResults, bulkAddResults, findSalaryBracket,
+    addResults, bulkAddResults, findSalaryBracket, getResultByRaceIdDriverId,
     getResutls,
     getResutlsByRound,
     getTotalPointsDriver, getTotalSalaryAndPosDiff
@@ -8,11 +8,11 @@ import {
 import _ from 'lodash'
 import {z} from 'zod'
 import {
-    getCurrentQualiResults,
     getCurrentRaceResults,
-    getCurrentSprintResults,
     getRaceByRound
 } from '../shared/f1api.util'
+import {getRaceDataByMeetingKey} from '../services/race.services'
+import {getActiveDrivers} from '../services/driver.service'
 import {BaseSalaryDriver} from '../shared/constants'
 import {Results} from '../models/Results'
 
@@ -33,10 +33,10 @@ export const getResultsByRoundController = async (req: Request, res: Response) =
     res.json(results)
 }
 
-export const addResultController = async (req: Request, res: Response) => {
+export const addResultBulkController = async (req: Request, res: Response) => {
     const schema = z.object({
         seasonId: z.number(),
-        round: z.number()
+        meeting_key: z.number()
     })
     const schemaValidator = schema.safeParse(req.body)
     if (!schemaValidator.success) return res.status(400).json({
@@ -44,86 +44,108 @@ export const addResultController = async (req: Request, res: Response) => {
         errors: schemaValidator.error
     })
 
-    const {seasonId, round} = req.body
+    const {seasonId, meeting_key} = req.body
+    const race = await getRaceDataByMeetingKey(meeting_key)
+    if (!race) return res.status(404).json({message: 'Race DB not found'})
+    const round = race.get('round')!
+    const sprint_key = race.get('sprint_key')
+    const quali_key = race.get('quali_key')
+    const race_key = race.get('race_key')
 
-    const quali = await getCurrentQualiResults(seasonId, round)
-    const sprint = await getCurrentSprintResults(seasonId, round)
-    const race = await getCurrentRaceResults(seasonId, round)
-    const sprintData = (sprint !== null) ? _.map(sprint.races.sprintRaceResults, (result) => {
-        return {
-            driverId: result.driverId,
-            teamId: result.team.teamId,
-            sprintPosition: result.position,
-            driver: {
-                driverId: result.driverId
-            }
-        }
-    }) : []
-    const {raceId} = race.races
-    const totalLaps = await getRaceByRound(seasonId, round)
-    const sortedWithoutDQs = _.reject(race.races.results, {position: '-'})
-    const dqs = _.filter(race.races.results, {position: '-'})
-    console.log('dqs', dqs)
+    const weekendRaceResults = await getCurrentRaceResults(meeting_key)
+    if (!weekendRaceResults) return res.status(404).json({message: 'Race not found'})
+    const filtered = _.filter(weekendRaceResults, item => _.includes([race.get('sprint_key'), race.get('quali_key'), race.get('race_key')], item.session_key))
+    const {laps, raceId} = _.get(await getRaceByRound(seasonId, round), '[0]', undefined)
 
-    let fullResult = await Promise.all(_(_.concat(quali.races.qualyResults, race.races.results, sprintData))
-        .groupBy('driver.driverId')
-        .map(async (value, key: string) => {
-            const weekendData = _.merge(value[0], value[1], value[2] ?? {})
-            const {sprintPosition, time} = weekendData
-            let {gridPosition, position} = weekendData
-            let dqed = false
-            if (gridPosition === '-') gridPosition = _.findIndex(quali.races.qualyResults, {driverId: key}) + 1
-            let teammatePos = _.find(race.races.results, (result) => result.driver.driverId !== key && result.team.teamId === weekendData.teamId).position
-            if (teammatePos === 'NC') teammatePos = _.findIndex(race.races.results, (result: any) => result.driver.driverId !== key && result.team.teamId === weekendData.teamId) + 1
-            if (position === 'NC') position = _.findIndex(sortedWithoutDQs, (result: any) => result.driver.driverId === key) + 1
-            if (position === '-') {
-                dqed = true
-                position = _.findIndex(dqs, (result: any) => result.driver.driverId === key) + sortedWithoutDQs.length + 1
-            }
-            const points = await getTotalPointsDriver(key, gridPosition, position, sprintPosition, teammatePos, time, totalLaps[0].laps, seasonId, round, dqed)
+    const raceResults = _.filter(filtered, {session_key: race_key})
+    const qualiResults = _.filter(filtered, {session_key: quali_key})
+    const sprintResults = _.filter(filtered, {session_key: sprint_key})
+    const drivers = await getActiveDrivers()
 
-            return {
-                driverId: key,
-                raceId: raceId,
-                points: points,
-                cost: -1,
-                seasonId: seasonId,
-                round: round,
-                finishPosition: position,
-                teamId: weekendData.teamId,
-                positionDifference: -1,
-                positionsForMoney: -1,
-                easeToGainPoints: -1,
-                rank: -1
-            }
-        }).value())
+    try {
+        let fullResult = await Promise.all(_(filtered)
+            .groupBy('driver_number')
+            .map(async (value, key: string) => {
+                const driver = drivers.find(driver => driver.get('driverNumber') === +key)
+                if (!driver) return {message: `Driver not found: ${key}`}
+                const driverId = driver.get('driverId')
+                const teamId = driver.get('teamId')
+                const teammate = drivers.find(mate => mate.get('teamId') === teamId && mate.get('driverId') !== driverId)
+                if (!teammate) return {message: `Teammate not found for driver: ${key}`}
 
-    const entries = Object.entries(BaseSalaryDriver)
-        .map(([key, value]) => Number(value))
-    fullResult = _.orderBy(fullResult, ['points', 'finishPosition'], ['desc', 'asc'])
+                const sprint = _.find(value, {session_key: sprint_key})
+                const quali = _.find(value, {session_key: quali_key})
+                const raceR = _.find(value, {session_key: race_key})
+                const teammateResult = _.find(raceResults, {driver_number: teammate.get('driverNumber')})
+                // if (!teammateResult) return {message: `Teammate ${teammate.get('driverId')} result not found for driver: ${driverId}`}
+                let sprintPosition = null
+                if (sprint) {
+                    sprintPosition = (sprint.dnf || sprint.dns || sprint.dsq) ? _.findIndex(sprintResults, {driver_number: +key}) + 1 : sprint.position
+                }
 
-    fullResult = await Promise.all(_.orderBy(fullResult, ['points', 'finishPosition'], ['desc', 'asc']).map(async (value, key) => {
-        value.rank = key+1
-        const {
-            totalSalary,
-            positionDifference
-        } = await getTotalSalaryAndPosDiff(value.driverId, value.seasonId, value.round, value.rank)
+                const qualiPosition = (quali.dnf || quali.dns || quali.dsq) ? _.findIndex(qualiResults, {driver_number: +key}) + 1 : quali.position
+                const racePosition = (!raceR) ? 20 : (raceR.dnf || raceR.dns || raceR.dsq) ? _.findIndex(raceResults, {driver_number: +key}) + 1 : raceR.position
+                const teammatePos = (!teammateResult) ? 20 : (teammateResult.dnf || teammateResult.dns || teammateResult.dsq) ? _.findIndex(raceResults, {driver_number: teammateResult.driver_number!}) + 1 : teammateResult.position
 
-        value.cost = _.round(totalSalary, 1)
-        value.positionDifference = positionDifference
-        value.positionsForMoney = await findSalaryBracket(value.cost, entries)
+                const numberOfLaps = (raceR) ? raceR.number_of_laps : teammateResult.number_of_laps
+                const dnsdsq = (raceR) ? (raceR.dsq || raceR.dns) : !raceR
 
-        return value
-    }).values())
+                const points = await getTotalPointsDriver(driverId!, teamId!, qualiPosition, racePosition, sprintPosition, teammatePos, numberOfLaps, laps, seasonId, round, dnsdsq)
 
-    fullResult = await Promise.all(_.orderBy(fullResult, ['cost'], ['desc', 'asc']).map(async (value, key) => {
-        value.easeToGainPoints = key+1 - value.positionsForMoney
-        return value
-    }))
+                return {
+                    driverId: driverId,
+                    raceId: raceId,
+                    points: points,
+                    cost: -1,
+                    seasonId: seasonId,
+                    round: round,
+                    finishPosition: racePosition,
+                    teamId: teamId,
+                    positionDifference: -1,
+                    positionsForMoney: -1,
+                    easeToGainPoints: -1,
+                    rank: -1,
+                    meeting_key: meeting_key
+                }
+            }).value())
 
-    const created = await bulkAddResults(fullResult as unknown as Results[])
+        const entries = Object.entries(BaseSalaryDriver)
+            .map(([key, value]) => Number(value))
+        fullResult = _.orderBy(fullResult, ['points', 'finishPosition'], ['desc', 'asc'])
 
-    res.json(created)
+        fullResult = await Promise.all(_.orderBy(fullResult, ['points', 'finishPosition'], ['desc', 'asc']).map(async (value, key) => {
+            value.rank = key + 1
+            const {
+                totalSalary,
+                positionDifference
+            } = await getTotalSalaryAndPosDiff(value.driverId!, value.seasonId, round, value.rank)
+
+            value.cost = _.round(totalSalary, 1)
+            value.positionDifference = positionDifference
+            value.positionsForMoney = await findSalaryBracket(value.cost, entries)
+
+            return value
+        }).values())
+
+        fullResult = await Promise.all(_.orderBy(fullResult, ['cost'], ['desc', 'asc']).map(async (value, key) => {
+            value.easeToGainPoints = key + 1 - value.positionsForMoney!
+            return value
+        }))
+
+        const resToCreate = await Promise.all(_.filter(fullResult, async result => {
+            const checkResult = await getResultByRaceIdDriverId(result.raceId, result.driverId!)
+            return !checkResult
+        }))
+
+        if (_.isEmpty(resToCreate)) return res.status(404).json({message: 'No results found'})
+        const created = await bulkAddResults(resToCreate as unknown as Results[])
+
+        res.json(fullResult)
+    } catch (e: any) {
+        console.log('e', e.message)
+        return res.status(400).json({message: `Error adding results ${e.message}`})
+    }
+
 }
 
 export const addResultArrayToStart = async (req: Request, res: Response) => {
@@ -139,7 +161,8 @@ export const addResultArrayToStart = async (req: Request, res: Response) => {
         positionDifference: z.number(),
         positionsForMoney: z.number(),
         easeToGainPoints: z.number(),
-        rank: z.number()
+        rank: z.number(),
+        meeting_key: z.number()
     }))
     const schemaValidator = schema.safeParse(req.body.start)
     if (!schemaValidator.success) return res.status(400).json({
@@ -149,9 +172,11 @@ export const addResultArrayToStart = async (req: Request, res: Response) => {
 
     const {start} = req.body
 
-    const resultsAdded = _.map(start, async (result) => {
-        return await addResults(result.raceId, result.points, result.cost, result.seasonId, result.round, result.driverId, result.teamId, result.finishPosition, result.positionDifference, result.positionsForMoney, result.easeToGainPoints, result.rank)
-    })
+    const resultsAdded = await Promise.all(_.map(start, async (result) => {
+        const checkResult = await getResultByRaceIdDriverId(result.raceId, result.driverId)
+        if (checkResult) return {message: 'Result already added'}
+        return await addResults(result.raceId, result.points, result.cost, result.seasonId, result.round, result.driverId, result.teamId, result.finishPosition, result.positionDifference, result.positionsForMoney, result.easeToGainPoints, result.rank, result.meeting_key)
+    }))
 
     res.json(resultsAdded)
 }

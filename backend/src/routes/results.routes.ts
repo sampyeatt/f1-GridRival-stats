@@ -1,7 +1,6 @@
 import {Router} from 'express'
 import {
-    addResultArrayToStart,
-    addResultController,
+    addResultArrayToStart, addResultBulkController,
     getResultsByRoundController,
     getResultsController
 } from '../controllers/results.controller'
@@ -10,7 +9,7 @@ const router = Router()
 
 router.get('/:seasonId', getResultsController)
 router.get('/:seasonId{/:round}', getResultsByRoundController)
-router.post('/', addResultController)
+router.post('/', addResultBulkController)
 router.post('/start', addResultArrayToStart)
 
 export default router

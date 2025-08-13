@@ -5,6 +5,6 @@ import {authenticateJWT} from '../shared/auth.util'
 const router = Router()
 
 router.get('/', getTeams)
-router.post('/newSeason', authenticateJWT, populateTeamTable)
+router.post('/newSeason', populateTeamTable)
 
 export default router
