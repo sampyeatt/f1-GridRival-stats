@@ -5,7 +5,7 @@
         <input [(ngModel)]="username" name="username" type="text" placeholder="Username" required class="block w-full mb-3 p-2 border" />
         <input [(ngModel)]="password"  name="password" type="password" placeholder="Password" required class="block w-full mb-4 p-2 border" />
         <div class="flex">
-          <p-button label="Login" icon="pi pi-user" class="w-full max-w-[17.35rem]" styleClass="w-full mx-auto" [disabled]="loginForm.invalid"/>
+          <p-button type="submit" label="Login" icon="pi pi-user" class="w-full max-w-[17.35rem]" styleClass="w-full mx-auto" [disabled]="loginForm.invalid"/>
         </div>
       </form>
     </div>

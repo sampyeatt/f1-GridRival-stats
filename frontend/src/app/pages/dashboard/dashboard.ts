@@ -10,13 +10,12 @@ import {TabsModule} from 'primeng/tabs'
 import {Select} from 'primeng/select'
 import {SeasonService} from '../../services/season.service'
 import {filter} from 'rxjs'
-import {IconField} from 'primeng/iconfield'
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [
-    TableModule, CommonModule, ButtonModule, BadgeModule, FormsModule, TabsModule, Select, IconField
+    TableModule, CommonModule, ButtonModule, BadgeModule, FormsModule, TabsModule, Select
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './dashboard.html',

@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import {HttpClient} from '@angular/common/http'
 import {computed, inject, Injectable} from '@angular/core'
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment.development';
@@ -9,14 +9,16 @@ interface AuthResponse{
   providedIn: 'root'
 })
 export class AuthService {
-  apiUrl = computed(() => `${environment.API_URL}/api`)
+  // apiUrl = `${environment.API_URL}/api/auth`
+
+  apiUrl = computed(() => `${environment.API_URL}/api/auth`)
 
   private http = inject(HttpClient)
   private router = inject(Router)
   token: string|null = null;
 
   register(username: string, password: string){
-    return this.http.post(`${this.apiUrl}/auth/register`, {username, password});
+    return this.http.post(`${this.apiUrl}/register`, {username, password});
   }
 
 
@@ -27,7 +29,8 @@ export class AuthService {
   }
 
   login(username: string, password: string){
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, {username, password});
+
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, {username, password}, {headers: {'Access-Control-Allow-Origin': environment.API_URL}});
   }
 
   saveToken(token: string){
