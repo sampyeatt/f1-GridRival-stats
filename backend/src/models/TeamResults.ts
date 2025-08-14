@@ -1,10 +1,9 @@
 import {Table, Column, Model, BelongsTo, ForeignKey} from 'sequelize-typescript'
-import {Driver} from './Driver'
 import {Team} from './Team'
 import {Race} from './Race'
 
 @Table
-export class Results extends Model<Results> {
+export class TeamResults extends Model<TeamResults> {
 
     @Column({
         allowNull: false,
@@ -39,41 +38,6 @@ export class Results extends Model<Results> {
 
     @Column({
         allowNull: false,
-    })
-    finishPosition?: number
-
-    @Column({
-        allowNull: false,
-        defaultValue: 0
-    })
-    qualiPosition?: number
-
-    @Column({
-        allowNull: false,
-        defaultValue: false
-    })
-    qualiDNS?: boolean
-
-    @Column({
-        allowNull: false,
-        defaultValue: false
-    })
-    raceDNS?: boolean
-
-    @Column({
-        allowNull: false,
-        defaultValue: false
-    })
-    qualiDSQ?: boolean
-
-    @Column({
-        allowNull: false,
-        defaultValue: false
-    })
-    raceDSQ?: boolean
-
-    @Column({
-        allowNull: false,
         type: 'float'
     })
     positionDifference?: number
@@ -87,10 +51,6 @@ export class Results extends Model<Results> {
         allowNull: false,
     })
     easeToGainPoints?: number
-
-    @ForeignKey(() => Driver)
-    @Column
-    driverId?: string
 
     @ForeignKey(() => Team)
     @Column({
@@ -106,9 +66,6 @@ export class Results extends Model<Results> {
 
     @BelongsTo(() => Race, 'meeting_key')
     race?: Race
-
-    @BelongsTo(() => Driver, 'driverId')
-    driver?: Driver
 
     @BelongsTo(() => Team, 'teamId')
     team?: Team

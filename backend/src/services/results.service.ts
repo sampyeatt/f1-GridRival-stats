@@ -1,5 +1,5 @@
 import {Results} from '../models/Results'
-import _ from 'lodash'
+import _, {rest} from 'lodash'
 import {
     BaseSalaryDriver,
     BeatingTeammatePoints,
@@ -185,5 +185,17 @@ export async function findSalaryBracket(salary: number, entries: number[]) {
         return salary <= val! && salary > prevVal!
     })
 
-    return found ? found+1 : 404
+    return found+1
+}
+
+export async function updateQulaiResults(driverId: string, meeting_key: number, qualiPosition: number, dns: boolean, dsq: boolean) {
+    const result = await Results.findOne({
+        where: {
+            driverId: driverId,
+            meeting_key: meeting_key
+        }
+    })
+    if (!result) return undefined
+    result.set({qualiPosition: qualiPosition, qualiDNS: dns, qualiDSQ: dsq})
+    return await result.save()
 }

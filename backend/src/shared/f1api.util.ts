@@ -5,21 +5,6 @@ export async function getCurrentRaceResults (meeting_key: number) {
     return response.data
 }
 
-export async function getCurrentQualiResults (seasonId: number, round: number) {
-    const response = await axios.get(`https://f1api.dev/api/${seasonId}/${round}/qualy`)
-    return response.data
-}
-
-export async function getCurrentSprintResults (seasonId: number, round: number) {
-    try {
-        const response = await axios.get(`https://f1api.dev/api/${seasonId}/${round}/sprint/race`)
-        return response.data
-    } catch (e: any) {
-        if (e.response.data.status === 404 && e.response.data.message === 'No sprint race results found for this round. Try with other one.') return null
-    }
-
-}
-
 export async function getCurrentDrivers(seasonId: number) {
     const response = await axios.get(`https://f1api.dev/api/current/drivers?seasonId=${seasonId}`)
     return response.data.drivers

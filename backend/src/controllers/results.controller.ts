@@ -3,18 +3,19 @@ import {
     addResults, bulkAddResults, findSalaryBracket, getResultByRaceIdDriverId,
     getResutls,
     getResutlsByRound,
-    getTotalPointsDriver, getTotalSalaryAndPosDiff
+    getTotalPointsDriver, getTotalSalaryAndPosDiff, updateQulaiResults
 } from '../services/results.service'
 import _ from 'lodash'
 import {z} from 'zod'
 import {
     getCurrentRaceResults,
-    getRaceByRound
+    getRaceByRound, getRacesByYear
 } from '../shared/f1api.util'
-import {getRaceDataByMeetingKey} from '../services/race.services'
+import {getRaceDataByMeetingKey, getSeasonBySeasonId} from '../services/race.services'
 import {getActiveDrivers} from '../services/driver.service'
 import {BaseSalaryDriver} from '../shared/constants'
 import {Results} from '../models/Results'
+import {all} from 'axios'
 
 export const getResultsController = async (req: Request, res: Response) => {
     console.log('req.params1', req.params)
@@ -100,6 +101,7 @@ export const addResultBulkController = async (req: Request, res: Response) => {
                     seasonId: seasonId,
                     round: round,
                     finishPosition: racePosition,
+                    qualiPosition: qualiPosition,
                     teamId: teamId,
                     positionDifference: -1,
                     positionsForMoney: -1,
@@ -111,7 +113,6 @@ export const addResultBulkController = async (req: Request, res: Response) => {
 
         const entries = Object.entries(BaseSalaryDriver)
             .map(([key, value]) => Number(value))
-        fullResult = _.orderBy(fullResult, ['points', 'finishPosition'], ['desc', 'asc'])
 
         fullResult = await Promise.all(_.orderBy(fullResult, ['points', 'finishPosition'], ['desc', 'asc']).map(async (value, key) => {
             value.rank = key + 1
@@ -181,42 +182,35 @@ export const addResultArrayToStart = async (req: Request, res: Response) => {
     res.json(resultsAdded)
 }
 
-export const addTeamResultsController = async (req: Request, res: Response) => {
+export const updateResultsController = async (req: Request, res: Response) => {
     const schema = z.object({
-        seasonId: z.number(),
-        round: z.number()
+        seasonId: z.number()
     })
     const schemaValidator = schema.safeParse(req.body)
     if (!schemaValidator.success) return res.status(400).json({
         message: 'Invalid request body',
         errors: schemaValidator.error
     })
-    const {seasonId, round} = req.body
-
-    const driverResults = await getResutlsByRound(seasonId, round)
-    if(!driverResults) return res.status(404).json({message: 'Results not found'})
-    const driverResultsJSON = driverResults.map(result => result.toJSON())
 
 
-    const resToCreate = _(driverResultsJSON).groupBy('teamId').map( result => {
-        const {raceId, teamId, meeting_key} = result[0]!
-        return {
-            driverId: null,
-            raceId: raceId,
-            points: points,
-            cost: -1,
-            seasonId: seasonId,
-            round: round,
-            finishPosition: racePosition,
-            teamId: teamId,
-            positionDifference: -1,
-            positionsForMoney: -1,
-            easeToGainPoints: -1,
-            rank: -1,
-            meeting_key: meeting_key
-        }
-    })
-    //TODO create resToCrate array with calculation of team points and salary
-    const created = await bulkAddResults(resToCreate as unknown as Results[])
+    const {seasonId} = req.body
+    const races = await getSeasonBySeasonId(+seasonId)
+    const drivers = _.map(await getActiveDrivers(), drive => drive.toJSON())
+    const allResults = _.flatten(await Promise.all(_.map(races, async race => {
+        const meeting_key = race.get('meeting_key')
+        return _.filter(await getCurrentRaceResults(meeting_key!), {session_key: race.get('quali_key')}).map((qualiR, index) => {
+            if (qualiR.position === null ) qualiR.position = index + 1
+            qualiR.qualiDNS = qualiR.dns
+            qualiR.qualiDSQ = qualiR.dsq
+            return qualiR
+        })
+    })))
 
+    const updated = await Promise.all(_.map(allResults, async result => {
+        const driver = _.find(drivers, {driverNumber: result.driver_number})
+        if (!driver) return {message: 'Driver not found'}
+        return await updateQulaiResults(driver.driverId!, result.meeting_key, result.position, result.qualiDNS, result.qualiDSQ)
+    }))
+
+    res.json(updated)
 }
