@@ -13,6 +13,7 @@ import logger from './shared/logger.util'
 import resultsRoutes from './routes/results.routes'
 import teamResultsRoutes from './routes/teamresults.routes'
 import raceRoutes from './routes/race.routes'
+import cors from 'cors'
 import {Request, Response} from 'express'
 
 const app = express()
@@ -20,6 +21,11 @@ const port = 3000
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
+app.use(cors({
+    origin: 'http://localhost:4200',
+    credentials: true,
+}))
+
 
 app.use('/api/users', userRoutes)
 app.use('/api/drivers', driverRoutes)

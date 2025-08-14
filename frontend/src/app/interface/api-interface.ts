@@ -35,3 +35,13 @@ export interface Race {
   meeting_name: string
   meeting_key: number
 }
+
+export interface Session {
+  accessToken: string
+  refreshToken: string
+  IUser: {
+    id: number
+    name: string
+    email: string
+  }
+}

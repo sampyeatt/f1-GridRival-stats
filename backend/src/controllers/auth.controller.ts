@@ -53,7 +53,6 @@ export const loginController = async (req: Request, res: Response) => {
         errors: JSON.parse(parsedData.error.message)
     })
 
-
     const {email, password} = parsedData.data
 
     const user = await getUserByEmail(email)

@@ -1,7 +1,7 @@
 import {Component, inject} from '@angular/core'
 import {Router} from '@angular/router'
 import {AuthService} from '../../services/auth.service'
-import {FormsModule, NgForm} from '@angular/forms'
+import {FormsModule, NgForm, ReactiveFormsModule} from '@angular/forms'
 import {CommonModule} from '@angular/common'
 import {ButtonModule} from 'primeng/button'
 import {DividerModule} from 'primeng/divider'
@@ -9,13 +9,13 @@ import {InputTextModule} from 'primeng/inputtext'
 
 @Component({
   selector: 'app-login',
-  imports: [FormsModule, CommonModule, ButtonModule, DividerModule, InputTextModule],
+  imports: [FormsModule, CommonModule, ButtonModule, DividerModule, InputTextModule, ReactiveFormsModule],
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
 export class LoginComponent {
 
-  username: string = ''
+  email: string = ''
   password: string = ''
 
   private authService = inject(AuthService)
@@ -23,10 +23,11 @@ export class LoginComponent {
 
   onSubmit(form: NgForm) {
     if (form.valid) {
-      this.authService.login(this.username, this.password)
+      this.authService.login(this.email, this.password)
         .subscribe({
           next: (res) => {
-            this.authService.saveToken(res.token)
+            console.log('Login successful: ', res)
+            this.authService.saveToken(res.accessToken)
             this.router.navigate(['/dashboard'])
           },
           error: (err) => {

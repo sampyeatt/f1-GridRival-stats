@@ -13,12 +13,12 @@ import {Router, RouterLink} from '@angular/router'
     <nav class="bg-gray-800 text-white p-4 flex justify-between items-center">
       <span class="text-xl font-semibold">Grid Rivals Organzied Data</span>
       <div>
-<!--        <a *ngIf="!authenticated" class="mr-4" routerLink="/login">Login</a>-->
-<!--        <a *ngIf="!authenticated" class="mr-4" routerLink="/register">Register</a>-->
-        <a class="mr-4" routerLink="/">Dashboard</a>
-<!--        <button-->
-<!--        *ngIf="authenticated"-->
-<!--        (click)="logout()" class="bg-red-500 px-3 py-1 rounded">Logout</button>-->
+        <a *ngIf="!authenticated" class="mr-4" routerLink="/login">Login</a>
+        <a *ngIf="!authenticated" class="mr-4" routerLink="/register">Register</a>
+        <a *ngIf="authenticated" class="mr-4" routerLink="/dashboard">Dashboard</a>
+        <button
+        *ngIf="authenticated"
+        (click)="logout()" class="bg-red-500 px-3 py-1 rounded">Logout</button>
       </div>
     </nav>
   `,
