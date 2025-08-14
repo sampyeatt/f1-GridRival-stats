@@ -11,7 +11,6 @@ const passwordZodRules = z.string().min(6).max(100).regex(/^(?=.*[a-z])(?=.*[A-Z
 
 export const registerController = async (req: Request, res: Response) => {
     const schema = z.object({
-        name: z.string().min(2).max(100),
         email: z.string().email(),
         password: passwordZodRules
     })
@@ -23,21 +22,23 @@ export const registerController = async (req: Request, res: Response) => {
         errors: JSON.parse(parsedData.error.message)
     })
 
-    let {name, email, password} = parsedData.data
+    let {email, password} = parsedData.data
 
     password = await encryptPassword(password)
 
     const existingUser = await getUserByEmail(email)
     if (existingUser) return res.status(400).json({message: 'User already exists'})
 
-    let user = await addUser(name, email, password)
+    let user = await addUser(email, password)
 
     user = user.toJSON()
     delete user.password
 
     const token = await generateToken(user.userId!)
     await addToken(token, 'activation', user.userId!)
-    await sendConfirmationEmail(email, token)
+    const emailSent = await sendConfirmationEmail(email, token)
+
+    if (!emailSent) return res.status(500).json({message: 'Failed to send email'})
 
     return res.status(201).json(user)
 }

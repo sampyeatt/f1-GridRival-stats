@@ -23,12 +23,12 @@ import {TeamResultsService} from '../../services/teamresults.service'
 })
 
 export class DashboardComponent {
-  results!: Result[]
-  selectedResult!: Result[]
-  races!: Race[]
-  selectedRace!: Race
-  teamResults!: TeamResult[]
-  selectedTeamResult!: TeamResult[]
+  results?: Result[]
+  selectedResult?: Result[]
+  races?: Race[]
+  selectedRace?: Race
+  teamResults?: TeamResult[]
+  selectedTeamResult?: TeamResult[]
 
 
   public resultsService = inject(ResultsService)
@@ -49,7 +49,9 @@ export class DashboardComponent {
     this.resultsService.getResults().subscribe({
       next: (data) => {
         this.results = data
-        this.selectedResult = this.results.filter(result => result.meeting_key === this.selectedRace.meeting_key)
+        if(this.selectedRace){
+          this.selectedResult = this.results.filter(result => result.meeting_key === this.selectedRace!.meeting_key)
+        }
       },
       error: (err) => {
         console.error('Error Loading posts: ', err)
@@ -59,7 +61,10 @@ export class DashboardComponent {
     this.teamResultsService.getTeamResults().subscribe({
       next: (data) => {
         this.teamResults = data
-        this.selectedTeamResult = this.teamResults.filter(result => result.meeting_key === this.selectedRace.meeting_key)
+        if(this.selectedRace){
+          this.selectedTeamResult = this.teamResults.filter(result => result.meeting_key === this.selectedRace!.meeting_key)
+
+        }
       },
       error: (err) => {}
     })
@@ -71,9 +76,15 @@ export class DashboardComponent {
     else return 'success'
   }
 
-  filterResults(race: Race) {
-    this.selectedResult = this.results.filter(result => result.meeting_key === this.selectedRace.meeting_key)
-    this.selectedTeamResult = this.teamResults.filter(result => result.meeting_key === this.selectedRace.meeting_key)
+  filterResults() {
+    if(this.selectedRace){
+      this.selectedResult = this.results!.filter(result => result.meeting_key === this.selectedRace!.meeting_key)
+      this.selectedTeamResult = this.teamResults!.filter(result => result.meeting_key === this.selectedRace!.meeting_key)
+    } else {
+      this.selectedResult = undefined
+      this.selectedTeamResult = undefined
+    }
+
   }
 
 

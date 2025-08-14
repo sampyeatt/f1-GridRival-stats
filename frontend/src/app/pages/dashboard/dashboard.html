@@ -1,6 +1,6 @@
 
 <div class="py-6">
-  <p-select [options]="this.races" [(ngModel)]="selectedRace" (onChange)=filterResults(selectedRace) optionLabel="meeting_name" placeholder="Select Race" class="w-full md:w-100"  />
+  <p-select [options]="this.races" [(ngModel)]="selectedRace" (onChange)=filterResults() optionLabel="meeting_name" placeholder="Select Race" class="w-full md:w-100"  />
   <p-tabs value="driver">
     <p-tablist class="flex justify-center py-6">
       <p-tab value="driver">Drivers</p-tab>
@@ -9,7 +9,7 @@
     <p-tabpanels>
       <p-tabpanel value="driver">
         <div class="flex justify-center py-6">
-          <p-table [value]="this.selectedResult" [tableStyle]="{ 'min-width': '50rem' }">
+          <p-table *ngIf="this.selectedResult" [value]="this.selectedResult" [tableStyle]="{ 'min-width': '50rem' }">
             <ng-template #header pTemplate="header">
               <tr>
                 <th pSortableColumn="criverId">
@@ -52,7 +52,7 @@
       </p-tabpanel>
       <p-tabpanel value="team">
         <div class="flex justify-center py-6">
-          <p-table [value]="this.selectedTeamResult" [tableStyle]="{ 'min-width': '50rem' }">
+          <p-table *ngIf="this.selectedTeamResult" [value]="this.selectedTeamResult" [tableStyle]="{ 'min-width': '50rem' }">
             <ng-template #header pTemplate="header">
               <tr>
                 <th pSortableColumn="criverId">
