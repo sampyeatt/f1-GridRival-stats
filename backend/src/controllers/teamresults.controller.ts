@@ -16,7 +16,6 @@ import {TeamResults} from '../models/TeamResults'
 import {getRaceByRound} from '../shared/f1api.util'
 
 export const getTeamResultsController = async (req: Request, res: Response) => {
-    console.log('req.params1', req.params)
     if (_.isNil(req.params.seasonId)) throw new Error('SeasonId parameter is required')
     const {seasonId} = req.params
     const results = _.map(await getTeamResults(+seasonId), result => result.toJSON())
@@ -24,7 +23,6 @@ export const getTeamResultsController = async (req: Request, res: Response) => {
 }
 
 export const getTeamResultsByRoundController = async (req: Request, res: Response) => {
-    console.log('req.params', req.params)
     if (_.isNil(req.params.seasonId) || _.isNil(req.params.round)) throw new Error('SeasonId parameter is required')
     const {seasonId, round} = req.params
     const results = await getTeamResultsByRound(+seasonId, +round)

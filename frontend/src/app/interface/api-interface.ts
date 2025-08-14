@@ -8,6 +8,22 @@ export interface Result {
   seasonId: number
   round: number
   finishPosition: number
+  qualiPosition: number
+  positionDifference: number
+  positionsForMoney: number
+  easeToGainPoints: number
+  teamId: string
+  meeting_key: number
+}
+
+export interface TeamResult {
+  id: number
+  raceId: string
+  points: number
+  cost: number
+  rank: number
+  seasonId: number
+  round: number
   positionDifference: number
   positionsForMoney: number
   easeToGainPoints: number

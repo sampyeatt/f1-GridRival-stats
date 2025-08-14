@@ -8,7 +8,7 @@ export async function getTeamResults(seasonId: number) {
             seasonId: seasonId
         },
         order: [['cost', 'DESC']],
-        include: ['driver']
+        include: ['team']
     })
 }
 

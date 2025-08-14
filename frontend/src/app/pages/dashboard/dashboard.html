@@ -52,7 +52,7 @@
       </p-tabpanel>
       <p-tabpanel value="team">
         <div class="flex justify-center py-6">
-          <p-table [value]="this.selectedResult" [tableStyle]="{ 'min-width': '50rem' }">
+          <p-table [value]="this.selectedTeamResult" [tableStyle]="{ 'min-width': '50rem' }">
             <ng-template #header pTemplate="header">
               <tr>
                 <th pSortableColumn="criverId">
@@ -77,16 +77,16 @@
                 </th>
               </tr>
             </ng-template>
-            <ng-template #body let-result pTemplate="body">
+            <ng-template #body let-teamresult pTemplate="body">
               <tr>
-                <td>{{ result.driver.driverName }}</td>
-                <td>{{ result.cost }}</td>
-                <td>{{ result.points }}</td>
+                <td>{{ teamresult.team.teamName }}</td>
+                <td>{{ teamresult.cost }}</td>
+                <td>{{ teamresult.points }}</td>
                 <td>
-                  <p-badge [value]="result.positionsForMoney" [severity]="resultSeverity(result)"/>
+                  <p-badge [value]="teamresult.positionsForMoney" [severity]="resultSeverity(teamresult)"/>
                 </td>
                 <td>
-                  <p-badge [value]="result.easeToGainPoints" [severity]="resultSeverity(result)"/>
+                  <p-badge [value]="teamresult.easeToGainPoints" [severity]="resultSeverity(teamresult)"/>
                 </td>
               </tr>
             </ng-template>
