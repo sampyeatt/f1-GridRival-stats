@@ -1,4 +1,14 @@
-import {Table, Column, Model, HasMany, PrimaryKey, AutoIncrement, DataType, Default} from 'sequelize-typescript'
+import {
+    Table,
+    Column,
+    Model,
+    HasMany,
+    PrimaryKey,
+    AutoIncrement,
+    DataType,
+    Default,
+    BelongsTo
+} from 'sequelize-typescript'
 
 @Table
 export class User extends Model<User> {
@@ -20,6 +30,13 @@ export class User extends Model<User> {
         allowNull: false
     })
     email?: string
+
+    @Column({
+        allowNull: false,
+        type: DataType.ENUM('admin', 'user'),
+        defaultValue: 'user'
+    })
+    role?: 'admin' | 'user'
 
     @Default('pending')
     @Column({

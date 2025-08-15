@@ -16,6 +16,7 @@ import {Router, RouterLink} from '@angular/router'
         <a *ngIf="!authenticated" class="mr-4" routerLink="/login">Login</a>
         <a *ngIf="!authenticated" class="mr-4" routerLink="/register">Register</a>
         <a *ngIf="authenticated" class="mr-4" routerLink="/dashboard">Dashboard</a>
+        <a *ngIf="authenticated" class="mr-4" routerLink="/admin">Admin</a>
         <button
         *ngIf="authenticated"
         (click)="logout()" class="bg-red-500 px-3 py-1 rounded">Logout</button>

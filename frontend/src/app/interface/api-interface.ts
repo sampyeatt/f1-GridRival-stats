@@ -39,8 +39,8 @@ export interface Race {
 export interface Session {
   accessToken: string
   refreshToken: string
-  IUser: {
-    id: number
+  user: {
+    userId: number
     name: string
     email: string
   }

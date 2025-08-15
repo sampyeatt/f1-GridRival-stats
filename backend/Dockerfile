@@ -7,7 +7,7 @@ COPY package*.json ./
 RUN npm install
 RUN npm install -g @angular/cli
 
-COPY . .
+COPY .. .
 
 RUN npm run build --config=production
 

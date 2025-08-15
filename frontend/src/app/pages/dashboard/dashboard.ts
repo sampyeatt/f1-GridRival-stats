@@ -1,4 +1,4 @@
-import {Component, inject, CUSTOM_ELEMENTS_SCHEMA} from '@angular/core'
+import {Component, inject, CUSTOM_ELEMENTS_SCHEMA, OnInit} from '@angular/core'
 import {TableModule} from 'primeng/table'
 import {CommonModule} from '@angular/common'
 import {ButtonModule} from 'primeng/button'
@@ -22,7 +22,7 @@ import {TeamResultsService} from '../../services/teamresults.service'
   styleUrl: './dashboard.css'
 })
 
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
   results?: Result[]
   selectedResult?: Result[]
   races?: Race[]

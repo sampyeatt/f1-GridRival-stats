@@ -28,6 +28,7 @@ export class LoginComponent {
           next: (res) => {
             console.log('Login successful: ', res)
             this.authService.saveToken(res.accessToken)
+            this.authService.saveUser(res.user.userId)
             this.router.navigate(['/dashboard'])
           },
           error: (err) => {

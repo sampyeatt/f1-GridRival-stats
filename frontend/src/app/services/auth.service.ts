@@ -15,6 +15,7 @@ export class AuthService {
   private http = inject(HttpClient)
   private router = inject(Router)
   token?: string | null = null
+  auth: boolean = false
 
 
   register(email: string, password: string) {
@@ -24,6 +25,7 @@ export class AuthService {
   logout() {
     this.token = null
     localStorage.removeItem('jwt')
+    localStorage.removeItem('userId')
     this.router.navigate(['/login'])
   }
 
@@ -37,13 +39,36 @@ export class AuthService {
     localStorage.setItem('jwt', token)
   }
 
+  saveUser(userId: number) {
+    localStorage.setItem('userId', String(userId))
+  }
+
   loadToken() {
     const token = localStorage.getItem('jwt')
     if (token) this.token = token
     return this.token
   }
 
+  loadAdminToken() {
+    const userId = localStorage.getItem('userId')
+    const role = this.http.get<string>(`${this.apiUrl}/role/${userId}`).pipe(share())
+    role.subscribe({
+      next: (role) => {
+        if (role) return (role === 'admin')
+        else return false
+      },
+      error: (err) => {
+        console.error('Error loading role:', err)
+        return false
+      }
+    })
+  }
+
   isAuthenticated() {
     return !!this.loadToken()
+  }
+
+  isAdminAuthenticated() {
+    return this.loadAdminToken()
   }
 }

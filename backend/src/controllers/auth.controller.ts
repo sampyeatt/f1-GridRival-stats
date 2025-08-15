@@ -1,6 +1,6 @@
 import {Request, Response} from 'express'
 import z from 'zod'
-import {addUser, getUserByEmail, updateUser} from '../services/user.service'
+import {addUser, getAllById, getUserByEmail, updateUser} from '../services/user.service'
 import {encryptPassword, generateToken, verifyToken} from '../shared/auth.util'
 import {addToken, deleteTokens, getToken} from '../services/token.service'
 import {sendConfirmationEmail, sendForgotPasswordEmail} from '../shared/email.util'
@@ -207,4 +207,13 @@ export const resetPasswordController = async (req: Request, res: Response) => {
     await deleteTokens(userId)
 
     return res.status(200).json({message: 'Password reset successfully'})
+}
+
+export const getUserRoleController = async (req: Request, res: Response) => {
+    if (!req.params.userId) return res.status(400).json({message: 'UserId parameter is required'})
+    const {userId} = req.params
+    const user = await getAllById(+userId)
+    if (!user) return res.status(404).json({message: 'User not found'})
+    const role = user.get('role')
+    return res.status(200).json({role})
 }

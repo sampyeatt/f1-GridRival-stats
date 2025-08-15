@@ -5,6 +5,10 @@ export async function getAllUsers() {
     return await User.findAll()
 }
 
+export async function getAllById(userId: number) {
+    return await User.findByPk(userId)
+}
+
 export async function addUser(email: string, password: string) {
     const user = new User()
     user.name = email
