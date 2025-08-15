@@ -13,7 +13,7 @@ export class AuthService {
   apiUrl = `${environment.API_URL}/api/auth`
 
   private http = inject(HttpClient)
-  private router = inject(Router)
+  public router = inject(Router)
   token?: string | null = null
   auth: boolean = false
 
@@ -24,8 +24,8 @@ export class AuthService {
 
   logout() {
     this.token = null
-    localStorage.removeItem('jwt')
-    localStorage.removeItem('userId')
+    sessionStorage.removeItem('jwt')
+    sessionStorage.removeItem('userId')
     this.router.navigate(['/login'])
   }
 
@@ -36,21 +36,21 @@ export class AuthService {
 
   saveToken(token: string) {
     this.token = token
-    localStorage.setItem('jwt', token)
+    sessionStorage.setItem('jwt', token)
   }
 
   saveUser(userId: number) {
-    localStorage.setItem('userId', String(userId))
+    sessionStorage.setItem('userId', String(userId))
   }
 
   loadToken() {
-    const token = localStorage.getItem('jwt')
+    const token = sessionStorage.getItem('jwt')
     if (token) this.token = token
     return this.token
   }
 
   loadAdminToken() {
-    const userId = localStorage.getItem('userId')
+    const userId = sessionStorage.getItem('userId')
     const role = this.http.get<string>(`${this.apiUrl}/role/${userId}`).pipe(share())
     role.subscribe({
       next: (role) => {

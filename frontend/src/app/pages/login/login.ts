@@ -9,6 +9,7 @@ import {InputTextModule} from 'primeng/inputtext'
 
 @Component({
   selector: 'app-login',
+  standalone: true,
   imports: [FormsModule, CommonModule, ButtonModule, DividerModule, InputTextModule, ReactiveFormsModule],
   templateUrl: './login.html',
   styleUrl: './login.css'

@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import {Component, inject} from '@angular/core'
 import { AuthService } from '../../services/auth.service';
-import {Router, RouterLink} from '@angular/router'
+import {Router, RouterModule} from '@angular/router'
 
 @Component({
   selector: 'app-nav-bar',
   imports: [
     CommonModule,
-    RouterLink
+    RouterModule
   ],
   template: `
     <nav class="bg-gray-800 text-white p-4 flex justify-between items-center">
@@ -17,9 +17,7 @@ import {Router, RouterLink} from '@angular/router'
         <a *ngIf="!authenticated" class="mr-4" routerLink="/register">Register</a>
         <a *ngIf="authenticated" class="mr-4" routerLink="/dashboard">Dashboard</a>
         <a *ngIf="authenticated" class="mr-4" routerLink="/admin">Admin</a>
-        <button
-        *ngIf="authenticated"
-        (click)="logout()" class="bg-red-500 px-3 py-1 rounded">Logout</button>
+        <button *ngIf="authenticated" (click)="logout()" class="bg-red-500 px-3 py-1 rounded">Logout</button>
       </div>
     </nav>
   `,
@@ -27,12 +25,11 @@ import {Router, RouterLink} from '@angular/router'
 })
 export class NavBarComponent {
 
+  public authService = inject(AuthService)
+  public router = inject(Router)
+
   get authenticated(){
     return this.authService.isAuthenticated();
-  }
-
-  constructor(public authService: AuthService, private router:Router){
-
   }
 
   logout(){

@@ -10,10 +10,12 @@ import {InputTextModule} from 'primeng/inputtext'
 import {Result} from '../../interface/api-interface'
 import {ResultsService} from '../../services/results.service'
 import {FormsModule} from '@angular/forms'
+import {Router} from '@angular/router'
 
 
 @Component({
   selector: 'app-admin',
+  standalone: true,
   imports: [TableModule, ToastModule, CommonModule, TagModule, SelectModule, ButtonModule, InputTextModule, FormsModule],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.css'
@@ -25,6 +27,7 @@ export class AdminComponent {
   clonedResult: { [s: number]: Result } = {}
 
   public resultsService = inject(ResultsService)
+  public router = inject(Router)
   // private messageService = inject(MessageService)
 
   ngOnInit() {

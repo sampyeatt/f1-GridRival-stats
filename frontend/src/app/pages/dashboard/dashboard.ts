@@ -14,6 +14,7 @@ import {TeamResultsService} from '../../services/teamresults.service'
 
 @Component({
   selector: 'app-dashboard',
+  standalone: true,
   imports: [
     TableModule, CommonModule, ButtonModule, BadgeModule, FormsModule, TabsModule, Select
   ],
