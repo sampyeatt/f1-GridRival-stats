@@ -20,4 +20,8 @@ export class ResultsService {
   getResults(): Observable<Result[]> {
     return this.http.get<Result[]>(`${this.apiUrl()}/2025`)
   }
+
+  getNewResults(): Observable<Result[]> {
+    return this.http.get<Result[]>(`${this.apiUrl()}/2025`)
+  }
 }
