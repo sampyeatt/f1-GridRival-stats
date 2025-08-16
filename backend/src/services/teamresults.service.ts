@@ -73,17 +73,6 @@ export async function getTotalSalaryAndPosDiffTeam(teamId: string, seasonId: num
     const differ = _.round(BaseSalaryTeam[String(teamRank) as keyof typeof BaseSalaryTeam] - results.get('cost')!, 1)
 
     const posDiff = Math.max(-3, Math.min(3, (Math.sign(differ) * _.floor(( Math.sign(differ) * differ / 4), 1))))
-
-    if(teamId === 'haas') {
-        console.log(`----------------------------------------`)
-        console.log(`Team: ${teamId}`)
-        console.log(`differ: ${differ}`)
-        console.log(`posDiff: ${posDiff}`)
-        console.log(`results.cost: ${results.get('cost')!}`)
-        console.log(`driverRankAndSalary: ${teamRank}`)
-        console.log(`BaseSalaryDriver[${teamRank}]: ${BaseSalaryTeam[String(teamRank) as keyof typeof BaseSalaryTeam]}`)
-        console.log(`----------------------------------------`)
-    }
     return {
         totalSalary: (posDiff + results.get('cost')!),
         positionDifference: posDiff
@@ -119,16 +108,6 @@ export async function teamResultsToAdd(seasonId: number, meeting_key: number){
                 const qualiPoint = (!driverResult.qualiDSQ) ? QualiPointsTeam[String(driverResult.qualiPosition) as keyof typeof QualiPointsTeam] : 0
                 return  (racePoint + qualiPoint)
             }).sum()
-            if(key === 'alpine') {
-                console.log('--------------------------------------------')
-                console.log(`Team: ${key}`)
-                console.log(`Points: ${points}`)
-                _(value).forEach(driverResult => {
-                    console.log(`RacePoints for ${driverResult.driverId}`, RacePointsTeam[String(driverResult.finishPosition) as keyof typeof RacePointsTeam])
-                    console.log(`QualiPoints for ${driverResult.driverId}`, QualiPointsTeam[String(driverResult.qualiPosition) as keyof typeof QualiPointsTeam])
-                })
-                console.log('--------------------------------------------')
-            }
             return {
                 raceId: raceId,
                 points: points,
@@ -159,4 +138,6 @@ export async function teamResultsToAdd(seasonId: number, meeting_key: number){
         value.easeToGainPoints = key + 1 - value.positionsForMoney!
         return value
     }))
+
+    return teamResults
 }

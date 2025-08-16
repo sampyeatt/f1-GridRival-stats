@@ -14,6 +14,7 @@ import {IconFieldModule} from 'primeng/iconfield'
 import {Message} from 'primeng/message'
 import {Tab, TabList, TabPanel, TabPanels, Tabs} from 'primeng/tabs'
 import {Ripple} from 'primeng/ripple'
+import {TeamResultsService} from '../../services/teamresults.service'
 
 
 @Component({
@@ -30,9 +31,11 @@ export class AdminComponent {
   resultSubmitSuccess: boolean = false
   resultSubmitError: boolean = false
 
-  clonedResult: { [s: number]: Result } = {}
+  clonedDriverResult: { [s: number]: Result } = {}
+  clonedTeamResults: { [s: number]: TeamResult } = {}
 
-  public resultsService = inject(ResultsService)
+  private resultsService = inject(ResultsService)
+  private teamResultsService = inject(TeamResultsService)
   public router = inject(Router)
   private cdref = inject(ChangeDetectorRef)
 
@@ -42,7 +45,7 @@ export class AdminComponent {
     this.resultSubmitSuccess = false
     this.resultSubmitError = false
     this.getDriverResults()
-    // this.getTeamResults()
+    this.getTeamResults()
   }
 
   getDriverResults() {
@@ -58,17 +61,18 @@ export class AdminComponent {
     })
   }
 
-  // getTeamResults() {
-  //   this.resultsService.getNewTeamResults().subscribe({
-  //     next: (data) => {
-  //       this.cdref.markForCheck()
-  //       this.teamResults = data
-  //     },
-  //     error: (err) => {
-  //       console.error('Error Loading posts: ', err)
-  //     }
-  //   })
-  // }
+  getTeamResults() {
+    this.teamResultsService.getNewTeamResults().subscribe({
+      next: (data) => {
+        console.log('Team Results: ', data)
+        this.cdref.markForCheck()
+        this.teamResults = data
+      },
+      error: (err) => {
+        console.error('Error Loading posts: ', err)
+      }
+    })
+  }
 
   onSaveResults() {
     this.resultsService.saveUpdatedResults(this.driverResults!).subscribe({
@@ -86,19 +90,34 @@ export class AdminComponent {
     })
   }
 
-  onRowEditInit(results: Result) {
-    this.clonedResult[results.id] = {...results}
+  onRowEditInitDriver(results: Result) {
+    this.clonedDriverResult[results.id] = {...results}
   }
 
-  onRowEditSave(results: Result) {
+  onRowEditSaveDriver(results: Result) {
     if (results.cost > 0) {
-      delete this.clonedResult[results.id]
+      delete this.clonedDriverResult[results.id]
     } else {    }
   }
 
-  onRowEditCancel(results: Result, index: number) {
-    this.driverResults![index] = this.clonedResult[results.id]
-    delete this.clonedResult[results.id]
+  onRowEditCancelDriver(results: Result, index: number) {
+    this.driverResults![index] = this.clonedDriverResult[results.id]
+    delete this.clonedDriverResult[results.id]
+  }
+
+  onRowEditInitTeam(results: Result) {
+    this.clonedTeamResults[results.id] = {...results}
+  }
+
+  onRowEditSaveTeam(results: Result) {
+    if (results.cost > 0) {
+      delete this.clonedTeamResults[results.id]
+    } else {    }
+  }
+
+  onRowEditCancelTeam(results: Result, index: number) {
+    this.teamResults![index] = this.clonedTeamResults[results.id]
+    delete this.clonedTeamResults[results.id]
   }
 
 }

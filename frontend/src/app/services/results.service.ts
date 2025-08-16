@@ -20,11 +20,6 @@ export class ResultsService {
     return this.http.get<Result[]>(`${this.apiUrl()}/drivers`)
   }
 
-  // TODO move to teamResultsService
-  getNewTeamResults(): Observable<TeamResult[]> {
-    return this.http.get<TeamResult[]>(`${this.apiUrl()}/teams`)
-  }
-
   saveUpdatedResults(results: Result[]) {
     return this.http.post(`${this.apiUrl()}/add`, {results})
   }

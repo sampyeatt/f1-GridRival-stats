@@ -7,8 +7,8 @@ import {
 
 const router = Router()
 
-router.get('/', getTeamResultsController)
-router.get('/:seasonId{/:round}', getTeamResultsByRoundController)
+router.get('/teamresults', getTeamResultsController)
+router.get('/byRound/:seasonId{/:round}', getTeamResultsByRoundController)
 router.get('/teams', getTeamResultsToAddController)
 router.post('/', addTeamResultBulkController)
 router.post('/start', addTeamResultStartController)

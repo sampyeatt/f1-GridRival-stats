@@ -18,6 +18,10 @@ export class TeamResultsService {
   // public result = toSignal(this.results$, {initialValue: []})
 
   getTeamResults(): Observable<TeamResult[]> {
-    return this.http.get<TeamResult[]>(`${this.apiUrl()}/2025`)
+    return this.http.get<TeamResult[]>(`${this.apiUrl()}`)
+  }
+
+  getNewTeamResults(): Observable<TeamResult[]> {
+    return this.http.get<TeamResult[]>(`${this.apiUrl()}/teams`)
   }
 }

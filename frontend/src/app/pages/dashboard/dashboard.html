@@ -12,9 +12,9 @@
           <p-table *ngIf="this.selectedResult" [value]="this.selectedResult" [tableStyle]="{ 'min-width': '50rem' }" #dynamicComponent >
             <ng-template #header pTemplate="header">
               <tr>
-                <th pSortableColumn="criverId">
+                <th pSortableColumn="driver.driverName">
                   DriverId
-                  <p-sortIcon field="driverId"/>
+                  <p-sortIcon field="driver.driverName"/>
                 </th>
                 <th pSortableColumn="cost">
                   Cost
