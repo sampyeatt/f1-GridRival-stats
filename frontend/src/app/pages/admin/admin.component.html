@@ -5,7 +5,7 @@
     <p-button (onClick)="this.onSaveResults()" [rounded]="true" [raised]="true">
       <i class="pi pi-save "> Save Results</i></p-button>
   }
-  @if (this.resultSubmitSuccess) {
+  @if (this.driverResults) {
     <p-message severity="success" class="flex justify-center">Driver Results Saved to Database</p-message>
   }
   <p-tabs value="driver"  >
@@ -91,10 +91,10 @@
           </p-table>
       </p-tabpanel>
       <p-tabpanel value="team" >
-        <p-table class="py-6 flex justify-center" *ngIf="this.teamResults" [value]="this.teamResults" dataKey="driverId" editMode="row" [tableStyle]="{'min-width': '50rem'}">
+        <p-table class="py-6 flex justify-center" *ngIf="this.teamResults" [value]="this.teamResults" dataKey="teamId" editMode="row" [tableStyle]="{'min-width': '50rem'}">
           <ng-template #header>
             <tr>
-              <th style="width:12%">Diver</th>
+              <th style="width:12%">Team</th>
               <th style="width:12%">Cost</th>
               <th style="width:12%">Points</th>
               <th style="width:12%">Pos 4 $</th>
@@ -105,7 +105,7 @@
           <ng-template #body let-result let-editing="editing" let-ri="rowIndex">
             <tr [pEditableRow]="result">
               <td>
-                {{ result.driverId }}
+                {{ result.teamId }}
               </td>
               <td>
                 <p-cellEditor>
@@ -168,9 +168,5 @@
       </p-tabpanel>
     </p-tabpanels>
   </p-tabs>
-
-
-
-
 </div>
 

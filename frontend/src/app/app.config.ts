@@ -18,9 +18,9 @@ export const appConfig: ApplicationConfig = {
     providePrimeNG({
       theme: {
         preset: Aura
+        // TODO add custom theme
       }
     }),
     provideAnimationsAsync(),
-
   ]
 }

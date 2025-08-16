@@ -3,7 +3,6 @@ import {Injectable, inject, computed} from '@angular/core'
 import {environment} from '../../environments/environment.development'
 import {Result, TeamResult} from '../interface/api-interface'
 import {Observable} from 'rxjs'
-import {toSignal} from '@angular/core/rxjs-interop'
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +13,7 @@ export class ResultsService {
   private http = inject(HttpClient)
 
   getResults(): Observable<Result[]> {
-    return this.http.get<Result[]>(`${this.apiUrl()}/2025`)
+    return this.http.get<Result[]>(`${this.apiUrl()}`)
   }
 
   getNewDriverResults(): Observable<Result[]> {

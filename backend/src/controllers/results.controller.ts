@@ -1,27 +1,23 @@
 import {Request, Response} from 'express'
 import {
-    addResults, bulkAddResults, findSalaryBracket, getResultByRaceIdDriverId, getResultsObjToAdd,
+    bulkAddResults, getResultByRaceIdDriverId, getResultsObjToAdd,
     getResutls,
     getResutlsByRound,
-    getTotalPointsDriver, getTotalSalaryAndPosDiff, updateQulaiResults
+    updateQulaiResults
 } from '../services/results.service'
 import _ from 'lodash'
 import {z} from 'zod'
 import {
     getCurrentRaceResults,
-    getRaceByRound, getRacesByYear
+    getRacesByYear
 } from '../shared/f1api.util'
-import {getRaceDataByMeetingKey, getSeasonBySeasonId} from '../services/race.services'
+import { getSeasonBySeasonId} from '../services/race.services'
 import {getActiveDrivers} from '../services/driver.service'
-import {BaseSalaryDriver} from '../shared/constants'
 import {Results} from '../models/Results'
-import {all} from 'axios'
 import {Meeting} from '../shared/interface.util'
 
 export const getResultsController = async (req: Request, res: Response) => {
-    console.log('req.params1', req.params)
-    if (_.isNil(req.params.seasonId)) throw new Error('SeasonId parameter is required')
-    const {seasonId} = req.params
+    const seasonId = 2025
     const results = _.map(await getResutls(+seasonId), result => result.toJSON())
     res.json(results)
 }

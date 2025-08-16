@@ -3,9 +3,7 @@ import {
   inject,
   CUSTOM_ELEMENTS_SCHEMA,
   OnInit,
-  ChangeDetectorRef,
-  AfterViewInit,
-  ViewChild, ViewContainerRef, AfterViewChecked
+  ChangeDetectorRef
 } from '@angular/core'
 import {TableModule} from 'primeng/table'
 import {CommonModule} from '@angular/common'
@@ -92,6 +90,7 @@ export class DashboardComponent implements OnInit {
         }
       },
       error: (err) => {
+        console.error('Error Loading posts: ', err)
       }
     })
   }
