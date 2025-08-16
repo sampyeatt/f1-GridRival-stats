@@ -17,16 +17,17 @@ export class AuthService {
   token?: string | null = null
   auth: boolean = false
 
-
   register(email: string, password: string) {
     return this.http.post(`${this.apiUrl}/register`, {email: email, password})
   }
 
   logout() {
-    this.token = null
-    sessionStorage.removeItem('jwt')
-    sessionStorage.removeItem('userId')
-    this.router.navigate(['/login'])
+    if (typeof window !== 'undefined') {
+      this.token = null
+      sessionStorage.removeItem('jwt')
+      sessionStorage.removeItem('userId')
+      this.router.navigate(['/login'])
+    }
   }
 
   login(email: string, password: string) {
@@ -44,28 +45,34 @@ export class AuthService {
   }
 
   loadToken() {
-    const token = sessionStorage.getItem('jwt')
-    if (token) this.token = token
-    return this.token
+    if (typeof window !== 'undefined') {
+      const token = sessionStorage.getItem('jwt')
+      if (token) this.token = token
+      return this.token
+    }
+    return null
   }
 
   loadAdminToken() {
-    const userId = sessionStorage.getItem('userId')
-    const role = this.http.get<string>(`${this.apiUrl}/role/${userId}`).pipe(share())
-    role.subscribe({
-      next: (role) => {
-        if (role) return (role === 'admin')
-        else return false
-      },
-      error: (err) => {
-        console.error('Error loading role:', err)
-        return false
-      }
-    })
+    if (typeof window !== 'undefined')  {
+      const userId = sessionStorage.getItem('userId')
+      const role = this.http.get<string>(`${this.apiUrl}/role/${userId}`).pipe(share())
+      role.subscribe({
+        next: (role) => {
+          if (role) return (role === 'admin')
+          else return false
+        },
+        error: (err) => {
+          console.error('Error loading role:', err)
+          return false
+        }
+      })
+    }
   }
 
   isAuthenticated() {
-    return !!this.loadToken()
+    if (typeof window !== 'undefined')  return !!this.loadToken()
+    return false
   }
 
   isAdminAuthenticated() {

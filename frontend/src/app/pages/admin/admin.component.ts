@@ -33,14 +33,12 @@ export class AdminComponent {
 
   ngOnInit() {
 
-
   }
 
   onFindResults() {
     this.resultsService.getNewResults().subscribe({
         next: (data) => {
           this.results = data
-
         },
         error: (err) => {
           console.error('Error Loading posts: ', err)
