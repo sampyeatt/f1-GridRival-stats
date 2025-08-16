@@ -24,4 +24,8 @@ export class ResultsService {
   getNewResults(): Observable<Result[]> {
     return this.http.get<Result[]>(`${this.apiUrl()}/2025`)
   }
+
+  saveUpdatedResults(Results: Result[]) {
+    return this.http.post(`${this.apiUrl()}/2025`, {})
+  }
 }

@@ -125,11 +125,10 @@ export const getDriverResultsToAdd = async (req: Request, res: Response) => {
     const seasonId = req.params.seasonId
     const dbRaces = _.map(await getSeasonBySeasonId(+seasonId), race => race.toJSON())
     const races: Meeting[] = await getRacesByYear(+seasonId)
-    const diff: Meeting[] = _.reject(_.differenceBy(races, dbRaces, 'meeting_key'), {meeting_name: 'Pre-Season Testing'})
-    if (diff.length === 0) return res.json({message: 'No new races to add'})
-    const newRaces = await Promise.all(_.map(diff, async race => {
-        return await getResultsObjToAdd(+seasonId, race.meeting_key)
-    }))
+    const diff: Meeting = _.minBy(_.reject(_.differenceBy(races, dbRaces, 'meeting_key'), {meeting_name: 'Pre-Season Testing'}), 'date_start') as Meeting
+    console.log('diff', diff)
+    if (!diff) return res.json([])
+    const newRaces = await getResultsObjToAdd(+seasonId, diff.meeting_key)
 
     res.json(newRaces)
 }

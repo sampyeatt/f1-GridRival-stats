@@ -1,104 +1,121 @@
 <h1>Admin</h1>
 <div class="py-6">
-  <p-button (onClick)="this.onSubmit()">Get New Results</p-button>
-  <p-table *ngIf="this.results" [value]="this.results" dataKey="id" editMode="row" [tableStyle]="{'min-width': '50rem'}">
-    <ng-template #header>
-      <tr>
-        <th style="width:22%">Diver</th>
-        <th style="width:22%">Cost</th>
-        <th style="width:22%">Points</th>
-        <th style="width:22%">Positions To Gain $</th>
-        <th style="width:22%">Ease to Gain</th>
-        <th style="width:12%"></th>
-      </tr>
-    </ng-template>
-    <ng-template #body let-result let-editing="editing" let-ri="rowIndex">
-      <tr [pEditableRow]="result">
-        <td>
-          <ng-template #output>
+  <p-button (onClick)="this.onFindResults()">Get New Results<i class="pi pi-flag"></i></p-button>
+  @if (this.results && this.results.length > 0) {
+    <p-table class="py-6 flex justify-center" *ngIf="this.results" [value]="this.results" dataKey="driverId" editMode="row" [tableStyle]="{'min-width': '50rem'}">
+      <ng-template #header>
+        <tr>
+          <th style="width:12%">Diver</th>
+          <th style="width:12%">Cost</th>
+          <th style="width:12%">Points</th>
+          <th style="width:12%">Pos 4 $</th>
+          <th style="width:12%">Ease</th>
+          <th style="width:12%"></th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-result let-editing="editing" let-ri="rowIndex">
+        <tr [pEditableRow]="result">
+          <td>
             {{ result.driverId }}
-          </ng-template>
-        </td>
-        <td>
-          <p-cellEditor>
-            <ng-template #input>
-              <input
-                pInputText type="text"
-                [(ngModel)]="result.cost"
-                required/>
-            </ng-template>
-            <ng-template #output>
-              {{ result.cost }}
-            </ng-template>
-          </p-cellEditor>
-        </td>
-        <td>
-          <p-cellEditor>
-            <ng-template #input>
-              <input
-                pInputText type="number"
-                [(ngModel)]="result.points"
-                required/>
-            </ng-template>
-            <ng-template #output>
-              {{ result.points }}
-            </ng-template>
-          </p-cellEditor>
-        </td>
-        <td>
-          <p-cellEditor>
-            <ng-template #input>
-              <input
-                pInputText type="text"
-                [(ngModel)]="result.positionsForMoney"/>
-            </ng-template>
-            <ng-template #output>
-              {{ result.positionsForMoney }}
-            </ng-template>
-          </p-cellEditor>
-        </td>
-        <td>
-          <div class="flex items-center justify-center gap-2">
-            <button
-              *ngIf="!editing"
-              pButton
-              pRipple
-              type="button"
-              pInitEditableRow
-              icon="pi pi-pencil"
-              (click)="onRowEditInit(result)"
-              text
-              rounded
-              severity="secondary"
-            ></button>
-            <button
-              *ngIf="editing"
-              pButton
-              pRipple
-              type="button"
-              pSaveEditableRow
-              icon="pi pi-check"
-              (click)="onRowEditSave(result)"
-              text
-              rounded
-              severity="secondary"
-            ></button>
-            <button
-              *ngIf="editing"
-              pButton
-              pRipple
-              type="button"
-              pCancelEditableRow
-              icon="pi pi-times"
-              (click)="onRowEditCancel(result, ri)"
-              text
-              rounded
-              severity="secondary"
-            ></button>
-          </div>
-        </td>
-      </tr>
-    </ng-template>
-  </p-table>
+          </td>
+          <td>
+            <p-cellEditor>
+              <ng-template #input>
+                <input
+                  pInputText type="text"
+                  [(ngModel)]="result.cost"
+                  required style="width:50%"/>
+              </ng-template>
+              <ng-template #output>
+                {{ result.cost }}
+              </ng-template>
+            </p-cellEditor>
+          </td>
+          <td>
+            <p-cellEditor>
+              <ng-template #input>
+                <input
+                  pInputText type="text"
+                  [(ngModel)]="result.points"
+                  required style="width:50%"/>
+              </ng-template>
+              <ng-template #output>
+                {{ result.points }}
+              </ng-template>
+            </p-cellEditor>
+          </td>
+          <td>
+            <p-cellEditor>
+              <ng-template #input>
+                <input
+                  pInputText type="text"
+                  [(ngModel)]="result.positionsForMoney"
+                  required style="width:50%"/>
+              </ng-template>
+              <ng-template #output>
+                {{ result.positionsForMoney }}
+              </ng-template>
+            </p-cellEditor>
+          </td>
+          <td>
+            <p-cellEditor>
+              <ng-template #input>
+                <input
+                  pInputText type="text"
+                  [(ngModel)]="result.easeToGainPoints"
+                  required style="width:50%"/>
+              </ng-template>
+              <ng-template #output>
+                {{ result.easeToGainPoints }}
+              </ng-template>
+            </p-cellEditor>
+          </td>
+          <td>
+            <div class="flex items-center justify-center gap-2">
+              <button
+                *ngIf="!editing"
+                class="accent-blue-400 "
+                pButton
+                pRipple
+                type="button"
+                pInitEditableRow
+                (click)="onRowEditInit(result)"
+                text
+                rounded
+                severity="secondary">
+                <i class="pi pi-pencil"></i>
+              </button>
+              <div style="width:12%">
+                <button
+                  *ngIf="editing"
+                  pButton
+                  pRipple
+                  type="button"
+                  pSaveEditableRow
+                  (click)="onRowEditSave(result)"
+                  text
+                  rounded
+                  severity="secondary">
+                  <i class="pi pi-check"></i>
+                </button>
+                <button
+                  *ngIf="editing"
+                  pButton
+                  pRipple
+                  type="button"
+                  pCancelEditableRow
+                  (click)="onRowEditCancel(result, ri)"
+                  text
+                  rounded
+                  severity="secondary">
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  }
 </div>
 

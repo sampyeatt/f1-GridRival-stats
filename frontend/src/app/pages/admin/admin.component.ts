@@ -11,12 +11,13 @@ import {Result} from '../../interface/api-interface'
 import {ResultsService} from '../../services/results.service'
 import {FormsModule} from '@angular/forms'
 import {Router} from '@angular/router'
+import {IconFieldModule} from 'primeng/iconfield'
 
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [TableModule, ToastModule, CommonModule, TagModule, SelectModule, ButtonModule, InputTextModule, FormsModule],
+  imports: [TableModule, ToastModule, CommonModule, TagModule, SelectModule, ButtonModule, InputTextModule, FormsModule, IconFieldModule],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.css'
 })
@@ -35,10 +36,11 @@ export class AdminComponent {
 
   }
 
-  onSubmit() {
+  onFindResults() {
     this.resultsService.getNewResults().subscribe({
         next: (data) => {
           this.results = data
+
         },
         error: (err) => {
           console.error('Error Loading posts: ', err)
@@ -46,6 +48,10 @@ export class AdminComponent {
       }
     )
   }
+
+  // onSaveResults() {
+    // this.resultsService.saveUpdatedResults()
+  // }
 
   onRowEditInit(results: Result) {
     this.clonedResult[results.id] = {...results}
