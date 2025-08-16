@@ -77,6 +77,7 @@ export const addResultArrayController = async (req: Request, res: Response) => {
         const checkResult = await getResultByRaceIdDriverId(result.raceId, result.driverId)
         console.log('result', result)
         if (checkResult) return {message: 'Result already added'}
+        return 'yes'
         // return await addResults(result.raceId, result.points, result.cost, result.seasonId, result.round, result.driverId, result.teamId, result.finishPosition, result.positionDifference, result.positionsForMoney, result.easeToGainPoints, result.rank, result.meeting_key)
     }))
 

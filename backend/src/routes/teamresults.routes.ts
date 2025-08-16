@@ -1,6 +1,6 @@
 import {Router} from 'express'
 import {
-    addTeamResultBulkController, addTeamResultStartController,
+    addTeamResultBulkController, addTeamResultArrayController,
     getTeamResultsByRoundController,
     getTeamResultsController, getTeamResultsToAddController
 } from '../controllers/teamresults.controller'
@@ -11,6 +11,6 @@ router.get('/teamresults', getTeamResultsController)
 router.get('/byRound/:seasonId{/:round}', getTeamResultsByRoundController)
 router.get('/teams', getTeamResultsToAddController)
 router.post('/', addTeamResultBulkController)
-router.post('/start', addTeamResultStartController)
+router.post('/add', addTeamResultArrayController)
 
 export default router

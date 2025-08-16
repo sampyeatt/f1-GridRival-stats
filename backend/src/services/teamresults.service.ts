@@ -1,6 +1,6 @@
 import {TeamResults} from '../models/TeamResults'
 import _ from 'lodash'
-import {BaseSalaryDriver, BaseSalaryTeam, QualiPointsTeam, RacePointsTeam} from '../shared/constants'
+import {BaseSalaryTeam, QualiPointsTeam, RacePointsTeam} from '../shared/constants'
 import {getRaceDataByMeetingKey} from './race.services'
 import {getRaceByRound} from '../shared/f1api.util'
 import {getResutlsByRound} from './results.service'
@@ -123,7 +123,7 @@ export async function teamResultsToAdd(seasonId: number, meeting_key: number){
             }
         }).value())
     const entries = Object.entries(BaseSalaryTeam)
-        .map(([key, value]) => Number(value))
+        .map(([value]) => Number(value))
 
     teamResults = await Promise.all(_.orderBy(teamResults, ['points'], ['desc']).map(async (value, key) => {
         value.rank = key + 1

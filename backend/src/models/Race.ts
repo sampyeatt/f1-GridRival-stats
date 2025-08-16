@@ -1,7 +1,6 @@
 import {Column, Model, Table, HasMany, BelongsTo, PrimaryKey, ForeignKey} from 'sequelize-typescript'
 import {Results} from './Results'
 import {Season} from './Season'
-import {stubTrue} from 'lodash'
 
 
 @Table

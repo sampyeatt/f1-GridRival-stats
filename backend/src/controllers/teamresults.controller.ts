@@ -1,20 +1,17 @@
 import {Request, Response} from 'express'
-import {
-    getResutlsByRound
-} from '../services/results.service'
 import _ from 'lodash'
 import {z} from 'zod'
-import {getRaceDataByMeetingKey, getRacesBySeasonId} from '../services/race.services'
-import {BaseSalaryTeam, QualiPointsTeam, RacePointsTeam} from '../shared/constants'
+import {getRacesBySeasonId} from '../services/race.services'
 import {
-    bulkAddTeamResults, findSalaryBracketTeamResults,
+    bulkAddTeamResults,
     getTeamResults,
     getTeamResultsByRound,
-    getTotalSalaryAndPosDiffTeam, teamResultsToAdd
+    teamResultsToAdd
 } from '../services/teamresults.service'
 import {TeamResults} from '../models/TeamResults'
-import {getRaceByRound, getRacesByYear} from '../shared/f1api.util'
+import {getRacesByYear} from '../shared/f1api.util'
 import {Meeting} from '../shared/interface.util'
+import {getActiveSeason} from '../services/season.services'
 
 export const getTeamResultsController = async (req: Request, res: Response) => {
     const seasonId = 2025
@@ -30,7 +27,7 @@ export const getTeamResultsByRoundController = async (req: Request, res: Respons
     res.json(results)
 }
 
-export const addTeamResultStartController = async (req: Request, res: Response) => {
+export const addTeamResultArrayController = async (req: Request, res: Response) => {
     const schema = z.array(z.object({
         raceId: z.string(),
         points: z.number(),
@@ -44,14 +41,19 @@ export const addTeamResultStartController = async (req: Request, res: Response) 
         rank: z.number(),
         meeting_key: z.number()
     }))
-    const schemaValidator = schema.safeParse(req.body.data)
+    const schemaValidator = schema.safeParse(req.body.results)
     if (!schemaValidator.success) return res.status(400).json({
         message: 'Invalid request body',
         errors: schemaValidator.error
     })
 
-    const created = await bulkAddTeamResults(req.body.data as unknown as TeamResults[])
-    res.json(created)
+    const currentSeason = await getActiveSeason()
+    if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
+    const teamResults = await getTeamResults(currentSeason.get('seasonId')!)
+    const removedDuplicates = _.differenceBy(req.body.results, teamResults, 'meeting_key')
+    // const resultsAdded = await bulkAddTeamResults(removedDuplicates as unknown as TeamResults[])
+
+    if (removedDuplicates.length !== 0) return res.status(200).json({message: 'Results not found', success: true})
 }
 
 export const addTeamResultBulkController = async (req: Request, res: Response) => {

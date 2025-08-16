@@ -75,7 +75,28 @@ export class AdminComponent {
   }
 
   onSaveResults() {
-    this.resultsService.saveUpdatedResults(this.driverResults!).subscribe({
+    this.saveDriverResults(this.driverResults!)
+    this.saveTeamResults(this.teamResults!)
+  }
+
+  saveDriverResults(driverResults: Result[]) {
+    this.resultsService.saveUpdatedDriverResults(driverResults!).subscribe({
+      next: (data) => {
+        console.log(data)
+        this.cdref.markForCheck()
+        this.driverResults = undefined
+        this.resultSubmitSuccess = true
+        this.resultSubmitError = false
+      },
+      error: (err) => {
+        this.resultSubmitError = true
+        console.error('Error Loading posts: ', err)
+      }
+    })
+  }
+
+  saveTeamResults(teamResults: TeamResult[]) {
+    this.teamResultsService.saveUpdatedTeamResults(teamResults!).subscribe({
       next: (data) => {
         console.log(data)
         this.cdref.markForCheck()

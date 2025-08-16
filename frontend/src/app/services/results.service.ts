@@ -1,7 +1,7 @@
 import {HttpClient} from '@angular/common/http'
 import {Injectable, inject, computed} from '@angular/core'
 import {environment} from '../../environments/environment.development'
-import {Result, TeamResult} from '../interface/api-interface'
+import {Result} from '../interface/api-interface'
 import {Observable} from 'rxjs'
 
 @Injectable({
@@ -20,7 +20,7 @@ export class ResultsService {
     return this.http.get<Result[]>(`${this.apiUrl()}/drivers`)
   }
 
-  saveUpdatedResults(results: Result[]) {
+  saveUpdatedDriverResults(results: Result[]) {
     return this.http.post(`${this.apiUrl()}/add`, {results})
   }
 }

@@ -61,9 +61,9 @@ export const addRaceBulkController = async (req: Request, res: Response) => {
         const combinedRaceData = _.merge(race[0], race[1], race[2])
         const raceAlreadyAdded = await getRaceByCircutKey(combinedRaceData!.circuit_key)
         if (raceAlreadyAdded) return {message: 'Race already added'}
-        // return await addSeasonRace(seasonId, combinedRaceData!)
+        return await addSeasonRace(seasonId, combinedRaceData!)
     }).value())
-    res.json(data)
+    res.json(raceAdded)
 }
 
 export const addRaceController = async (req: Request, res: Response) => {

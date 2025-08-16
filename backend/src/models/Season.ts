@@ -1,4 +1,4 @@
-import {Column, Model, Table, HasMany, BelongsTo, PrimaryKey} from 'sequelize-typescript'
+import {Column, Model, Table, HasMany, PrimaryKey} from 'sequelize-typescript'
 import {Results} from './Results'
 import {TeamResults} from './TeamResults'
 import {Race} from './Race'

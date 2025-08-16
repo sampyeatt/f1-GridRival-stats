@@ -3,7 +3,6 @@ import {Injectable, inject, computed} from '@angular/core'
 import {environment} from '../../environments/environment.development'
 import {TeamResult} from '../interface/api-interface'
 import {Observable} from 'rxjs'
-import {toSignal} from '@angular/core/rxjs-interop'
 
 @Injectable({
   providedIn: 'root'
@@ -13,15 +12,15 @@ export class TeamResultsService {
 
   private http = inject(HttpClient)
 
-  // private results$: Observable<Result[]> = this.getResults()
-  //
-  // public result = toSignal(this.results$, {initialValue: []})
-
   getTeamResults(): Observable<TeamResult[]> {
     return this.http.get<TeamResult[]>(`${this.apiUrl()}`)
   }
 
   getNewTeamResults(): Observable<TeamResult[]> {
     return this.http.get<TeamResult[]>(`${this.apiUrl()}/teams`)
+  }
+
+  saveUpdatedTeamResults(results: TeamResult[]) {
+    return this.http.post(`${this.apiUrl()}/add`, {results})
   }
 }
