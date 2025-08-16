@@ -1,4 +1,12 @@
-import {Component, inject, CUSTOM_ELEMENTS_SCHEMA, OnInit} from '@angular/core'
+import {
+  Component,
+  inject,
+  CUSTOM_ELEMENTS_SCHEMA,
+  OnInit,
+  ChangeDetectorRef,
+  AfterViewInit,
+  ViewChild, ViewContainerRef, AfterViewChecked
+} from '@angular/core'
 import {TableModule} from 'primeng/table'
 import {CommonModule} from '@angular/common'
 import {ButtonModule} from 'primeng/button'
@@ -35,22 +43,36 @@ export class DashboardComponent implements OnInit {
   public resultsService = inject(ResultsService)
   public teamResultsService = inject(TeamResultsService)
   public seasonService = inject(SeasonService)
+  private cdref = inject(ChangeDetectorRef)
+
+  // @ViewChild('dynamicComponent ', {read: ViewContainerRef})
 
   ngOnInit() {
+    this.loadRaces()
+    this.loadDriverResults()
+    this.loadTeamResults()
+    this.cdref.markForCheck()
+  }
+
+  loadRaces() {
     this.seasonService.getSeasonList().subscribe({
       next: (data) => {
+        this.cdref.markForCheck()
         this.races = data
-        this.selectedRace = this.races[0]
+        this.selectedRace = this.races[data.length-1]
       },
       error: (err) => {
         console.error('Error Loading posts: ', err)
       }
     })
+  }
 
+  loadDriverResults() {
     this.resultsService.getResults().subscribe({
       next: (data) => {
+        this.cdref.markForCheck()
         this.results = data
-        if(this.selectedRace){
+        if (this.selectedRace) {
           this.selectedResult = this.results.filter(result => result.meeting_key === this.selectedRace!.meeting_key)
         }
       },
@@ -58,27 +80,30 @@ export class DashboardComponent implements OnInit {
         console.error('Error Loading posts: ', err)
       }
     })
+  }
 
+  loadTeamResults() {
     this.teamResultsService.getTeamResults().subscribe({
       next: (data) => {
+        this.cdref.markForCheck()
         this.teamResults = data
-        if(this.selectedRace){
+        if (this.selectedRace) {
           this.selectedTeamResult = this.teamResults.filter(result => result.meeting_key === this.selectedRace!.meeting_key)
-
         }
       },
-      error: (err) => {}
+      error: (err) => {
+      }
     })
   }
 
-  resultSeverity(result: Result){
+  resultSeverity(result: Result) {
     if (result.easeToGainPoints > 2) return 'danger'
     else if (result.easeToGainPoints <= 2 && result.easeToGainPoints > 0) return 'warn'
     else return 'success'
   }
 
   filterResults() {
-    if(this.selectedRace){
+    if (this.selectedRace) {
       this.selectedResult = this.results!.filter(result => result.meeting_key === this.selectedRace!.meeting_key)
       this.selectedTeamResult = this.teamResults!.filter(result => result.meeting_key === this.selectedRace!.meeting_key)
     } else {

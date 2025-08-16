@@ -1,15 +1,15 @@
 
 <div class="py-6">
-  <p-select [options]="this.races" [(ngModel)]="selectedRace" (onChange)=filterResults() optionLabel="meeting_name" placeholder="Select Race" class="w-full md:w-100"  />
-  <p-tabs value="driver">
+  <p-select [options]="this.races" [(ngModel)]="selectedRace" (onChange)=filterResults() optionLabel="meeting_name" placeholder="Select Race" class="w-full md:w-100" #dynamicComponent />
+  <p-tabs value="driver"  >
     <p-tablist class="flex justify-center py-6">
       <p-tab value="driver">Drivers</p-tab>
       <p-tab value="team">Teams</p-tab>
     </p-tablist>
-    <p-tabpanels>
-      <p-tabpanel value="driver">
+    <p-tabpanels #dynamicComponent>
+      <p-tabpanel value="driver" >
         <div class="flex justify-center py-6">
-          <p-table *ngIf="this.selectedResult" [value]="this.selectedResult" [tableStyle]="{ 'min-width': '50rem' }">
+          <p-table *ngIf="this.selectedResult" [value]="this.selectedResult" [tableStyle]="{ 'min-width': '50rem' }" #dynamicComponent >
             <ng-template #header pTemplate="header">
               <tr>
                 <th pSortableColumn="criverId">

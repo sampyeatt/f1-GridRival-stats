@@ -53,7 +53,7 @@ export const addResultBulkController = async (req: Request, res: Response) => {
     res.json(created)
 }
 
-export const addResultArrayToStart = async (req: Request, res: Response) => {
+export const addResultArrayController = async (req: Request, res: Response) => {
     const schema = z.array(z.object({
         driverId: z.string(),
         raceId: z.string(),
@@ -69,21 +69,22 @@ export const addResultArrayToStart = async (req: Request, res: Response) => {
         rank: z.number(),
         meeting_key: z.number()
     }))
-    const schemaValidator = schema.safeParse(req.body.start)
+    const schemaValidator = schema.safeParse(req.body.results)
     if (!schemaValidator.success) return res.status(400).json({
         message: 'Invalid request body',
         errors: schemaValidator.error
     })
 
-    const {start} = req.body
+    const {results} = req.body
 
-    const resultsAdded = await Promise.all(_.map(start, async (result) => {
+    const resultsAdded = await Promise.all(_.map(results, async (result) => {
         const checkResult = await getResultByRaceIdDriverId(result.raceId, result.driverId)
+        console.log('result', result)
         if (checkResult) return {message: 'Result already added'}
-        return await addResults(result.raceId, result.points, result.cost, result.seasonId, result.round, result.driverId, result.teamId, result.finishPosition, result.positionDifference, result.positionsForMoney, result.easeToGainPoints, result.rank, result.meeting_key)
+        // return await addResults(result.raceId, result.points, result.cost, result.seasonId, result.round, result.driverId, result.teamId, result.finishPosition, result.positionDifference, result.positionsForMoney, result.easeToGainPoints, result.rank, result.meeting_key)
     }))
 
-    res.json(resultsAdded)
+    if (resultsAdded.length !== 0) return res.status(200).json({message: 'Results not found', success: true})
 }
 
 export const updateResultsController = async (req: Request, res: Response) => {
@@ -120,9 +121,7 @@ export const updateResultsController = async (req: Request, res: Response) => {
 }
 
 export const getDriverResultsToAdd = async (req: Request, res: Response) => {
-    console.log('TEST')
-    if (!req.params.seasonId) throw new Error('SeasonId parameter is required')
-    const seasonId = req.params.seasonId
+    const seasonId = 2025
     const dbRaces = _.map(await getSeasonBySeasonId(+seasonId), race => race.toJSON())
     const races: Meeting[] = await getRacesByYear(+seasonId)
     const diff: Meeting = _.minBy(_.reject(_.differenceBy(races, dbRaces, 'meeting_key'), {meeting_name: 'Pre-Season Testing'}), 'date_start') as Meeting
@@ -131,4 +130,16 @@ export const getDriverResultsToAdd = async (req: Request, res: Response) => {
     const newRaces = await getResultsObjToAdd(+seasonId, diff.meeting_key)
 
     res.json(newRaces)
+}
+
+
+// TODO move to team results controller
+export const getTeamResultsToAdd = async (req: Request, res: Response) => {
+    const seasonId = 2025
+    const dbRaces = _.map(await getSeasonBySeasonId(+seasonId), race => race.toJSON())
+    const races: Meeting[] = await getRacesByYear(+seasonId)
+    const diff: Meeting = _.minBy(_.reject(_.differenceBy(races, dbRaces, 'meeting_key'), {meeting_name: 'Pre-Season Testing'}), 'date_start') as Meeting
+    console.log('diff', diff)
+
+
 }

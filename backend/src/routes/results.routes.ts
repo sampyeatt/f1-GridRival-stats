@@ -1,17 +1,17 @@
 import {Router} from 'express'
 import {
-    addResultArrayToStart, addResultBulkController, getDriverResultsToAdd,
+    addResultArrayController, addResultBulkController, getDriverResultsToAdd,
     getResultsByRoundController,
-    getResultsController, updateResultsController
+    getResultsController, getTeamResultsToAdd, updateResultsController
 } from '../controllers/results.controller'
 
 const router = Router()
 
-// router.get('/:seasonId', getResultsController)
+router.get('/:seasonId', getResultsController)
 // router.get('/:seasonId{/:round}', getResultsByRoundController)
 router.post('/', addResultBulkController)
-router.post('/start', addResultArrayToStart)
+router.post('/add', addResultArrayController)
 router.put('/update', updateResultsController)
-router.get('/:seasonId', getDriverResultsToAdd)
+router.get('/drivers', getDriverResultsToAdd)
 
 export default router

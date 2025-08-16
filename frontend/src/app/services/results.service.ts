@@ -1,7 +1,7 @@
 import {HttpClient} from '@angular/common/http'
 import {Injectable, inject, computed} from '@angular/core'
 import {environment} from '../../environments/environment.development'
-import {Result} from '../interface/api-interface'
+import {Result, TeamResult} from '../interface/api-interface'
 import {Observable} from 'rxjs'
 import {toSignal} from '@angular/core/rxjs-interop'
 
@@ -13,19 +13,20 @@ export class ResultsService {
 
   private http = inject(HttpClient)
 
-  // private results$: Observable<Result[]> = this.getResults()
-  //
-  // public result = toSignal(this.results$, {initialValue: []})
-
   getResults(): Observable<Result[]> {
     return this.http.get<Result[]>(`${this.apiUrl()}/2025`)
   }
 
-  getNewResults(): Observable<Result[]> {
-    return this.http.get<Result[]>(`${this.apiUrl()}/2025`)
+  getNewDriverResults(): Observable<Result[]> {
+    return this.http.get<Result[]>(`${this.apiUrl()}/drivers`)
   }
 
-  saveUpdatedResults(Results: Result[]) {
-    return this.http.post(`${this.apiUrl()}/2025`, {})
+  // TODO move to teamResultsService
+  getNewTeamResults(): Observable<TeamResult[]> {
+    return this.http.get<TeamResult[]>(`${this.apiUrl()}/teams`)
+  }
+
+  saveUpdatedResults(results: Result[]) {
+    return this.http.post(`${this.apiUrl()}/add`, {results})
   }
 }

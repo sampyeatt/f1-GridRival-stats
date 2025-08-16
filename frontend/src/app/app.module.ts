@@ -17,6 +17,7 @@ import {BrowserModule} from '@angular/platform-browser'
     DashboardComponent,
     AdminComponent,
     BrowserModule,
-  ]
+  ],
+  providers:[]
 })
 export class AppModule { }
