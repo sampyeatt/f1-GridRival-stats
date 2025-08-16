@@ -20,7 +20,7 @@ export async function getRaceByCircutKey(circut_key: number) {
     })
 }
 
-export async function getSeasonBySeasonId(seasonId: number) {
+export async function getRacesBySeasonId(seasonId: number) {
     return await Race.findAll({
         where: {
             seasonId: seasonId

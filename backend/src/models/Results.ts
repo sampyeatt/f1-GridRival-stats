@@ -2,6 +2,7 @@ import {Table, Column, Model, BelongsTo, ForeignKey} from 'sequelize-typescript'
 import {Driver} from './Driver'
 import {Team} from './Team'
 import {Race} from './Race'
+import {Season} from './Season'
 
 @Table
 export class Results extends Model<Results> {
@@ -26,11 +27,6 @@ export class Results extends Model<Results> {
         allowNull: false
     })
     rank?: number
-
-    @Column({
-        allowNull: false,
-    })
-    seasonId?: number
 
     @Column({
         allowNull: false,
@@ -104,6 +100,12 @@ export class Results extends Model<Results> {
     })
     meeting_key?: number
 
+    @ForeignKey(() => Season)
+    @Column({
+        allowNull: false,
+    })
+    seasonId?: number
+
     @BelongsTo(() => Race, 'meeting_key')
     race?: Race
 
@@ -112,6 +114,9 @@ export class Results extends Model<Results> {
 
     @BelongsTo(() => Team, 'teamId')
     team?: Team
+
+    @BelongsTo(() => Season, 'seasonId')
+    season?: Season
 
 
 }

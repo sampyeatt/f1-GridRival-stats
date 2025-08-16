@@ -1,6 +1,9 @@
 import {TeamResults} from '../models/TeamResults'
 import _ from 'lodash'
-import {BaseSalaryDriver, BaseSalaryTeam} from '../shared/constants'
+import {BaseSalaryDriver, BaseSalaryTeam, QualiPointsTeam, RacePointsTeam} from '../shared/constants'
+import {getRaceDataByMeetingKey} from './race.services'
+import {getRaceByRound} from '../shared/f1api.util'
+import {getResutlsByRound} from './results.service'
 
 export async function getTeamResults(seasonId: number) {
     return await TeamResults.findAll({
@@ -95,4 +98,65 @@ export async function findSalaryBracketTeamResults (salary: number, entries: num
     })
 
     return found+1
+}
+
+export async function teamResultsToAdd(seasonId: number, meeting_key: number){
+
+    const race = await getRaceDataByMeetingKey(meeting_key)
+    if (!race) return {message: 'Race DB not found'}
+    const round = race.get('round')!
+    const {raceId} = _.get(await getRaceByRound(seasonId, round), '[0]', undefined)
+
+    const results = _.map(await getResutlsByRound(+seasonId, +round), result => result.toJSON())
+    if (!results) return {message: 'Race Results not found'}
+
+    let teamResults = await Promise.all(_(results)
+        .groupBy('teamId')
+        .map(async (value, key: string) => {
+
+            const points = _(value).map(driverResult => {
+                const racePoint = (!driverResult.raceDNS && !driverResult.raceDSQ) ? RacePointsTeam[String(driverResult.finishPosition) as keyof typeof RacePointsTeam] : 0
+                const qualiPoint = (!driverResult.qualiDSQ) ? QualiPointsTeam[String(driverResult.qualiPosition) as keyof typeof QualiPointsTeam] : 0
+                return  (racePoint + qualiPoint)
+            }).sum()
+            if(key === 'alpine') {
+                console.log('--------------------------------------------')
+                console.log(`Team: ${key}`)
+                console.log(`Points: ${points}`)
+                _(value).forEach(driverResult => {
+                    console.log(`RacePoints for ${driverResult.driverId}`, RacePointsTeam[String(driverResult.finishPosition) as keyof typeof RacePointsTeam])
+                    console.log(`QualiPoints for ${driverResult.driverId}`, QualiPointsTeam[String(driverResult.qualiPosition) as keyof typeof QualiPointsTeam])
+                })
+                console.log('--------------------------------------------')
+            }
+            return {
+                raceId: raceId,
+                points: points,
+                cost: -1,
+                seasonId: seasonId,
+                round: round,
+                teamId: key,
+                positionDifference: -1,
+                positionsForMoney: -1,
+                easeToGainPoints: -1,
+                rank: -1,
+                meeting_key: meeting_key
+            }
+        }).value())
+    const entries = Object.entries(BaseSalaryTeam)
+        .map(([key, value]) => Number(value))
+
+    teamResults = await Promise.all(_.orderBy(teamResults, ['points'], ['desc']).map(async (value, key) => {
+        value.rank = key + 1
+        const {totalSalary, positionDifference} = await getTotalSalaryAndPosDiffTeam(value.teamId, value.seasonId, value.round, key + 1)
+        value.cost = _.round(totalSalary, 1)
+        value.positionDifference = positionDifference
+        value.positionsForMoney = await findSalaryBracketTeamResults(value.cost, entries)
+        return value
+    }))
+
+    teamResults = await Promise.all(_.orderBy(teamResults, ['cost'], ['desc']).map(async (value, key) => {
+        value.easeToGainPoints = key + 1 - value.positionsForMoney!
+        return value
+    }))
 }

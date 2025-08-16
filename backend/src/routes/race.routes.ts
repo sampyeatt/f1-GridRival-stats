@@ -1,9 +1,13 @@
 import {Router} from 'express'
-import {addRaceBulkController, addRaceController, getSeasonBySeasonIdController} from '../controllers/race.controller'
+import {
+    addRaceBulkController,
+    addRaceController,
+    getRacesBySeasonIdController,
+} from '../controllers/race.controller'
 
 const router = Router()
 
-router.get('/:seasonId', getSeasonBySeasonIdController)
+router.get('/:seasonId', getRacesBySeasonIdController)
 router.post('/addRace', addRaceController)
 router.post('/addRaceBulk', addRaceBulkController)
 

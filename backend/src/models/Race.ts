@@ -1,5 +1,7 @@
-import {Column, Model, Table, HasMany, BelongsTo, PrimaryKey} from 'sequelize-typescript'
+import {Column, Model, Table, HasMany, BelongsTo, PrimaryKey, ForeignKey} from 'sequelize-typescript'
 import {Results} from './Results'
+import {Season} from './Season'
+import {stubTrue} from 'lodash'
 
 
 @Table
@@ -54,13 +56,22 @@ export class Race extends Model<Race> {
     @Column({
         allowNull: false
     })
-    seasonId?: number
+    round?: number
 
     @Column({
-        allowNull: false
+        allowNull: true
     })
-    round?: number
+    totalLaps?: number
+
+    @ForeignKey(() => Season)
+    @Column({
+        allowNull: false,
+    })
+    seasonId?: number
 
     @HasMany(() => Results)
     results?: Results[] = []
+
+    @BelongsTo(() => Season, 'seasonId')
+    season?: Season
 }

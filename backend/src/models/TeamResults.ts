@@ -1,6 +1,7 @@
 import {Table, Column, Model, BelongsTo, ForeignKey} from 'sequelize-typescript'
 import {Team} from './Team'
 import {Race} from './Race'
+import {Season} from './Season'
 
 @Table
 export class TeamResults extends Model<TeamResults> {
@@ -25,11 +26,6 @@ export class TeamResults extends Model<TeamResults> {
         allowNull: false
     })
     rank?: number
-
-    @Column({
-        allowNull: false,
-    })
-    seasonId?: number
 
     @Column({
         allowNull: false,
@@ -64,11 +60,18 @@ export class TeamResults extends Model<TeamResults> {
     })
     meeting_key?: number
 
+    @ForeignKey(() => Season)
+    @Column({
+        allowNull: false,
+    })
+    seasonId?: number
+
     @BelongsTo(() => Race, 'meeting_key')
     race?: Race
 
     @BelongsTo(() => Team, 'teamId')
     team?: Team
 
-
+    @BelongsTo(() => Season, 'seasonId')
+    season?: Season
 }

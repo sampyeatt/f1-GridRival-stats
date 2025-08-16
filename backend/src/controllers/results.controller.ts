@@ -11,7 +11,7 @@ import {
     getCurrentRaceResults,
     getRacesByYear
 } from '../shared/f1api.util'
-import { getSeasonBySeasonId} from '../services/race.services'
+import { getRacesBySeasonId} from '../services/race.services'
 import {getActiveDrivers} from '../services/driver.service'
 import {Results} from '../models/Results'
 import {Meeting} from '../shared/interface.util'
@@ -95,7 +95,7 @@ export const updateResultsController = async (req: Request, res: Response) => {
 
 
     const {seasonId} = req.body
-    const races = await getSeasonBySeasonId(+seasonId)
+    const races = await getRacesBySeasonId(+seasonId)
     const drivers = _.map(await getActiveDrivers(), drive => drive.toJSON())
     const allResults = _.flatten(await Promise.all(_.map(races, async race => {
         const meeting_key = race.get('meeting_key')
@@ -116,9 +116,9 @@ export const updateResultsController = async (req: Request, res: Response) => {
     res.json(updated)
 }
 
-export const getDriverResultsToAdd = async (req: Request, res: Response) => {
+export const getDriverResultsToAddController = async (req: Request, res: Response) => {
     const seasonId = 2025
-    const dbRaces = _.map(await getSeasonBySeasonId(+seasonId), race => race.toJSON())
+    const dbRaces = _.map(await getRacesBySeasonId(+seasonId), race => race.toJSON())
     const races: Meeting[] = await getRacesByYear(+seasonId)
     const diff: Meeting = _.minBy(_.reject(_.differenceBy(races, dbRaces, 'meeting_key'), {meeting_name: 'Pre-Season Testing'}), 'date_start') as Meeting
     console.log('diff', diff)
@@ -126,16 +126,4 @@ export const getDriverResultsToAdd = async (req: Request, res: Response) => {
     const newRaces = await getResultsObjToAdd(+seasonId, diff.meeting_key)
 
     res.json(newRaces)
-}
-
-
-// TODO move to team results controller
-export const getTeamResultsToAdd = async (req: Request, res: Response) => {
-    const seasonId = 2025
-    const dbRaces = _.map(await getSeasonBySeasonId(+seasonId), race => race.toJSON())
-    const races: Meeting[] = await getRacesByYear(+seasonId)
-    const diff: Meeting = _.minBy(_.reject(_.differenceBy(races, dbRaces, 'meeting_key'), {meeting_name: 'Pre-Season Testing'}), 'date_start') as Meeting
-    console.log('diff', diff)
-
-
 }

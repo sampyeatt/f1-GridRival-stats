@@ -4,20 +4,20 @@ import {
 } from '../services/results.service'
 import _ from 'lodash'
 import {z} from 'zod'
-import {getRaceDataByMeetingKey} from '../services/race.services'
+import {getRaceDataByMeetingKey, getRacesBySeasonId} from '../services/race.services'
 import {BaseSalaryTeam, QualiPointsTeam, RacePointsTeam} from '../shared/constants'
 import {
     bulkAddTeamResults, findSalaryBracketTeamResults,
     getTeamResults,
     getTeamResultsByRound,
-    getTotalSalaryAndPosDiffTeam
+    getTotalSalaryAndPosDiffTeam, teamResultsToAdd
 } from '../services/teamresults.service'
 import {TeamResults} from '../models/TeamResults'
-import {getRaceByRound} from '../shared/f1api.util'
+import {getRaceByRound, getRacesByYear} from '../shared/f1api.util'
+import {Meeting} from '../shared/interface.util'
 
 export const getTeamResultsController = async (req: Request, res: Response) => {
-    if (_.isNil(req.params.seasonId)) throw new Error('SeasonId parameter is required')
-    const {seasonId} = req.params
+    const seasonId = 2025
     const results = _.map(await getTeamResults(+seasonId), result => result.toJSON())
     res.json(results)
 }
@@ -65,65 +65,22 @@ export const addTeamResultBulkController = async (req: Request, res: Response) =
         errors: schemaValidator.error
     })
     const {seasonId, meeting_key} = req.body
-    const race = await getRaceDataByMeetingKey(meeting_key)
-    if (!race) return res.status(404).json({message: 'Race DB not found'})
-    const round = race.get('round')!
-    const {raceId} = _.get(await getRaceByRound(seasonId, round), '[0]', undefined)
 
-    const results = _.map(await getResutlsByRound(+seasonId, +round), result => result.toJSON())
-    if (!results) return res.status(404).json({message: 'Race Results not found'})
-
-    let teamResults = await Promise.all(_(results)
-        .groupBy('teamId')
-        .map(async (value, key: string) => {
-
-            const points = _(value).map(driverResult => {
-                const racePoint = (!driverResult.raceDNS && !driverResult.raceDSQ) ? RacePointsTeam[String(driverResult.finishPosition) as keyof typeof RacePointsTeam] : 0
-                const qualiPoint = (!driverResult.qualiDSQ) ? QualiPointsTeam[String(driverResult.qualiPosition) as keyof typeof QualiPointsTeam] : 0
-                return  (racePoint + qualiPoint)
-            }).sum()
-            if(key === 'alpine') {
-                console.log('--------------------------------------------')
-                console.log(`Team: ${key}`)
-                console.log(`Points: ${points}`)
-                _(value).forEach(driverResult => {
-                    console.log(`RacePoints for ${driverResult.driverId}`, RacePointsTeam[String(driverResult.finishPosition) as keyof typeof RacePointsTeam])
-                    console.log(`QualiPoints for ${driverResult.driverId}`, QualiPointsTeam[String(driverResult.qualiPosition) as keyof typeof QualiPointsTeam])
-                })
-                console.log('--------------------------------------------')
-            }
-        return {
-            raceId: raceId,
-            points: points,
-            cost: -1,
-            seasonId: seasonId,
-            round: round,
-            teamId: key,
-            positionDifference: -1,
-            positionsForMoney: -1,
-            easeToGainPoints: -1,
-            rank: -1,
-            meeting_key: meeting_key
-        }
-    }).value())
-    const entries = Object.entries(BaseSalaryTeam)
-        .map(([key, value]) => Number(value))
-
-    teamResults = await Promise.all(_.orderBy(teamResults, ['points'], ['desc']).map(async (value, key) => {
-        value.rank = key + 1
-        const {totalSalary, positionDifference} = await getTotalSalaryAndPosDiffTeam(value.teamId, value.seasonId, value.round, key + 1)
-        value.cost = _.round(totalSalary, 1)
-        value.positionDifference = positionDifference
-        value.positionsForMoney = await findSalaryBracketTeamResults(value.cost, entries)
-        return value
-    }))
-
-    teamResults = await Promise.all(_.orderBy(teamResults, ['cost'], ['desc']).map(async (value, key) => {
-        value.easeToGainPoints = key + 1 - value.positionsForMoney!
-        return value
-    }))
+    const teamResults = await teamResultsToAdd(seasonId, meeting_key)
 
     const created = await bulkAddTeamResults(teamResults as unknown as TeamResults[])
 
+    res.json(created)
+}
+
+export const getTeamResultsToAddController = async (req: Request, res: Response) => {
+    const seasonId = 2025
+    const dbRaces = _.map(await getRacesBySeasonId(+seasonId), race => race.toJSON())
+    const races: Meeting[] = await getRacesByYear(+seasonId)
+    const diff: Meeting = _.minBy(_.reject(_.differenceBy(races, dbRaces, 'meeting_key'), {meeting_name: 'Pre-Season Testing'}), 'date_start') as Meeting
+    console.log('diff', diff)
+
+    const teamResults = await teamResultsToAdd(seasonId, diff.meeting_key)
     res.json(teamResults)
+
 }
