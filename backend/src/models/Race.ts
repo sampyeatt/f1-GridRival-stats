@@ -73,4 +73,5 @@ export class Race extends Model<Race> {
 
     @BelongsTo(() => Season, 'seasonId')
     season?: Season
+
 }

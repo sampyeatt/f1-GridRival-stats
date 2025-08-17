@@ -7,6 +7,7 @@ import {providePrimeNG} from 'primeng/config'
 import Aura from '@primeuix/themes/aura'
 import {provideAnimationsAsync} from '@angular/platform-browser/animations/async'
 import {authInterceptor} from './interceptors/auth.interceptor'
+import {DarkMode} from './component/theme/theme'
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -17,8 +18,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([authInterceptor])),
     providePrimeNG({
       theme: {
-        preset: Aura
-        // TODO add custom theme
+        preset: DarkMode
       }
     }),
     provideAnimationsAsync(),
