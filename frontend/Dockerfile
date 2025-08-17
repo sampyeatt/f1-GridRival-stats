@@ -1,4 +1,4 @@
-FROM node:22.18.0 as angular
+FROM node:latest as build
 
 WORKDIR /app
 
@@ -9,10 +9,10 @@ RUN npm install -g @angular/cli
 
 COPY .. .
 
-RUN npm run build --config=production
+RUN npm run build
 
 FROM nginx:latest
 
-COPY --from=angular /app/dist/ /usr/share/nginx/html
+COPY --from=angular /app/dist/frontend /usr/share/nginx/html
 
 EXPOSE 80
