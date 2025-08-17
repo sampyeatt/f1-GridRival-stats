@@ -1,18 +1,11 @@
-FROM node:latest as build
-
+FROM node:22.18.0-alpine as build
 WORKDIR /app
-
 COPY package*.json ./
-
 RUN npm install
-RUN npm install -g @angular/cli
-
-COPY .. .
-
+COPY . .
 RUN npm run build
 
-FROM nginx:latest
-
-COPY --from=angular /app/dist/frontend /usr/share/nginx/html
+FROM nginx:stable
+COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
 
 EXPOSE 80

@@ -2,7 +2,7 @@ import { connection } from "./connection"
 
 connection.sync({
     logging: false,
-    alter: true
+    // alter: true
 })
 
 export { connection }

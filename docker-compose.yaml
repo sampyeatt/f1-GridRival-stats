@@ -1,0 +1,25 @@
+version: "3"
+services:
+  db:
+    image: postgres
+    ports:
+      - "5435:5435"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+      - PGPORT=5435
+  backend:
+    container_name: f1-grod-backend
+    image: f1-grod-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+  frontend:
+    container_name: f1-grod-frontend
+    image: f1-grod-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
