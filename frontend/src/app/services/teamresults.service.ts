@@ -13,7 +13,7 @@ export class TeamResultsService {
   private http = inject(HttpClient)
 
   getTeamResults(): Observable<TeamResult[]> {
-    return this.http.get<TeamResult[]>(`${this.apiUrl()}`)
+    return this.http.get<TeamResult[]>(`${this.apiUrl()}/teamresults`)
   }
 
   getNewTeamResults(): Observable<TeamResult[]> {
