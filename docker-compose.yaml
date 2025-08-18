@@ -1,7 +1,11 @@
 version: "3"
 services:
   db:
-    image: postgres
+    container_name: f1-grod-db
+    image: postgres:17.6-alpine
+    volumes:
+      - ./db/data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d/
     ports:
       - "5435:5435"
     environment:

@@ -22,7 +22,7 @@ export async function getRaceByRound(seasonId: number, round: number) {
 
 export async function getRaceLaps(seasonId: number) {
     const response = await axios.get(`https://f1api.dev/api/${seasonId}`)
-    return response.data.race
+    return response.data.races
 }
 
 export async function getRaceByMeetingKey(seasonId: number, meeting_key: number) {
