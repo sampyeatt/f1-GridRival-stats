@@ -22,7 +22,7 @@ const port = 3000
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cors({
-    origin: 'http://localhost:4200',
+    origin:[ 'http://f1-grod-frontend:4200', 'http://localhost:4200'],
     credentials: true,
 }))
 
@@ -35,11 +35,11 @@ app.use('/api/result', resultsRoutes)
 app.use('/api/teamresult', teamResultsRoutes)
 app.use('/api/race', raceRoutes)
 
-// app.use((err: Error, req: Request, res: Response, next: any) => {
-//     logger.error({
-//         message: err.message, stack: err.stack,
-//     })
-//     res.status(500).send({message: 'Internal server error'})
-// })
+app.use((err: Error, req: Request, res: Response, next: any) => {
+    logger.error({
+        message: err.message, stack: err.stack,
+    })
+    res.status(500).send({message: 'Internal server error'})
+})
 
 app.listen(port, () => console.log(`Example app listening on port http://localhost:${port}!`))

@@ -1,7 +1,7 @@
 import {HttpClient} from '@angular/common/http'
 import {inject, Injectable} from '@angular/core'
 import {Router} from '@angular/router'
-import {environment} from '../../environments/environment.development'
+import {environment} from '../../environments/environment'
 import {Session} from '../interface/api-interface'
 import {share} from 'rxjs'
 
