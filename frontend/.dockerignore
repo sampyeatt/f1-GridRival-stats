@@ -8,3 +8,4 @@
 **/.editorconfig
 **/dist
 **/coverage
+**/.angular

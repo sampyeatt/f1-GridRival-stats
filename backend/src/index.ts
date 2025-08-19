@@ -22,7 +22,7 @@ const port = 3000
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cors({
-    origin:[ 'http://f1-grod-frontend:4200', 'http://localhost:4200'],
+    origin: [ 'http://f1-grod-frontend:4200', 'http://localhost:80', 'http://192.168.0.125:3000', 'http://172.18.0.2:80'],
     credentials: true,
 }))
 
