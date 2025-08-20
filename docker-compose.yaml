@@ -7,6 +7,8 @@ services:
       - ./db/init:/docker-entrypoint-initdb.d/
     ports:
       - "5435:5435"
+    networks:
+      - internalnet
     environment:
       - POSTGRES_USER=f1-data-user
       - POSTGRES_PASSWORD=database-dockerpassword-here
@@ -18,6 +20,10 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    networks:
+      - internalnet
+    expose:
+      - "3000"
     ports:
       - "3000:3000"
   frontend:
@@ -34,17 +40,26 @@ services:
       - internalnet
     depends_on:
       - backend
+#  nginx:
+#    container_name: f1-grod-nginx
+#    build:
+#      context: ./nginx
+#      dockerfile: Dockerfile
+#    expose:
+#      - "443"
+#      - "444"
+#    ports:
+#      - "443:443"
+#      - "444:444"
+#    networks:
+#      - internalnet
+#    volumes:
+#      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:rw
+#      - ./nginx/nginx-selfsigned.crt:/etc/nginx/ssl/nginx-selfsigned.crt:ro
+#      - ./nginx/nginx-selfsigned.key:/etc/nginx/ssl/nginx-selfsigned.key:ro
+#    depends_on:
+#      - backend
+#      - frontend
 networks:
   internalnet:
     driver: bridge
-#  nginx:
-#    container_name: f1-grod-nginx
-#    image: nginx:stable-alpine
-#    expose:
-#      - "80"
-#    ports:
-#      - "80:80"
-#    volumes:
-#      - ./nginx.conf:/etc/nginx/nginx.conf:rw
-#    depends_on:
-#      - backend
