@@ -51,7 +51,7 @@ export const addTeamResultArrayController = async (req: Request, res: Response) 
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
     const teamResults = await getTeamResults(currentSeason.get('seasonId')!)
     const removedDuplicates = _.differenceBy(req.body.results, teamResults, 'meeting_key')
-    // const resultsAdded = await bulkAddTeamResults(removedDuplicates as unknown as TeamResults[])
+    const resultsAdded = await bulkAddTeamResults(removedDuplicates as unknown as TeamResults[])
 
     if (removedDuplicates.length !== 0) return res.status(200).json({message: 'Results not found', success: true})
 }
@@ -80,7 +80,6 @@ export const getTeamResultsToAddController = async (req: Request, res: Response)
     const dbRaces = _.map(await getRacesBySeasonId(+seasonId), race => race.toJSON())
     const races: Meeting[] = await getRacesByYear(+seasonId)
     const diff: Meeting = _.minBy(_.reject(_.differenceBy(races, dbRaces, 'meeting_key'), {meeting_name: 'Pre-Season Testing'}), 'date_start') as Meeting
-    'diff team', diff)
     if (!diff) return res.json([])
     const teamResults = await teamResultsToAdd(seasonId, diff.meeting_key)
     res.json(teamResults)
