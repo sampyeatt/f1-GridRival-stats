@@ -31,6 +31,7 @@ export class LoginComponent {
             this.authService.saveToken(res.accessToken)
             this.authService.saveUser(res.user.userId)
             if (res.adminToken !== null) this.authService.saveAdminToken(res.adminToken)
+            this.authService.currentUser.set(res)
             this.router.navigate(['/dashboard'])
           },
           error: (err) => {

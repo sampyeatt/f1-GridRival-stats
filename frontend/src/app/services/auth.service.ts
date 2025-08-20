@@ -1,10 +1,9 @@
 import {HttpClient} from '@angular/common/http'
-import {inject, Injectable} from '@angular/core'
+import {inject, Injectable, signal} from '@angular/core'
 import {Router} from '@angular/router'
 import {environment} from '../../environments/environment.development'
 import {Session} from '../interface/api-interface'
 import {share} from 'rxjs'
-import {log} from 'node:util'
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +17,7 @@ export class AuthService {
   token?: string | null = null
   auth: boolean = false
   adminToken? : string | null = null
+  currentUser = signal<Session | null> (null)
 
   register(email: string, password: string) {
     return this.http.post(`${this.apiUrl}/register`, {email: email, password})
@@ -68,26 +68,11 @@ export class AuthService {
     return null
   }
 
-  validateAdminToken(token: string){
-    return this.http.post<{valid: boolean}>(`${this.apiUrl}/validateAdmin`, {token: token}).pipe(share())
-    }
-
-  validateUserToken(token: string){
-    return this.http.post<{valid: boolean}>(`${this.apiUrl}/validateUser`, {token: token}).pipe(share())
-    }
-
   isAuthenticated() {
     if (typeof window !== 'undefined') {
       const token = this.loadToken()
-      if (!token) return false
-      return this.validateUserToken(token).subscribe({
-        next: (res) => {
-          return res.valid
-        },
-        error: (err) => {
-          console.error('Validation failed', err)
-        }
-      })
+      if (!token || this.currentUser() === null) return false
+      return (token === this.currentUser()?.accessToken)
     }
     return false
   }
@@ -95,15 +80,8 @@ export class AuthService {
   isAdminAuthenticated() {
     if (typeof window !== 'undefined') {
       const token = this.loadAdminToken()
-      if (!token) return false
-      return this.validateAdminToken(token).subscribe({
-        next: (res) => {
-          return res.valid
-        },
-        error: (err) => {
-          console.error('Admin validation failed', err)
-        }
-      })
+      if (!token || this.currentUser() === null) return false
+      return (token === this.currentUser()?.adminToken)
     }
     return false
   }
