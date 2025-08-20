@@ -26,7 +26,12 @@ export async function getUserByEmail(email: string) {
     })
 }
 
-export const updateUser = async ({name, status, id, password}: {name?: string, status?: 'active' | 'pending', id: number, password?: string}) => {4
+export const updateUser = async ({name, status, id, password}: {
+    name?: string,
+    status?: 'active' | 'pending',
+    id: number,
+    password?: string
+}) => {
     console.log('name: ', name, ' status: ', status, ' id: ', id, '')
     const user = await User.findByPk(id)
     if (!user) throw new Error('User not found')
@@ -36,6 +41,13 @@ export const updateUser = async ({name, status, id, password}: {name?: string, s
     if (status) user.status = status
     if (password) user.password = password
     return await User.update(user, {
-        where: { userId: id }
+        where: {userId: id}
     })
+}
+
+export const updateToAdmin = async (userId: number) => {
+    const user = await User.findByPk(userId)
+    if (!user) throw new Error('User not found')
+    if (user.role === 'user') user.set({role: 'admin'})
+    return await user.save()
 }

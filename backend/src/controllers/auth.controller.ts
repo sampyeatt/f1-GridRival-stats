@@ -1,7 +1,7 @@
 import {Request, Response} from 'express'
 import z from 'zod'
-import {addUser, getAllById, getUserByEmail, updateUser} from '../services/user.service'
-import {encryptPassword, generateToken, verifyToken} from '../shared/auth.util'
+import {addUser, getAllById, getUserByEmail, updateToAdmin, updateUser} from '../services/user.service'
+import {encryptPassword, generateAdminToken, generateToken, verifyToken} from '../shared/auth.util'
 import {addToken, deleteTokens, getToken} from '../services/token.service'
 import {sendConfirmationEmail, sendForgotPasswordEmail} from '../shared/email.util'
 
@@ -216,4 +216,34 @@ export const getUserRoleController = async (req: Request, res: Response) => {
     if (!user) return res.status(404).json({message: 'User not found'})
     const role = user.get('role')
     return res.status(200).json({role})
+}
+
+export const addUserAdminController = async (req: Request, res: Response) => {
+    const schema = z.object({
+        email: z.string().email(),
+        password: passwordZodRules,
+        role: z.enum(['admin', 'user'])
+    })
+    const parsedData = schema.safeParse(req.body)
+    if (!parsedData.success) return res.status(400).json({
+        message: 'Invalid request body',
+        errors: JSON.parse(parsedData.error.message)
+    })
+    const {email, password} = parsedData.data
+    let existingUser = await getUserByEmail(email)
+    if (!existingUser) return res.status(400).json({message: 'User does not exist'})
+    const dbPassword = await verifyToken(existingUser.get('password')!)
+    console.log('DB Password', dbPassword)
+    if (dbPassword !== password) return res.status(400).json({message: 'Invalid credentials'})
+
+    existingUser = existingUser.toJSON()
+    delete existingUser.password
+
+    const token = await generateAdminToken(existingUser.userId!, password)
+    await addToken(token, 'admin', existingUser.userId!)
+    let adminUser = await updateToAdmin(existingUser.userId!)
+    adminUser = adminUser.toJSON()
+    delete adminUser.password
+
+    return res.status(201).json(adminUser)
 }

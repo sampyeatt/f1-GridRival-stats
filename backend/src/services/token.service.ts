@@ -1,6 +1,6 @@
 import {Token} from '../models/Token'
 
-export const addToken = async (token: string, type: 'activation' | 'reset' | 'access' | 'refresh', userId: number) => {
+export const addToken = async (token: string, type: 'activation' | 'reset' | 'access' | 'refresh' | 'admin', userId: number) => {
     const tokenInstance = new Token()
     tokenInstance.token = token
     tokenInstance.type = type

@@ -10,9 +10,9 @@ export class Token extends Model<Token> {
     token?: string
 
     @Column({
-        type: DataType.ENUM('activation', 'reset', 'access', 'refresh')
+        type: DataType.ENUM('activation', 'reset', 'access', 'refresh', 'admin')
     })
-    type?: 'activation' | 'reset' | 'access' | 'refresh'
+    type?: 'activation' | 'reset' | 'access' | 'refresh' | 'admin'
 
     @ForeignKey(() => User)
     @Column({

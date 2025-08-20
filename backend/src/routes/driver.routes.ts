@@ -1,9 +1,9 @@
 import {Router} from 'express'
 import {getDrivers, populateDriverTable} from '../controllers/driver.controller'
-import {authenticateJWT} from '../shared/auth.util'
+import {authenticateJWT, authenticateJWTAdmin} from '../shared/auth.util'
 
 const router = Router()
 
-router.get('/', getDrivers)
-router.post('/newSeason', populateDriverTable)
+router.get('/', authenticateJWT, getDrivers)
+router.post('/newSeason', authenticateJWTAdmin, populateDriverTable)
 export default router

@@ -3,14 +3,15 @@ import {
     addResultArrayController, addResultBulkController, getDriverResultsToAddController,
     getResultsController, updateResultsController
 } from '../controllers/results.controller'
+import {authenticateJWT, authenticateJWTAdmin} from '../shared/auth.util'
 
 const router = Router()
 
-router.get('/', getResultsController)
+router.get('/', authenticateJWT, getResultsController)
 // router.get('/:seasonId{/:round}', getResultsByRoundController)
-router.get('/drivers', getDriverResultsToAddController)
-router.post('/', addResultBulkController)
-router.post('/add', addResultArrayController)
-router.put('/update', updateResultsController)
+router.get('/drivers', authenticateJWTAdmin, getDriverResultsToAddController)
+router.post('/', authenticateJWTAdmin, addResultBulkController)
+router.post('/add', authenticateJWTAdmin, addResultArrayController)
+router.put('/update', authenticateJWTAdmin, updateResultsController)
 
 export default router

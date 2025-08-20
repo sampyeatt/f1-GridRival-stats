@@ -4,13 +4,14 @@ import {
     getTeamResultsByRoundController,
     getTeamResultsController, getTeamResultsToAddController
 } from '../controllers/teamresults.controller'
+import {authenticateJWT, authenticateJWTAdmin} from '../shared/auth.util'
 
 const router = Router()
 
-router.get('/teamresults', getTeamResultsController)
-router.get('/byRound/:seasonId{/:round}', getTeamResultsByRoundController)
-router.get('/teams', getTeamResultsToAddController)
-router.post('/', addTeamResultBulkController)
-router.post('/add', addTeamResultArrayController)
+router.get('/teamresults', authenticateJWT, getTeamResultsController)
+router.get('/byRound/:seasonId{/:round}', authenticateJWT, getTeamResultsByRoundController)
+router.get('/teams', authenticateJWTAdmin, getTeamResultsToAddController)
+router.post('/', authenticateJWTAdmin, addTeamResultBulkController)
+router.post('/add', authenticateJWTAdmin, addTeamResultArrayController)
 
 export default router

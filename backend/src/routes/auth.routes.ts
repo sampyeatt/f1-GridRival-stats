@@ -1,5 +1,6 @@
 import {Router} from 'express'
 import {
+    addUserAdminController,
     confirmEmailController, forgotPasswordController, getUserRoleController,
     loginController,
     logoutController,
@@ -18,5 +19,6 @@ router.post('/logout', logoutController)
 router.post('/refresh', refreshTokenController)
 router.post('/forgot-password', forgotPasswordController)
 router.post('/reset-password', resetPasswordController)
+router.put('/addUserAdmin', addUserAdminController)
 
 export default router
