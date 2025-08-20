@@ -1,6 +1,6 @@
 import {HttpClient} from '@angular/common/http'
 import {Injectable, inject, computed} from '@angular/core'
-import {environment} from '../../environments/environment'
+import {environment} from '../../environments/environment.development'
 import {Race} from '../interface/api-interface'
 import {Observable} from 'rxjs'
 import {toSignal} from '@angular/core/rxjs-interop'

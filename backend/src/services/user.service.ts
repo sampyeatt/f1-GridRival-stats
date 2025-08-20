@@ -48,6 +48,7 @@ export const updateUser = async ({name, status, id, password}: {
 export const updateToAdmin = async (userId: number) => {
     const user = await User.findByPk(userId)
     if (!user) throw new Error('User not found')
-    if (user.role === 'user') user.set({role: 'admin'})
+    console.log('user: ', user.toJSON())
+    if (user.get('role') === 'user') user.set({role: 'admin'})
     return await user.save()
 }

@@ -1,9 +1,10 @@
 import {HttpClient} from '@angular/common/http'
 import {inject, Injectable} from '@angular/core'
 import {Router} from '@angular/router'
-import {environment} from '../../environments/environment'
+import {environment} from '../../environments/environment.development'
 import {Session} from '../interface/api-interface'
 import {share} from 'rxjs'
+import {log} from 'node:util'
 
 @Injectable({
   providedIn: 'root'
@@ -16,6 +17,7 @@ export class AuthService {
   public router = inject(Router)
   token?: string | null = null
   auth: boolean = false
+  adminToken? : string | null = null
 
   register(email: string, password: string) {
     return this.http.post(`${this.apiUrl}/register`, {email: email, password})
@@ -44,6 +46,10 @@ export class AuthService {
     sessionStorage.setItem('userId', String(userId))
   }
 
+  saveAdminToken(token: string) {
+    sessionStorage.setItem('adminToken', token)
+  }
+
   loadToken() {
     if (typeof window !== 'undefined') {
       const token = sessionStorage.getItem('jwt')
@@ -55,20 +61,16 @@ export class AuthService {
 
   loadAdminToken() {
     if (typeof window !== 'undefined')  {
-      const userId = sessionStorage.getItem('userId')
-      const role = this.http.get<string>(`${this.apiUrl}/role/${userId}`).pipe(share())
-      role.subscribe({
-        next: (role) => {
-          if (role) return (role === 'admin')
-          else return false
-        },
-        error: (err) => {
-          console.error('Error loading role:', err)
-          return false
-        }
-      })
+      const adminToken = sessionStorage.getItem('adminToken')
+      if (adminToken) return adminToken
+      return this.adminToken = adminToken
     }
+    return null
   }
+
+  validateAdminToken(token: string){
+    return this.http.post<{valid: boolean}>(`${this.apiUrl}/validateAdmin`, {token: token}).pipe(share())
+    }
 
   isAuthenticated() {
     if (typeof window !== 'undefined')  return !!this.loadToken()
@@ -76,6 +78,18 @@ export class AuthService {
   }
 
   isAdminAuthenticated() {
-    return this.loadAdminToken()
+    if (typeof window !== 'undefined') {
+      const token = this.loadAdminToken()
+      if (!token) return false
+      return this.validateAdminToken(token).subscribe({
+        next: (res) => {
+          return res.valid
+        },
+        error: (err) => {
+          console.error('Admin validation failed', err)
+        }
+      })
+    }
+    return false
   }
 }

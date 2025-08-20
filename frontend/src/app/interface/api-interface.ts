@@ -38,7 +38,8 @@ export interface Race {
 
 export interface Session {
   accessToken: string
-  refreshToken: string
+  refreshToken: string,
+  adminToken: string | null
   user: {
     userId: number
     name: string

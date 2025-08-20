@@ -5,9 +5,9 @@ import {
     loginController,
     logoutController,
     refreshTokenController,
-    registerController, resetPasswordController
+    registerController, resetPasswordController, validateAdminController
 } from '../controllers/auth.controller'
-import {authenticateJWT} from '../shared/auth.util'
+import {authenticateJWT, authenticateJWTAdmin} from '../shared/auth.util'
 
 const router = Router()
 
@@ -19,6 +19,7 @@ router.post('/logout', logoutController)
 router.post('/refresh', refreshTokenController)
 router.post('/forgot-password', forgotPasswordController)
 router.post('/reset-password', resetPasswordController)
-router.put('/addUserAdmin', addUserAdminController)
+router.post('/validateAdmin', authenticateJWTAdmin, validateAdminController)
+router.put('/addUserAdmin', authenticateJWTAdmin, addUserAdminController)
 
 export default router

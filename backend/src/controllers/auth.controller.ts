@@ -64,15 +64,19 @@ export const loginController = async (req: Request, res: Response) => {
 
     const accessToken = await generateToken(user.get('userId')!)
     const refreshToken = await generateToken(user.get('userId')!, '7d')
-
     await deleteTokens(user.get('userId')!)
-
+    let adminToken = null
+    if (user.get('role') === 'admin') {
+        adminToken = await generateAdminToken(user.get('userId')!, password)
+        await addToken(adminToken, 'admin', user.get('userId')!)
+    }
     await addToken(refreshToken, 'refresh', user.get('userId')!)
     await addToken(accessToken, 'access', user.get('userId')!)
 
     const session = {
         accessToken,
         refreshToken,
+        adminToken,
         user: user.toJSON()
     }
 
@@ -246,4 +250,18 @@ export const addUserAdminController = async (req: Request, res: Response) => {
     delete adminUser.password
 
     return res.status(201).json(adminUser)
+}
+
+export const validateAdminController = async (req: Request, res: Response) => {
+    const schema = z.object({
+        token: z.string()
+    })
+    const parsedData = schema.safeParse(req.body)
+    if (!parsedData.success) return res.status(400).json({
+        message: 'Invalid request body',
+        errors: JSON.parse(parsedData.error.message)
+    })
+    const {token} = parsedData.data
+    const validated = await verifyToken(token)
+    return res.status(200).json({valid: !!validated})
 }
