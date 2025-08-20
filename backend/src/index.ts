@@ -35,8 +35,6 @@ app.use('/api/result', resultsRoutes)
 app.use('/api/teamresult', teamResultsRoutes)
 app.use('/api/race', raceRoutes)
 
-console.log('Process.env.NODE_ENV', process.env.PG_USER_NAME)
-
 app.use((err: Error, req: Request, res: Response, next: any) => {
     logger.error({
         message: err.message, stack: err.stack,

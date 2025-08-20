@@ -51,7 +51,6 @@ export class AdminComponent {
   getDriverResults() {
     this.resultsService.getNewDriverResults().subscribe({
       next: (data) => {
-        console.log('Driver Results: ', data)
         this.cdref.markForCheck()
         this.driverResults = data
       },
@@ -64,7 +63,6 @@ export class AdminComponent {
   getTeamResults() {
     this.teamResultsService.getNewTeamResults().subscribe({
       next: (data) => {
-        console.log('Team Results: ', data)
         this.cdref.markForCheck()
         this.teamResults = data
       },
@@ -82,7 +80,6 @@ export class AdminComponent {
   saveDriverResults(driverResults: Result[]) {
     this.resultsService.saveUpdatedDriverResults(driverResults!).subscribe({
       next: (data) => {
-        console.log(data)
         this.cdref.markForCheck()
         this.driverResults = undefined
         this.resultSubmitSuccess = true
@@ -98,7 +95,6 @@ export class AdminComponent {
   saveTeamResults(teamResults: TeamResult[]) {
     this.teamResultsService.saveUpdatedTeamResults(teamResults!).subscribe({
       next: (data) => {
-        console.log(data)
         this.cdref.markForCheck()
         this.driverResults = undefined
         this.resultSubmitSuccess = true

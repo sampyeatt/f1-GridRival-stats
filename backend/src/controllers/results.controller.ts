@@ -23,7 +23,6 @@ export const getResultsController = async (req: Request, res: Response) => {
 }
 
 export const getResultsByRoundController = async (req: Request, res: Response) => {
-    console.log('req.params', req.params)
     if (_.isNil(req.params.seasonId) || _.isNil(req.params.round)) throw new Error('SeasonId parameter is required')
     const {seasonId, round} = req.params
     const results = await getResutlsByRound(+seasonId, +round)
@@ -75,9 +74,9 @@ export const addResultArrayController = async (req: Request, res: Response) => {
 
     const resultsAdded = await Promise.all(_.map(results, async (result) => {
         const checkResult = await getResultByRaceIdDriverId(result.raceId, result.driverId)
-        console.log('result', result)
         if (checkResult) return {message: 'Result already added'}
         return 'yes'
+        // TODO test
         // return await addResults(result.raceId, result.points, result.cost, result.seasonId, result.round, result.driverId, result.teamId, result.finishPosition, result.positionDifference, result.positionsForMoney, result.easeToGainPoints, result.rank, result.meeting_key)
     }))
 
@@ -122,7 +121,6 @@ export const getDriverResultsToAddController = async (req: Request, res: Respons
     const dbRaces = _.map(await getRacesBySeasonId(+seasonId), race => race.toJSON())
     const races: Meeting[] = await getRacesByYear(+seasonId)
     const diff: Meeting = _.minBy(_.reject(_.differenceBy(races, dbRaces, 'meeting_key'), {meeting_name: 'Pre-Season Testing'}), 'date_start') as Meeting
-    console.log('diff', diff)
     if (!diff) return res.json([])
     const newRaces = await getResultsObjToAdd(+seasonId, diff.meeting_key)
 

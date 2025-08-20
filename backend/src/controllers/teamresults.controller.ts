@@ -80,7 +80,7 @@ export const getTeamResultsToAddController = async (req: Request, res: Response)
     const dbRaces = _.map(await getRacesBySeasonId(+seasonId), race => race.toJSON())
     const races: Meeting[] = await getRacesByYear(+seasonId)
     const diff: Meeting = _.minBy(_.reject(_.differenceBy(races, dbRaces, 'meeting_key'), {meeting_name: 'Pre-Season Testing'}), 'date_start') as Meeting
-    console.log('diff team', diff)
+    'diff team', diff)
     if (!diff) return res.json([])
     const teamResults = await teamResultsToAdd(seasonId, diff.meeting_key)
     res.json(teamResults)

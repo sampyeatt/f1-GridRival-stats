@@ -94,13 +94,6 @@ export async function getTotalPointsDriver(driverId: string, teamId: string, qua
         if (!originalPos) return 0
         eightRaceDB = _.reject(eightRaceDB, (item => item.round === originalPos.round))
         eightRaceAvg = Math.ceil((_.sumBy(eightRaceDB, 'finishPosition') + (originalPos.finishPosition! * (8 - (round - 1)))) / 8)
-        if (driverId === 'norris') {
-            console.log('eightRaceDB', eightRaceDB)
-            console.log('eightRaceAvg', eightRaceAvg)
-            console.log('originalPos', originalPos)
-            console.log('round', round)
-            console.log('----------------------------------------')
-        }
     }
     const quailPoints = QualiPointsDriver[String(qualiPos) as keyof typeof QualiPointsDriver]
     const sprintPoints = SprintPointsDriver[String(sprintPos) as keyof typeof SprintPointsDriver]
@@ -109,31 +102,6 @@ export async function getTotalPointsDriver(driverId: string, teamId: string, qua
     const improvedPoints = (!dqed) ? ImprovedPoints[String(_.round(eightRaceAvg - racePos, 0)) as keyof typeof ImprovedPoints] : 0
     const completionPoints = (!dqed) ? await getCompletionPoints((lapsCompleted / totalLaps) * 100) : 0
     const overtakePoints = (!dqed) ? Math.max((qualiPos - racePos), 0) * 3 : 0
-
-    if (driverId === 'norris') {
-
-        console.log(`----------------------------------------`)
-        console.log(`Driver: ${driverId}`)
-        console.log(`Round: ${round}`)
-        console.log(`RacePos: ${racePos}`)
-        console.log(`QualiPos: ${qualiPos}`)
-        console.log(`Completion: ${lapsCompleted}`)
-        console.log(`TotalLaps: ${totalLaps}`)
-        console.log(`EightRaceAvg: ${eightRaceAvg}`)
-        console.log(`TeammatePos: ${teammatePos}`)
-        console.log(`SprintPos: ${sprintPos}`)
-        console.log('******')
-        console.log(`RacePoints: ${racePoints}`)
-        console.log(`QuailPoints: ${quailPoints}`)
-        console.log(`CompletionPoints: ${completionPoints}`)
-        console.log(`OvertakePoints: ${overtakePoints}`)
-        console.log(`ImprovedPoints: ${improvedPoints}`)
-        console.log(`BeatTeammatePoints: ${beatTeammatePoints}`)
-        console.log(`SprintPoints: ${sprintPoints}`)
-        console.log(`----------------------------------------`)
-    }
-
-
     return _.sum([quailPoints, racePoints, sprintPoints, overtakePoints, beatTeammatePoints, completionPoints, improvedPoints])
 }
 
@@ -158,19 +126,7 @@ export async function getTotalSalaryAndPosDiff(driverId: string, seasonId: numbe
         positionDifference: 0
     }
     const differ = _.round(BaseSalaryDriver[String(driverRankAndSalary) as keyof typeof BaseSalaryDriver] - results.get('cost')!, 1)
-
     const posDiff = Math.max(-2, Math.min(2, (Math.sign(differ) * _.floor((Math.sign(differ) * differ / 4), 1))))
-
-    if (driverId === 'colapinto') {
-        console.log(`----------------------------------------`)
-        console.log(`driverId: ${driverId}`)
-        console.log(`differ: ${differ}`)
-        console.log(`posDiff: ${posDiff}`)
-        console.log(`results.cost: ${results.get('cost')!}`)
-        console.log(`driverRankAndSalary: ${driverRankAndSalary}`)
-        console.log(`BaseSalaryDriver[${driverRankAndSalary}]: ${BaseSalaryDriver[String(driverRankAndSalary) as keyof typeof BaseSalaryDriver]}`)
-        console.log(`----------------------------------------`)
-    }
     return {
         totalSalary: (posDiff + results.get('cost')!),
         positionDifference: posDiff
@@ -234,7 +190,7 @@ export async function getResultsObjToAdd(seasonId: number, meeting_key: number) 
             const quali = _.find(value, {session_key: quali_key})
             const raceR = _.find(value, {session_key: race_key})
             const teammateResult = _.find(raceResults, {driver_number: teammate.get('driverNumber')})
-            // if (!teammateResult) return {message: `Teammate ${teammate.get('driverId')} result not found for driver: ${driverId}`}
+            if (!teammateResult) return {message: `Teammate ${teammate.get('driverId')} result not found for driver: ${driverId}`}
             let sprintPosition = null
             if (sprint) {
                 sprintPosition = (sprint.dnf || sprint.dns || sprint.dsq) ? _.findIndex(sprintResults, {driver_number: +key}) + 1 : sprint.position

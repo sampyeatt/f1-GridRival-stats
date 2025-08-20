@@ -20,18 +20,13 @@ export const populateTeamTable = async (req: Request, res: Response) => {
     const {seasonId} = req.body
 
     const teams = await getCurrentTeams(seasonId)
-    console.log(teams)
 
     const teamAdded = await _.forEach(teams, async (team) => {
-        console.log(team)
         const existingTeam = await getTeamById(team.teamId)
         if (!existingTeam) {
             return await addTeam(team.teamId, team.teamName,)
         }
     })
-
-    console.log(teamAdded)
-
     res.json(teamAdded)
 }
 

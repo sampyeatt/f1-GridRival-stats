@@ -237,7 +237,6 @@ export const addUserAdminController = async (req: Request, res: Response) => {
     let existingUser = await getUserByEmail(email)
     if (!existingUser) return res.status(400).json({message: 'User does not exist'})
     const dbPassword = await verifyToken(existingUser.get('password')!)
-    console.log('DB Password', dbPassword)
     if (dbPassword !== password) return res.status(400).json({message: 'Invalid credentials'})
 
     existingUser = existingUser.toJSON()

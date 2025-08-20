@@ -27,7 +27,6 @@ export class LoginComponent {
       this.authService.login(this.email, this.password)
         .subscribe({
           next: (res) => {
-            console.log('Login successful: ', res)
             this.authService.saveToken(res.accessToken)
             this.authService.saveUser(res.user.userId)
             if (res.adminToken !== null) this.authService.saveAdminToken(res.adminToken)
