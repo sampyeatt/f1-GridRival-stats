@@ -265,3 +265,17 @@ export const validateAdminController = async (req: Request, res: Response) => {
     const validated = await verifyToken(token)
     return res.status(200).json({valid: !!validated})
 }
+
+export const validateUserController = async (req: Request, res: Response) => {
+    const schema = z.object({
+        token: z.string()
+    })
+    const parsedData = schema.safeParse(req.body)
+    if (!parsedData.success) return res.status(400).json({
+        message: 'Invalid request body',
+        errors: JSON.parse(parsedData.error.message)
+    })
+    const {token} = parsedData.data
+    const validated = await verifyToken(token)
+    return res.status(200).json({valid: !!validated})
+}

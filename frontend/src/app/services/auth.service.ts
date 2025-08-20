@@ -72,8 +72,23 @@ export class AuthService {
     return this.http.post<{valid: boolean}>(`${this.apiUrl}/validateAdmin`, {token: token}).pipe(share())
     }
 
+  validateUserToken(token: string){
+    return this.http.post<{valid: boolean}>(`${this.apiUrl}/validateUser`, {token: token}).pipe(share())
+    }
+
   isAuthenticated() {
-    if (typeof window !== 'undefined')  return !!this.loadToken()
+    if (typeof window !== 'undefined') {
+      const token = this.loadToken()
+      if (!token) return false
+      return this.validateUserToken(token).subscribe({
+        next: (res) => {
+          return res.valid
+        },
+        error: (err) => {
+          console.error('Validation failed', err)
+        }
+      })
+    }
     return false
   }
 
