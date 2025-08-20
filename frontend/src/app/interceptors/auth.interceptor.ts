@@ -13,10 +13,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       }
     });
     return  next(authReq);
-  } else if(adminToken){
+  } else if(token && adminToken){
     const authReq = req.clone({
       setHeaders:{
-        Authorization: `Bearer ${adminToken}`
+        Authorization: `Bearer ${token}`,
+        AdminAuth: `Bearer ${adminToken}`
       }
     });
     return  next(authReq);

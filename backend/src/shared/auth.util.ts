@@ -62,11 +62,13 @@ export async function authenticateJWT(req: Request, res: Response, next: Functio
 
 export async function authenticateJWTAdmin(req: Request, res: Response, next: Function) {
     const token = req.header('Authorization')?.replace('Bearer ', '')
-    if (!token) {
+    const adminToken = req.header('AdminAuth')?.replace('Bearer ', '')
+    if (!token || !adminToken) {
         return res.status(401).json({message: 'Unauthorized'})
     }
     const verified = await verifyToken(token)
-    if (!verified) {
+    const adminVerified = await verifyToken(adminToken)
+    if (!verified || !adminVerified) {
         return res.status(401).json({message: 'Invalid token'})
     }
 
