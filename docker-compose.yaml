@@ -22,44 +22,42 @@ services:
       dockerfile: Dockerfile
     networks:
       - internalnet
-    expose:
-      - "3000"
     ports:
       - "3000:3000"
+    secrets:
+      - my_secret
   frontend:
     container_name: f1-grod-frontend
     image: f1-grod-frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    expose:
-      - "80"
-    ports:
-      - "80:80"
     networks:
       - internalnet
     depends_on:
       - backend
-#  nginx:
-#    container_name: f1-grod-nginx
-#    build:
-#      context: ./nginx
-#      dockerfile: Dockerfile
-#    expose:
-#      - "443"
-#      - "444"
-#    ports:
-#      - "443:443"
-#      - "444:444"
-#    networks:
-#      - internalnet
-#    volumes:
-#      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:rw
-#      - ./nginx/nginx-selfsigned.crt:/etc/nginx/ssl/nginx-selfsigned.crt:ro
-#      - ./nginx/nginx-selfsigned.key:/etc/nginx/ssl/nginx-selfsigned.key:ro
-#    depends_on:
-#      - backend
-#      - frontend
+  nginx:
+    container_name: f1-grod-nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    expose:
+      - "443"
+    ports:
+      - "443:443"
+    networks:
+      - internalnet
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:rw
+      - ./nginx/nginx-selfsigned.crt:/etc/nginx/ssl/nginx-selfsigned.crt:ro
+      - ./nginx/nginx-selfsigned.key:/etc/nginx/ssl/nginx-selfsigned.key:ro
+    depends_on:
+      - backend
+      - frontend
 networks:
   internalnet:
     driver: bridge
+
+secrets:
+  my_secret:
+    file: ./backend/src/.env

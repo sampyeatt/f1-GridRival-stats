@@ -1,3 +1,3 @@
 export const environment = {
-  API_URL: 'http://f1-grod-backend:3000'
+  API_URL: 'https://localhost:443'
 }

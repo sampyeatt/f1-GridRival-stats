@@ -22,7 +22,7 @@ const port = 3000
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cors({
-    origin: [ 'http://f1-grod-frontend:4200', 'http://localhost:80', 'http://192.168.0.125:3000', 'http://172.18.0.2:80'],
+    origin: [ 'http://f1-grod-frontend:4200', 'https://localhost:443', 'http://localhost:3000', 'http://localhost:4200'],
     credentials: true,
 }))
 
@@ -34,6 +34,8 @@ app.use('/api/auth', authRoutes)
 app.use('/api/result', resultsRoutes)
 app.use('/api/teamresult', teamResultsRoutes)
 app.use('/api/race', raceRoutes)
+
+console.log('Process.env.NODE_ENV', process.env.PG_USER_NAME)
 
 app.use((err: Error, req: Request, res: Response, next: any) => {
     logger.error({

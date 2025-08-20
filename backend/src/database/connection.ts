@@ -2,10 +2,10 @@ import {Sequelize} from 'sequelize-typescript'
 
 export const connection = new Sequelize({
     dialect: 'postgres',
-    host: 'f1-grod-db',
-    username: 'f1-data-user',
-    password: 'database-dockerpassword-here',
-    database: 'postgres',
-    port: 5435,
+    host: process.env.PG_HOST as string,
+    username: process.env.PG_USER_NAME as string,
+    password: process.env.PG_PASSWORD as string,
+    database: process.env.PG_DATABASE as string,
+    port: process.env.PG_PORT as any || 5435,
     models: [__dirname + '/../models']
 })
