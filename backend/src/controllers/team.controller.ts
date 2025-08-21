@@ -14,7 +14,7 @@ export const getTeams = async (req: Request, res: Response) => {
 export const populateTeamTable = async (req: Request, res: Response) => {
     const currentSeason = await getActiveSeason()
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason!.get('seasonId')
+    const seasonId = currentSeason!.get('seasonId') as number
 
     const teams = await getCurrentTeams(seasonId!)
 

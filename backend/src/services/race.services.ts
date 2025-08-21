@@ -68,7 +68,7 @@ export async function updateRaceBulk(raceData: any[]){
     raceData.map(async (race) => {
         const raceInstance = await Race.findByPk(race.meeting_key)
         if (!raceInstance) return
-        race.set(race)
+        raceInstance.set(race)
         return await raceInstance.save()
     })
 }

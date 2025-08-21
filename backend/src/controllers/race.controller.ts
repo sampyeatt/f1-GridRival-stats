@@ -8,7 +8,7 @@ import {getActiveSeason} from '../services/season.services'
 export const getRacesBySeasonIdController = async (req: Request, res: Response) => {
     const currentSeason = await getActiveSeason()
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason!.get('seasonId')
+    const seasonId = currentSeason!.get('seasonId') as number
 
     const results = await getRacesBySeasonId(+seasonId!)
 
@@ -20,7 +20,7 @@ export const getRacesBySeasonIdController = async (req: Request, res: Response) 
 export const addRaceBulkController = async (req: Request, res: Response) => {
     const currentSeason = await getActiveSeason()
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason!.get('seasonId')
+    const seasonId = currentSeason!.get('seasonId') as number
     const raceData = await getRacesByYear(seasonId!)
     const f1DataRaces = await getRaceLaps(seasonId!)
     const sordertRaces = _.orderBy(raceData, ['date_start'], ['asc'])
@@ -72,7 +72,7 @@ export const addRaceController = async (req: Request, res: Response) => {
     const meeting_key = req.body
     const currentSeason = await getActiveSeason()
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason!.get('seasonId')
+    const seasonId = currentSeason!.get('seasonId') as number
 
     const raceData = await getRacesByYear(seasonId!)
     const f1DataRaces = await getRaceLaps(seasonId!)
@@ -110,13 +110,15 @@ export const updateCurrentSeason = async (req: Request, res: Response) => {
 
     const currentSeason = await getActiveSeason()
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason!.get('seasonId')
-    const raceData = await getRacesByYear(seasonId!)
-    const f1DataRaces = await getRaceLaps(seasonId!)
+    const seasonId = currentSeason!.get('seasonId') as number
+    console.log('SeasonId: ', seasonId)
+    const raceData = await getRacesByYear(seasonId)
+    const f1DataRaces = await getRaceLaps(seasonId)
     const sordertRaces = _.orderBy(raceData, ['date_start'], ['asc'])
     if (raceData.length === 0) return res.status(404).json({message: 'Race not found'})
     const data = await Promise.all(_.map(raceData, async (race) => {
-        const raceSessionData = await getRaceByMeetingKey(seasonId!, race.meeting_key)
+        if (!race.meeting_key) return {message: 'no meeting key found'}
+        const raceSessionData = await getRaceByMeetingKey(seasonId, race.meeting_key)
         return await Promise.all(_(raceSessionData)
             .reject({'session_type': 'Practice'})
             .reject({'session_name': 'Sprint Qualifying'})
@@ -125,22 +127,24 @@ export const updateCurrentSeason = async (req: Request, res: Response) => {
                 const round = _.findIndex(sordertRaces, {meeting_key: race.meeting_key})
                 const totalLaps = _.find(f1DataRaces, {round: round})?.laps
                 return {
-                    circuit_key: race.circuit_key,
-                    meeting_name: meetingName.meeting_name,
-                    circuit_short_name: race.circuit_short_name,
-                    country_code: race.country_code,
-                    country_name: race.country_name,
-                    meeting_key: race.meeting_key,
-                    sprint_key: (race.session_name === 'Sprint') ? race.session_key : undefined,
-                    quali_key: (race.session_name === 'Qualifying') ? race.session_key : undefined,
-                    race_key: (race.session_name === 'Race') ? race.session_key : undefined,
-                    seasonId: seasonId,
-                    round: round,
-                    totalLaps: totalLaps
+                    circuit_key: race.circuit_key as number,
+                    meeting_name: meetingName.meeting_name as string,
+                    circuit_short_name: race.circuit_short_name as string,
+                    country_code: race.country_code as string,
+                    country_name: race.country_name as string,
+                    meeting_key: race.meeting_key as number,
+                    sprint_key: (race.session_name === 'Sprint') ? race.session_key as number : undefined,
+                    quali_key: (race.session_name === 'Qualifying') ? race.session_key as number : undefined,
+                    race_key: (race.session_name === 'Race') ? race.session_key as number : undefined,
+                    seasonId: seasonId as number,
+                    round: round as number,
+                    totalLaps: totalLaps as number
                 }
             }).value())
     }))
 
-    const racesUpdated = await updateRaceBulk(data)
+    // @ts-ignore data is an array of arrays so its resulst will have eleeement of array of objects.
+    const combinedRaceData = _.map(data, race => _.merge(race[0], race[1], race[2]))
+    const racesUpdated = await updateRaceBulk(combinedRaceData)
     res.json(racesUpdated)
 }
