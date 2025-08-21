@@ -8,3 +8,17 @@ export  async  function getActiveSeason() {
     })
 }
 
+export  async  function getAllSeasons() {
+    return await Season.findAll()
+}
+
+export  async  function upsertSeason(season: { seasonId: number, currentSeason: boolean}) {
+    const seasonInstance = new Season()
+    seasonInstance.set(season)
+    return seasonInstance.save()
+}
+
+export  async  function deleteSeason(seasonId: number) {
+    return await Season.destroy({where: {seasonId: seasonId}})
+}
+
