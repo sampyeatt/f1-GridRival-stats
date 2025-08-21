@@ -14,15 +14,20 @@ import {Meeting} from '../shared/interface.util'
 import {getActiveSeason} from '../services/season.services'
 
 export const getTeamResultsController = async (req: Request, res: Response) => {
-    const seasonId = 2025
-    const results = _.map(await getTeamResults(+seasonId), result => result.toJSON())
+    const currentSeason = await getActiveSeason()
+    if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
+    const seasonId = currentSeason!.get('seasonId')
+    const results = _.map(await getTeamResults(+seasonId!), result => result.toJSON())
     res.json(results)
 }
 
 export const getTeamResultsByRoundController = async (req: Request, res: Response) => {
-    if (_.isNil(req.params.seasonId) || _.isNil(req.params.round)) throw new Error('SeasonId parameter is required')
-    const {seasonId, round} = req.params
-    const results = await getTeamResultsByRound(+seasonId, +round)
+    if (_.isNil(req.params.round)) throw new Error('SeasonId parameter is required')
+    const {round} = req.params
+    const currentSeason = await getActiveSeason()
+    if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
+    const seasonId = currentSeason!.get('seasonId')
+    const results = await getTeamResultsByRound(+seasonId!, +round)
 
     res.json(results)
 }
@@ -58,7 +63,6 @@ export const addTeamResultArrayController = async (req: Request, res: Response) 
 
 export const addTeamResultBulkController = async (req: Request, res: Response) => {
     const schema = z.object({
-        seasonId: z.number(),
         meeting_key: z.number()
     })
     const schemaValidator = schema.safeParse(req.body)
@@ -66,9 +70,12 @@ export const addTeamResultBulkController = async (req: Request, res: Response) =
         message: 'Invalid request body',
         errors: schemaValidator.error
     })
-    const {seasonId, meeting_key} = req.body
+    const {meeting_key} = req.body
+    const currentSeason = await getActiveSeason()
+    if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
+    const seasonId = currentSeason!.get('seasonId')
 
-    const teamResults = await teamResultsToAdd(seasonId, meeting_key)
+    const teamResults = await teamResultsToAdd(seasonId!, meeting_key)
 
     const created = await bulkAddTeamResults(teamResults as unknown as TeamResults[])
 
@@ -76,12 +83,14 @@ export const addTeamResultBulkController = async (req: Request, res: Response) =
 }
 
 export const getTeamResultsToAddController = async (req: Request, res: Response) => {
-    const seasonId = 2025
-    const dbRaces = _.map(await getRacesBySeasonId(+seasonId), race => race.toJSON())
-    const races: Meeting[] = await getRacesByYear(+seasonId)
+    const currentSeason = await getActiveSeason()
+    if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
+    const seasonId = currentSeason!.get('seasonId')
+    const dbRaces = _.map(await getRacesBySeasonId(+seasonId!), race => race.toJSON())
+    const races: Meeting[] = await getRacesByYear(+seasonId!)
     const diff: Meeting = _.minBy(_.reject(_.differenceBy(races, dbRaces, 'meeting_key'), {meeting_name: 'Pre-Season Testing'}), 'date_start') as Meeting
     if (!diff) return res.json([])
-    const teamResults = await teamResultsToAdd(seasonId, diff.meeting_key)
+    const teamResults = await teamResultsToAdd(seasonId!, diff.meeting_key)
     res.json(teamResults)
 
 }

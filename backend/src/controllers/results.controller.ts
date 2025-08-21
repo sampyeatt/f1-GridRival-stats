@@ -11,28 +11,33 @@ import {
     getCurrentRaceResults,
     getRacesByYear
 } from '../shared/f1api.util'
-import { getRacesBySeasonId} from '../services/race.services'
+import {getRacesBySeasonId} from '../services/race.services'
 import {getActiveDrivers} from '../services/driver.service'
 import {Results} from '../models/Results'
 import {Meeting} from '../shared/interface.util'
+import {getActiveSeason} from '../services/season.services'
 
 export const getResultsController = async (req: Request, res: Response) => {
-    const seasonId = 2025
-    const results = _.map(await getResutls(+seasonId), result => result.toJSON())
+    const currentSeason = await getActiveSeason()
+    if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
+    const seasonId = currentSeason!.get('seasonId')
+    const results = _.map(await getResutls(+seasonId!), result => result.toJSON())
     res.json(results)
 }
 
 export const getResultsByRoundController = async (req: Request, res: Response) => {
-    if (_.isNil(req.params.seasonId) || _.isNil(req.params.round)) throw new Error('SeasonId parameter is required')
-    const {seasonId, round} = req.params
-    const results = await getResutlsByRound(+seasonId, +round)
+    if (_.isNil(req.params.round)) throw new Error('SeasonId parameter is required')
+    const currentSeason = await getActiveSeason()
+    if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
+    const seasonId = currentSeason!.get('seasonId')
+    const {round} = req.params
+    const results = await getResutlsByRound(+seasonId!, +round)
 
     res.json(results)
 }
 
 export const addResultBulkController = async (req: Request, res: Response) => {
     const schema = z.object({
-        seasonId: z.number(),
         meeting_key: z.number()
     })
     const schemaValidator = schema.safeParse(req.body)
@@ -40,9 +45,12 @@ export const addResultBulkController = async (req: Request, res: Response) => {
         message: 'Invalid request body',
         errors: schemaValidator.error
     })
-    const {seasonId, meeting_key} = req.body
+    const {meeting_key} = req.body
+    const currentSeason = await getActiveSeason()
+    if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
+    const seasonId = currentSeason!.get('seasonId')
 
-    const resultsToCreate = await getResultsObjToAdd(seasonId, meeting_key)
+    const resultsToCreate = await getResultsObjToAdd(seasonId!, meeting_key)
     const created = await bulkAddResults(resultsToCreate as unknown as Results[])
 
     res.json(created)
@@ -84,18 +92,10 @@ export const addResultArrayController = async (req: Request, res: Response) => {
 }
 
 export const updateResultsController = async (req: Request, res: Response) => {
-    const schema = z.object({
-        seasonId: z.number()
-    })
-    const schemaValidator = schema.safeParse(req.body)
-    if (!schemaValidator.success) return res.status(400).json({
-        message: 'Invalid request body',
-        errors: schemaValidator.error
-    })
-
-
-    const {seasonId} = req.body
-    const races = await getRacesBySeasonId(+seasonId)
+    const currentSeason = await getActiveSeason()
+    if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
+    const seasonId = currentSeason!.get('seasonId')
+    const races = await getRacesBySeasonId(+seasonId!)
     const drivers = _.map(await getActiveDrivers(), drive => drive.toJSON())
     const allResults = _.flatten(await Promise.all(_.map(races, async race => {
         const meeting_key = race.get('meeting_key')
@@ -117,12 +117,14 @@ export const updateResultsController = async (req: Request, res: Response) => {
 }
 
 export const getDriverResultsToAddController = async (req: Request, res: Response) => {
-    const seasonId = 2025
-    const dbRaces = _.map(await getRacesBySeasonId(+seasonId), race => race.toJSON())
-    const races: Meeting[] = await getRacesByYear(+seasonId)
+    const currentSeason = await getActiveSeason()
+    if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
+    const seasonId = currentSeason!.get('seasonId')
+    const dbRaces = _.map(await getRacesBySeasonId(+seasonId!), race => race.toJSON())
+    const races: Meeting[] = await getRacesByYear(+seasonId!)
     const diff: Meeting = _.minBy(_.reject(_.differenceBy(races, dbRaces, 'meeting_key'), {meeting_name: 'Pre-Season Testing'}), 'date_start') as Meeting
     if (!diff) return res.json([])
-    const newRaces = await getResultsObjToAdd(+seasonId, diff.meeting_key)
+    const newRaces = await getResultsObjToAdd(+seasonId!, diff.meeting_key)
 
     res.json(newRaces)
 }
