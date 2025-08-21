@@ -62,6 +62,11 @@ export class Race extends Model<Race> {
     })
     totalLaps?: number
 
+    @Column({
+        allowNull: true
+    })
+    raceId?: string
+
     @ForeignKey(() => Season)
     @Column({
         allowNull: false,

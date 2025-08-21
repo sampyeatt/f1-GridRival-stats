@@ -33,7 +33,7 @@ export const addRaceBulkController = async (req: Request, res: Response) => {
             .map(async (race) => {
                 const meetingName = _.find(raceData, {meeting_key: race.meeting_key})
                 const round = _.findIndex(sordertRaces, {meeting_key: race.meeting_key})
-                const totalLaps = _.find(f1DataRaces, {round: round})?.laps
+                const dataRace = _.find(f1DataRaces, {round: round})
                 return {
                     circuit_key: race.circuit_key as number,
                     meeting_name: meetingName.meeting_name as string,
@@ -46,7 +46,8 @@ export const addRaceBulkController = async (req: Request, res: Response) => {
                     race_key: (race.session_name === 'Race') ? race.session_key  as number : undefined,
                     seasonId: seasonId  as number,
                     round: round  as number,
-                    totalLaps: totalLaps as number
+                    totalLaps: dataRace.laps as number,
+                    raceId: dataRace.raceId as string
                 }
             }).value())
     }))
@@ -85,7 +86,7 @@ export const addRaceController = async (req: Request, res: Response) => {
         .map(async (race) => {
             const meetingName = _.find(raceData, {meeting_key: race.meeting_key})
             const round = _.findIndex(sordertRaces, {meeting_key: race.meeting_key})
-            const totalLaps = _.find(f1DataRaces, {round: round})?.laps
+            const dataRace = _.find(f1DataRaces, {round: round})
             return {
                 circuit_key: race.circuit_key as number,
                 meeting_name: meetingName.meeting_name as string,
@@ -97,8 +98,9 @@ export const addRaceController = async (req: Request, res: Response) => {
                 quali_key: (race.session_name === 'Qualifying') ? race.session_key as number: undefined,
                 race_key: (race.session_name === 'Race') ? race.session_key as number : undefined,
                 seasonId: seasonId as number,
-                round: round as number ,
-                totalLaps: totalLaps as number
+                round: round as number,
+                totalLaps: dataRace.laps as number,
+                raceId: dataRace.raceId as string
             }
         }).value())
     const combinedRaceData = _.merge(race[0], race[1], race[2])
@@ -125,7 +127,7 @@ export const updateCurrentSeason = async (req: Request, res: Response) => {
             .map(async (race) => {
                 const meetingName = _.find(raceData, {meeting_key: race.meeting_key})
                 const round = _.findIndex(sordertRaces, {meeting_key: race.meeting_key})
-                const totalLaps = _.find(f1DataRaces, {round: round})?.laps
+                const dataRace = _.find(f1DataRaces, {round: round})
                 return {
                     circuit_key: race.circuit_key as number,
                     meeting_name: meetingName.meeting_name as string,
@@ -138,7 +140,8 @@ export const updateCurrentSeason = async (req: Request, res: Response) => {
                     race_key: (race.session_name === 'Race') ? race.session_key as number : undefined,
                     seasonId: seasonId as number,
                     round: round as number,
-                    totalLaps: totalLaps as number
+                    totalLaps: dataRace.laps as number,
+                    raceId: dataRace.raceId as string
                 }
             }).value())
     }))

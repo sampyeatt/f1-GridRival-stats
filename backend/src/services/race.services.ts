@@ -45,7 +45,8 @@ export async function addSeasonRace(seasonId: number, data: {
     race_key: number | undefined,
     seasonId: number,
     round: number,
-    totalLaps: number
+    totalLaps: number,
+    raceId: string
 }) {
     const race = new Race()
     race.seasonId = seasonId
@@ -61,6 +62,7 @@ export async function addSeasonRace(seasonId: number, data: {
     race.seasonId = seasonId
     race.round = data.round
     race.totalLaps = data.totalLaps
+    race.raceId = data.raceId
     return await Race.build(race).save()
 }
 
