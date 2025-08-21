@@ -256,3 +256,9 @@ export async function getResultsObjToAdd(seasonId: number, meeting_key: number) 
 
     return resToCreate
 }
+
+export async function upsertResultsBulk(resultData: Partial<Results>) {
+    const resultInstance = new Results()
+    resultInstance.set(resultData)
+    return resultInstance.save()
+}

@@ -3,7 +3,7 @@ import {
     bulkAddResults, getResultByRaceIdDriverId, getResultsObjToAdd,
     getResutls,
     getResutlsByRound,
-    updateQulaiResults
+    updateQulaiResults, upsertResultsBulk
 } from '../services/results.service'
 import _ from 'lodash'
 import {z} from 'zod'
@@ -127,4 +127,43 @@ export const getDriverResultsToAddController = async (req: Request, res: Respons
     const newRaces = await getResultsObjToAdd(seasonId, diff.meeting_key)
 
     res.json({newRaces})
+}
+
+export const importRaceDataController = async (req: Request, res: Response) => {
+
+    console.log('Request Body: ', req.body)
+    const schema = z.array(z.object({
+        id: z.number(),
+        raceId: z.string(),
+        points: z.number(),
+        cost: z.number(),
+        rank: z.number(),
+        round: z.number(),
+        finishPosition: z.number(),
+        qualiPosition: z.number(),
+        qualiDNS: z.boolean(),
+        raceDNS: z.boolean(),
+        qualiDSQ: z.boolean(),
+        raceDSQ: z.boolean(),
+        positionDifference: z.number(),
+        positionsForMoney: z.number(),
+        easeToGainPoints: z.number(),
+        driverId: z.string(),
+        teamId: z.string(),
+        meeting_key: z.number(),
+        seasonId: z.number(),
+        createdAt: z.string(),
+        updatedAt: z.string()
+    }))
+    const schemaValidator = schema.safeParse(req.body.data)
+    if (!schemaValidator.success) return res.status(400).json({
+        message: 'Invalid request body',
+        errors: schemaValidator.error
+    })
+
+    const races = req.body.data
+    const currentSeason = await getActiveSeason()
+    if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
+    _.map(races, result => upsertResultsBulk(_.omit(result, 'id')))
+    res.json({message: 'Result imported queued for processing'})
 }
