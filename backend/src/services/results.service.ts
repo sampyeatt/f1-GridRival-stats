@@ -10,7 +10,7 @@ import {
 } from '../shared/constants'
 import {Op} from 'sequelize'
 import {getRaceDataByMeetingKey} from './race.services'
-import {getCurrentRaceResults, getRaceByRound} from '../shared/f1api.util'
+import {getCurrentRaceResults} from '../shared/f1api.util'
 import {getActiveDrivers} from './driver.service'
 
 
@@ -166,11 +166,12 @@ export async function getResultsObjToAdd(seasonId: number, meeting_key: number) 
     const sprint_key = race.get('sprint_key')
     const quali_key = race.get('quali_key')
     const race_key = race.get('race_key')
+    const laps = race.get('laps') as number
+    const raceId = race.get('raceId') as string
 
     const weekendRaceResults = await getCurrentRaceResults(meeting_key)
     if (!weekendRaceResults) return {message: 'Race not found'}
     const filtered = _.filter(weekendRaceResults, item => _.includes([race.get('sprint_key'), race.get('quali_key'), race.get('race_key')], item.session_key))
-    const {laps, raceId} = _.get(await getRaceByRound(seasonId, round), '[0]', undefined)
 
     const raceResults = _.filter(filtered, {session_key: race_key})
     const qualiResults = _.filter(filtered, {session_key: quali_key})
@@ -246,7 +247,7 @@ export async function getResultsObjToAdd(seasonId: number, meeting_key: number) 
     }))
 
     const resToCreate = await Promise.all(_.filter(fullResult, async result => {
-        const checkResult = await getResultByRaceIdDriverId(result.raceId, result.driverId!)
+        const checkResult = await getResultByRaceIdDriverId(result.raceId!, result.driverId!)
         return !checkResult
     }))
 

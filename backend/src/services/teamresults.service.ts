@@ -2,7 +2,6 @@ import {TeamResults} from '../models/TeamResults'
 import _ from 'lodash'
 import {BaseSalaryTeam, QualiPointsTeam, RacePointsTeam} from '../shared/constants'
 import {getRaceDataByMeetingKey} from './race.services'
-import {getRaceByRound} from '../shared/f1api.util'
 import {getResutlsByRound} from './results.service'
 
 export async function getTeamResults(seasonId: number) {
@@ -94,7 +93,7 @@ export async function teamResultsToAdd(seasonId: number, meeting_key: number){
     const race = await getRaceDataByMeetingKey(meeting_key)
     if (!race) return {message: 'Race DB not found'}
     const round = race.get('round')!
-    const {raceId} = _.get(await getRaceByRound(seasonId, round), '[0]', undefined)
+    const raceId = race.get('raceId') as string
 
     const results = _.map(await getResutlsByRound(+seasonId, +round), result => result.toJSON())
     if (!results) return {message: 'Race Results not found'}
