@@ -12,7 +12,7 @@ const router = Router()
 router.get('/active', authenticateJWT, getActiveSeasonController)
 router.get('/all', authenticateJWT, getAllSeasonsController)
 router.post('/add', authenticateJWTAdmin, addSeasonController)
-router.delete('/add', authenticateJWTAdmin, deleteSeasonController)
-router.put('/add', authenticateJWTAdmin, inactivateSeasonController)
+router.delete('/delete', authenticateJWTAdmin, deleteSeasonController)
+router.put('/inactivate', authenticateJWTAdmin, inactivateSeasonController)
 
 export default router

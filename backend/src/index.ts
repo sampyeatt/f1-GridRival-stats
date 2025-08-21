@@ -15,6 +15,7 @@ import teamResultsRoutes from './routes/teamresults.routes'
 import raceRoutes from './routes/race.routes'
 import cors from 'cors'
 import {Request, Response} from 'express'
+import seasonRoutes from './routes/season.routes'
 
 const app = express()
 const port = 3000
@@ -34,6 +35,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/result', resultsRoutes)
 app.use('/api/teamresult', teamResultsRoutes)
 app.use('/api/race', raceRoutes)
+app.use('/api/season', seasonRoutes)
 
 app.use((err: Error, req: Request, res: Response, next: any) => {
     logger.error({

@@ -1,7 +1,7 @@
 import {Request, Response} from 'express'
 import z from 'zod'
 import {addUser, getAllById, getUserByEmail, updateToAdmin, updateUser} from '../services/user.service'
-import {encryptPassword, generateAdminToken, generateToken, verifyToken} from '../shared/auth.util'
+import {generateAdminToken, generateToken, verifyToken} from '../shared/auth.util'
 import {addToken, deleteTokens, getToken} from '../services/token.service'
 import {sendConfirmationEmail, sendForgotPasswordEmail} from '../shared/email.util'
 import bcrypt from 'bcrypt'
@@ -23,19 +23,21 @@ export const registerController = async (req: Request, res: Response) => {
         errors: JSON.parse(parsedData.error.message)
     })
 
-    let {email, password} = parsedData.data
+    let {email, password} = req.body
 
     const existingUser = await getUserByEmail(email)
     if (existingUser) return res.status(400).json({message: 'User already exists'})
 
-    bcrypt.hash(password, process.env.SALT_ROUNDS ?? 10, async (err, hash) => {
-        let user = await addUser(email, hash)
-        const token = await generateToken(user.userId!)
-        await addToken(token, 'activation', user.userId!)
-        const emailSent = await sendConfirmationEmail(email, token)
-        if (!emailSent) return res.status(500).json({message: 'Failed to send email'})
-        return res.status(201).json({message: 'User registered successfully'})
-    })
+    const hash = await bcrypt.hash(password,  10)
+    const user = await addUser(email, hash)
+    const userId = user.get('userId')
+    console.log('user id', userId)
+    const token = await generateToken(userId)
+    await addToken(token, 'activation', userId)
+    const emailSent = await sendConfirmationEmail(email, token)
+    if (!emailSent) return res.status(500).json({message: 'Failed to send email'})
+    return res.status(201).json({message: 'User registered successfully'})
+
 }
 
 export const loginController = async (req: Request, res: Response) => {
@@ -49,14 +51,13 @@ export const loginController = async (req: Request, res: Response) => {
         errors: JSON.parse(parsedData.error.message)
     })
 
-    const {email, password} = parsedData.data
+    const {email, password} = req.body
 
     const user = await getUserByEmail(email)
     if (!user) return res.status(400).json({message: 'User Not Found'})
     if (user.get('status') !== 'active') return res.status(400).json({message: 'User is not active, please confirm your email'})
-    const dbPassword = await verifyToken(user.get('password')!)
     const match = await bcrypt.compare(password, user.get('password'))
-    if (dbPassword !== password || !match) return res.status(400).json({message: 'Invalid credentials'})
+    if (!match) return res.status(400).json({message: 'Invalid credentials'})
 
     const accessToken = await generateToken(user.get('userId')!)
     const refreshToken = await generateToken(user.get('userId')!, '7d')
@@ -230,9 +231,8 @@ export const addUserAdminController = async (req: Request, res: Response) => {
     const {email, password} = parsedData.data
     let existingUser = await getUserByEmail(email)
     if (!existingUser) return res.status(400).json({message: 'User does not exist'})
-    const dbPassword = await verifyToken(existingUser.get('password')!)
     const match = await bcrypt.compare(password, existingUser.get('password'))
-    if (dbPassword !== password || !match) return res.status(400).json({message: 'Invalid credentials'})
+    if (!match) return res.status(400).json({message: 'Invalid credentials'})
 
     existingUser = existingUser.toJSON()
     // @ts-ignore

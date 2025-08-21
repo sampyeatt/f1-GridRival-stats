@@ -21,6 +21,6 @@ router.post('/forgot-password', forgotPasswordController)
 router.post('/reset-password', resetPasswordController)
 router.post('/validateAdmin',authenticateJWTAdmin, validateAdminController)
 router.post('/validateUser',authenticateJWT, validateUserController)
-router.put('/addUserAdmin', authenticateJWTAdmin, addUserAdminController)
+router.put('/addUserAdmin', authenticateJWT, addUserAdminController)
 
 export default router

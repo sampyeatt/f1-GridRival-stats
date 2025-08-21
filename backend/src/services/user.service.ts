@@ -11,10 +11,14 @@ export async function getAllById(userId: number) {
 
 export async function addUser(email: string, password: string) {
     const user = new User()
-    user.name = email
-    user.email = email
-    user.password = password
-    return User.build(user).save()
+    user.set({
+        name: email,
+        email: email,
+        password: password,
+        role: 'user',
+        status: 'pending'
+    })
+    return await user.save()
 
 }
 
