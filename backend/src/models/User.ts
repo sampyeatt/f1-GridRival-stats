@@ -18,35 +18,35 @@ export class User extends Model<User> {
         allowNull: false,
         unique: true
     })
-    userId?: number
+    declare userId: number
 
     @Column({
         allowNull: false
     })
-    name?: string
+    declare name: string
 
     @Column({
         unique: true,
         allowNull: false
     })
-    email?: string
+    declare email: string
 
     @Column({
         allowNull: false,
         type: DataType.ENUM('admin', 'user'),
         defaultValue: 'user'
     })
-    role?: 'admin' | 'user'
+    declare role: 'admin' | 'user'
 
     @Default('pending')
     @Column({
         allowNull: false,
         type: DataType.ENUM('active', 'pending')
     })
-    status?: 'active' | 'pending'
+    declare status: 'active' | 'pending'
 
     @Column({
         allowNull: false
     })
-    password?: string
+    declare password: string
 }

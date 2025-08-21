@@ -16,7 +16,7 @@ import {getActiveSeason} from '../services/season.services'
 export const getTeamResultsController = async (req: Request, res: Response) => {
     const currentSeason = await getActiveSeason()
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason!.get('seasonId') as number
+    const seasonId = currentSeason.toJSON().seasonId as number
     const results = _.map(await getTeamResults(+seasonId!), result => result.toJSON())
     res.json(results)
 }
@@ -26,7 +26,7 @@ export const getTeamResultsByRoundController = async (req: Request, res: Respons
     const {round} = req.params
     const currentSeason = await getActiveSeason()
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason!.get('seasonId') as number
+    const seasonId = currentSeason.toJSON().seasonId as number
     const results = await getTeamResultsByRound(+seasonId!, +round)
 
     res.json(results)
@@ -73,7 +73,7 @@ export const addTeamResultBulkController = async (req: Request, res: Response) =
     const {meeting_key} = req.body
     const currentSeason = await getActiveSeason()
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason!.get('seasonId') as number
+    const seasonId = currentSeason.toJSON().seasonId as number
 
     const teamResults = await teamResultsToAdd(seasonId!, meeting_key)
 
@@ -85,7 +85,7 @@ export const addTeamResultBulkController = async (req: Request, res: Response) =
 export const getTeamResultsToAddController = async (req: Request, res: Response) => {
     const currentSeason = await getActiveSeason()
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason!.get('seasonId') as number
+    const seasonId = currentSeason.toJSON().seasonId as number
     const dbRaces = _.map(await getRacesBySeasonId(+seasonId!), race => race.toJSON())
     const races: Meeting[] = await getRacesByYear(+seasonId!)
     const diff: Meeting = _.minBy(_.reject(_.differenceBy(races, dbRaces, 'meeting_key'), {meeting_name: 'Pre-Season Testing'}), 'date_start') as Meeting

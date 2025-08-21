@@ -20,7 +20,7 @@ import {getActiveSeason} from '../services/season.services'
 export const getResultsController = async (req: Request, res: Response) => {
     const currentSeason = await getActiveSeason()
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason!.get('seasonId') as number
+    const seasonId = currentSeason.toJSON().seasonId as number
     const results = _.map(await getResutls(+seasonId!), result => result.toJSON())
     res.json(results)
 }
@@ -29,7 +29,7 @@ export const getResultsByRoundController = async (req: Request, res: Response) =
     if (_.isNil(req.params.round)) throw new Error('SeasonId parameter is required')
     const currentSeason = await getActiveSeason()
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason!.get('seasonId') as number
+    const seasonId = currentSeason.toJSON().seasonId as number
     const {round} = req.params
     const results = await getResutlsByRound(+seasonId!, +round)
 
@@ -48,7 +48,7 @@ export const addResultBulkController = async (req: Request, res: Response) => {
     const {meeting_key} = req.body
     const currentSeason = await getActiveSeason()
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason!.get('seasonId') as number
+    const seasonId = currentSeason.toJSON().seasonId as number
 
     const resultsToCreate = await getResultsObjToAdd(seasonId!, meeting_key)
     const created = await bulkAddResults(resultsToCreate as unknown as Results[])
@@ -94,7 +94,7 @@ export const addResultArrayController = async (req: Request, res: Response) => {
 export const updateResultsController = async (req: Request, res: Response) => {
     const currentSeason = await getActiveSeason()
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason!.get('seasonId') as number
+    const seasonId = currentSeason.toJSON().seasonId as number
     const races = await getRacesBySeasonId(+seasonId!)
     const drivers = _.map(await getActiveDrivers(), drive => drive.toJSON())
     const allResults = _.flatten(await Promise.all(_.map(races, async race => {
@@ -119,12 +119,12 @@ export const updateResultsController = async (req: Request, res: Response) => {
 export const getDriverResultsToAddController = async (req: Request, res: Response) => {
     const currentSeason = await getActiveSeason()
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason!.get('seasonId') as number
-    const dbRaces = _.map(await getRacesBySeasonId(+seasonId!), race => race.toJSON())
-    const races: Meeting[] = await getRacesByYear(+seasonId!)
+    const seasonId = currentSeason.toJSON().seasonId as number
+    const dbRaces = _.map(await getRacesBySeasonId(seasonId), race => race.toJSON())
+    const races: Meeting[] = await getRacesByYear(seasonId)
     const diff: Meeting = _.minBy(_.reject(_.differenceBy(races, dbRaces, 'meeting_key'), {meeting_name: 'Pre-Season Testing'}), 'date_start') as Meeting
     if (!diff) return res.json([])
-    const newRaces = await getResultsObjToAdd(+seasonId!, diff.meeting_key)
+    const newRaces = await getResultsObjToAdd(seasonId, diff.meeting_key)
 
-    res.json(newRaces)
+    res.json({newRaces})
 }

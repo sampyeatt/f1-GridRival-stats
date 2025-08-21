@@ -9,62 +9,62 @@ export class TeamResults extends Model<TeamResults> {
     @Column({
         allowNull: false,
     })
-    raceId?: string
+    declare raceId: string
 
     @Column({
         allowNull: false,
     })
-    points?: number
+    declare points: number
 
     @Column({
         allowNull: false,
         type: 'float'
     })
-    cost?: number
+    declare cost: number
 
     @Column({
         allowNull: false
     })
-    rank?: number
+    declare rank: number
 
     @Column({
         allowNull: false,
     })
-    round?: number
+    declare round: number
 
     @Column({
         allowNull: false,
         type: 'float'
     })
-    positionDifference?: number
+    declare positionDifference: number
 
     @Column({
         allowNull: false,
     })
-    positionsForMoney?: number
+    declare positionsForMoney: number
 
     @Column({
         allowNull: false,
     })
-    easeToGainPoints?: number
+    declare easeToGainPoints: number
 
     @ForeignKey(() => Team)
     @Column({
         allowNull: false,
     })
-    teamId?: string
+    declare teamId: string
 
     @ForeignKey(() => Race)
     @Column({
         allowNull: false,
     })
-    meeting_key?: number
+    declare meeting_key: number
 
     @ForeignKey(() => Season)
     @Column({
         allowNull: false,
     })
-    seasonId?: number
+    declare seasonId: number
 
     @BelongsTo(() => Race, 'meeting_key')
     race?: Race

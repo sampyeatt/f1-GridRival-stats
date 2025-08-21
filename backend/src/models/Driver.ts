@@ -10,34 +10,34 @@ export class Driver extends Model<Driver> {
         allowNull: false,
         unique: true
     })
-    driverId?: string
+    declare driverId: string
 
     @Column({
         allowNull: false
     })
-    driverName?: string
+    declare driverName: string
 
     @Column({
         allowNull: false,
         unique: true
     })
-    driverNumber?: number
+    declare driverNumber: number
 
     @Column({
         allowNull: false
     })
-    shortName?: string
+    declare shortName: string
 
     @Column({
         allowNull: false
     })
-    active?: boolean
+    declare active: boolean
 
     @ForeignKey(() => Team)
     @Column({
         allowNull: false
     })
-    teamId?: string
+    declare teamId: string
 
     @HasMany(() => Results)
     results?: Results[] = []

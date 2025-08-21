@@ -162,12 +162,13 @@ export async function updateQulaiResults(driverId: string, meeting_key: number, 
 export async function getResultsObjToAdd(seasonId: number, meeting_key: number) {
     const race = await getRaceDataByMeetingKey(meeting_key)
     if (!race) return {message: 'Race DB not found'}
-    const round = race.get('round')!
-    const sprint_key = race.get('sprint_key')
-    const quali_key = race.get('quali_key')
-    const race_key = race.get('race_key')
-    const laps = race.get('laps') as number
-    const raceId = race.get('raceId') as string
+    const raceJson = race.toJSON()
+    const round = raceJson.round as number
+    const sprint_key =raceJson.sprint_key
+    const quali_key = raceJson.quali_key as number
+    const race_key = raceJson.race_key as number
+    const laps = raceJson.totalLaps as number
+    const raceIdStr = raceJson.raceId as string
 
     const weekendRaceResults = await getCurrentRaceResults(meeting_key)
     if (!weekendRaceResults) return {message: 'Race not found'}
@@ -176,22 +177,22 @@ export async function getResultsObjToAdd(seasonId: number, meeting_key: number) 
     const raceResults = _.filter(filtered, {session_key: race_key})
     const qualiResults = _.filter(filtered, {session_key: quali_key})
     const sprintResults = _.filter(filtered, {session_key: sprint_key})
-    const drivers = await getActiveDrivers()
+    const drivers = _.map(await getActiveDrivers(), driver => driver.toJSON())
     let fullResult = await Promise.all(_(filtered)
         .groupBy('driver_number')
         .map(async (value, key: string) => {
-            const driver = drivers.find(driver => driver.get('driverNumber') === +key)
+            const driver = drivers.find(driver => driver.driverNumber === +key)
             if (!driver) return {message: `Driver not found: ${key}`}
-            const driverId = driver.get('driverId')
-            const teamId = driver.get('teamId')
-            const teammate = drivers.find(mate => mate.get('teamId') === teamId && mate.get('driverId') !== driverId)
+            const driverId = driver.driverId
+            const teamId = driver.teamId
+            const teammate = drivers.find(mate => mate.teamId === teamId && mate.driverId !== driverId)
             if (!teammate) return {message: `Teammate not found for driver: ${key}`}
 
             const sprint = _.find(value, {session_key: sprint_key})
             const quali = _.find(value, {session_key: quali_key})
             const raceR = _.find(value, {session_key: race_key})
-            const teammateResult = _.find(raceResults, {driver_number: teammate.get('driverNumber')})
-            if (!teammateResult) return {message: `Teammate ${teammate.get('driverId')} result not found for driver: ${driverId}`}
+            const teammateResult = _.find(raceResults, {driver_number: teammate.driverNumber})
+            if (!teammateResult) return {message: `Teammate ${teammate.driverId} result not found for driver: ${driverId}`}
             let sprintPosition = null
             if (sprint) {
                 sprintPosition = (sprint.dnf || sprint.dns || sprint.dsq) ? _.findIndex(sprintResults, {driver_number: +key}) + 1 : sprint.position
@@ -208,7 +209,7 @@ export async function getResultsObjToAdd(seasonId: number, meeting_key: number) 
 
             return {
                 driverId: driverId,
-                raceId: raceId,
+                raceId: raceIdStr,
                 points: points,
                 cost: -1,
                 seasonId: seasonId,

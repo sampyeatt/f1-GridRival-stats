@@ -11,67 +11,67 @@ export class Race extends Model<Race> {
         allowNull: false,
         unique: true
     })
-    meeting_key?: number
+    declare meeting_key: number
 
     @Column({
         allowNull: false,
         unique: true
     })
-    circut_key?: number
+    declare circut_key: number
 
     @Column({
         allowNull: false
     })
-    meeting_name?: string
+    declare meeting_name: string
 
     @Column({
         allowNull: false
     })
-    circuit_short_name?: string
+    declare circuit_short_name: string
 
     @Column({
         allowNull: false
     })
-    country_code?: string
+    declare country_code: string
 
     @Column({
         allowNull: false
     })
-    country_name?: string
+    declare country_name: string
 
     @Column
-    sprint_key?: number
+    declare sprint_key?: number
 
     @Column({
         allowNull: false
     })
-    quali_key?: number
+    declare quali_key: number
 
     @Column({
         allowNull: false
     })
-    race_key?: number
+    declare race_key: number
 
     @Column({
         allowNull: false
     })
-    round?: number
+    declare round: number
 
     @Column({
-        allowNull: true
+        allowNull: false
     })
-    totalLaps?: number
+    declare totalLaps: number
 
     @Column({
-        allowNull: true
+        allowNull: false
     })
-    raceId?: string
+    declare raceId: string
 
     @ForeignKey(() => Season)
     @Column({
         allowNull: false,
     })
-    seasonId?: number
+    declare seasonId: number
 
     @HasMany(() => Results)
     results?: Results[] = []

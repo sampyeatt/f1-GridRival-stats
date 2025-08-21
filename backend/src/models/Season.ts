@@ -13,13 +13,13 @@ export class Season extends Model<Season> {
         allowNull: false,
         unique: true
     })
-    seasonId?: number
+    declare seasonId: number
 
     @Column({
         allowNull: false,
         defaultValue: false
     })
-    currentSeason?: boolean
+    declare currentSeason: boolean
 
     @HasMany(() => Race)
     races?: Race[] = []

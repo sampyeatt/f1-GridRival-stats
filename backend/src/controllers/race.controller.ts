@@ -8,7 +8,7 @@ import {getActiveSeason} from '../services/season.services'
 export const getRacesBySeasonIdController = async (req: Request, res: Response) => {
     const currentSeason = await getActiveSeason()
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason!.get('seasonId') as number
+    const seasonId = currentSeason.toJSON().seasonId as number
 
     const results = await getRacesBySeasonId(+seasonId!)
 
@@ -20,7 +20,7 @@ export const getRacesBySeasonIdController = async (req: Request, res: Response) 
 export const addRaceBulkController = async (req: Request, res: Response) => {
     const currentSeason = await getActiveSeason()
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason!.get('seasonId') as number
+    const seasonId = currentSeason.toJSON().seasonId as number
     const raceData = await getRacesByYear(seasonId!)
     const f1DataRaces = await getRaceLaps(seasonId!)
     const sordertRaces = _.orderBy(raceData, ['date_start'], ['asc'])
@@ -73,7 +73,7 @@ export const addRaceController = async (req: Request, res: Response) => {
     const meeting_key = req.body
     const currentSeason = await getActiveSeason()
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason!.get('seasonId') as number
+    const seasonId = currentSeason.toJSON().seasonId as number
 
     const raceData = await getRacesByYear(seasonId!)
     const f1DataRaces = await getRaceLaps(seasonId!)
@@ -112,7 +112,7 @@ export const updateCurrentSeason = async (req: Request, res: Response) => {
 
     const currentSeason = await getActiveSeason()
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason!.get('seasonId') as number
+    const seasonId = currentSeason.toJSON().seasonId as number
     console.log('SeasonId: ', seasonId)
     const raceData = await getRacesByYear(seasonId)
     const f1DataRaces = await getRaceLaps(seasonId)

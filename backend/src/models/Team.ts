@@ -11,12 +11,12 @@ export class Team extends Model<Team> {
         allowNull: false,
         unique: true
     })
-    teamId?: string
+    declare teamId: string
 
     @Column({
         allowNull: false
     })
-    teamName?: string
+    declare teamName: string
 
     @HasMany(() => Driver)
     drivers?: Driver[] = []

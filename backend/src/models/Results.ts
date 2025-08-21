@@ -10,101 +10,101 @@ export class Results extends Model<Results> {
     @Column({
         allowNull: false,
     })
-    raceId?: string
+    declare raceId: string
 
     @Column({
         allowNull: false,
     })
-    points?: number
+    declare points: number
 
     @Column({
         allowNull: false,
         type: 'float'
     })
-    cost?: number
+    declare cost: number
 
     @Column({
         allowNull: false
     })
-    rank?: number
+    declare rank: number
 
     @Column({
         allowNull: false,
     })
-    round?: number
+    declare round: number
 
     @Column({
         allowNull: false,
     })
-    finishPosition?: number
+    declare finishPosition: number
 
     @Column({
         allowNull: false,
         defaultValue: 0
     })
-    qualiPosition?: number
+    declare qualiPosition: number
 
     @Column({
         allowNull: false,
         defaultValue: false
     })
-    qualiDNS?: boolean
+    declare qualiDNS: boolean
 
     @Column({
         allowNull: false,
         defaultValue: false
     })
-    raceDNS?: boolean
+    declare raceDNS: boolean
 
     @Column({
         allowNull: false,
         defaultValue: false
     })
-    qualiDSQ?: boolean
+    declare qualiDSQ: boolean
 
     @Column({
         allowNull: false,
         defaultValue: false
     })
-    raceDSQ?: boolean
+    declare raceDSQ: boolean
 
     @Column({
         allowNull: false,
         type: 'float'
     })
-    positionDifference?: number
+    declare positionDifference: number
 
     @Column({
         allowNull: false,
     })
-    positionsForMoney?: number
+    declare positionsForMoney: number
 
     @Column({
         allowNull: false,
     })
-    easeToGainPoints?: number
+    declare easeToGainPoints: number
 
     @ForeignKey(() => Driver)
     @Column
-    driverId?: string
+    declare driverId?: string
 
     @ForeignKey(() => Team)
     @Column({
         allowNull: false,
     })
-    teamId?: string
+    declare teamId: string
 
     @ForeignKey(() => Race)
     @Column({
         allowNull: false,
     })
-    meeting_key?: number
+    declare meeting_key: number
 
     @ForeignKey(() => Season)
     @Column({
         allowNull: false,
     })
-    seasonId?: number
+    declare seasonId: number
 
     @BelongsTo(() => Race, 'meeting_key')
     race?: Race
