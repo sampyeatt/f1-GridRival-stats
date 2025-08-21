@@ -9,7 +9,7 @@ import {authenticateJWT, authenticateJWTAdmin} from '../shared/auth.util'
 const router = Router()
 
 router.get('/teamresults', authenticateJWT, getTeamResultsController)
-router.get('/byRound/:seasonId{/:round}', authenticateJWT, getTeamResultsByRoundController)
+router.get('/byRound/:round', authenticateJWT, getTeamResultsByRoundController)
 router.get('/teams', authenticateJWTAdmin, getTeamResultsToAddController)
 router.post('/', authenticateJWTAdmin, addTeamResultBulkController)
 router.post('/add', authenticateJWTAdmin, addTeamResultArrayController)

@@ -8,7 +8,7 @@ import {authenticateJWT, authenticateJWTAdmin} from '../shared/auth.util'
 
 const router = Router()
 
-router.get('/:seasonId', authenticateJWT, getRacesBySeasonIdController)
+router.get('/', authenticateJWT, getRacesBySeasonIdController)
 router.post('/addRace', authenticateJWTAdmin, addRaceController)
 router.post('/addRaceBulk', authenticateJWTAdmin, addRaceBulkController)
 router.put('/updateRaces', authenticateJWTAdmin, updateCurrentSeason)
