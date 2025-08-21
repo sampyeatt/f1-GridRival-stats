@@ -4,6 +4,7 @@ import {addUser, getAllById, getUserByEmail, updateToAdmin, updateUser} from '..
 import {encryptPassword, generateAdminToken, generateToken, verifyToken} from '../shared/auth.util'
 import {addToken, deleteTokens, getToken} from '../services/token.service'
 import {sendConfirmationEmail, sendForgotPasswordEmail} from '../shared/email.util'
+import bcrypt from 'bcrypt'
 
 const passwordZodRules = z.string().min(6).max(100).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, {
     message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number'
@@ -24,23 +25,17 @@ export const registerController = async (req: Request, res: Response) => {
 
     let {email, password} = parsedData.data
 
-    password = await encryptPassword(password)
-
     const existingUser = await getUserByEmail(email)
     if (existingUser) return res.status(400).json({message: 'User already exists'})
 
-    let user = await addUser(email, password)
-
-    user = user.toJSON()
-    delete user.password
-
-    const token = await generateToken(user.userId!)
-    await addToken(token, 'activation', user.userId!)
-    const emailSent = await sendConfirmationEmail(email, token)
-
-    if (!emailSent) return res.status(500).json({message: 'Failed to send email'})
-
-    return res.status(201).json(user)
+    bcrypt.hash(password, process.env.SALT_ROUNDS ?? 10, async (err, hash) => {
+        let user = await addUser(email, hash)
+        const token = await generateToken(user.userId!)
+        await addToken(token, 'activation', user.userId!)
+        const emailSent = await sendConfirmationEmail(email, token)
+        if (!emailSent) return res.status(500).json({message: 'Failed to send email'})
+        return res.status(201).json({message: 'User registered successfully'})
+    })
 }
 
 export const loginController = async (req: Request, res: Response) => {
@@ -60,7 +55,8 @@ export const loginController = async (req: Request, res: Response) => {
     if (!user) return res.status(400).json({message: 'User Not Found'})
     if (user.get('status') !== 'active') return res.status(400).json({message: 'User is not active, please confirm your email'})
     const dbPassword = await verifyToken(user.get('password')!)
-    if (dbPassword !== password) return res.status(400).json({message: 'Invalid credentials'})
+    const match = await bcrypt.compare(password, user.get('password'))
+    if (dbPassword !== password || !match) return res.status(400).json({message: 'Invalid credentials'})
 
     const accessToken = await generateToken(user.get('userId')!)
     const refreshToken = await generateToken(user.get('userId')!, '7d')
@@ -80,6 +76,7 @@ export const loginController = async (req: Request, res: Response) => {
         user: user.toJSON()
     }
 
+    // @ts-ignore
     delete session.user.password
 
     return res.status(200).json(session)
@@ -200,17 +197,14 @@ export const resetPasswordController = async (req: Request, res: Response) => {
     if (!dbToken || dbToken.get('type') !== 'reset') return res.status(400).json({message: 'Invalid token'})
 
     const userId = dbToken.get('userId')!
-
-    const encryptedPassword = await encryptPassword(password)
-
-    await updateUser({
-        id: userId,
-        password: encryptedPassword
+    bcrypt.hash(password, process.env.SALT_ROUNDS ?? 10, async (err, hash) => {
+        await updateUser({
+            id: userId,
+            password: hash
+        })
+        await deleteTokens(userId)
+        return res.status(200).json({message: 'Password reset successfully'})
     })
-
-    await deleteTokens(userId)
-
-    return res.status(200).json({message: 'Password reset successfully'})
 }
 
 export const getUserRoleController = async (req: Request, res: Response) => {
@@ -237,15 +231,18 @@ export const addUserAdminController = async (req: Request, res: Response) => {
     let existingUser = await getUserByEmail(email)
     if (!existingUser) return res.status(400).json({message: 'User does not exist'})
     const dbPassword = await verifyToken(existingUser.get('password')!)
-    if (dbPassword !== password) return res.status(400).json({message: 'Invalid credentials'})
+    const match = await bcrypt.compare(password, existingUser.get('password'))
+    if (dbPassword !== password || !match) return res.status(400).json({message: 'Invalid credentials'})
 
     existingUser = existingUser.toJSON()
+    // @ts-ignore
     delete existingUser.password
 
     const token = await generateAdminToken(existingUser.userId!, password)
     await addToken(token, 'admin', existingUser.userId!)
     let adminUser = await updateToAdmin(existingUser.userId!)
     adminUser = adminUser.toJSON()
+    // @ts-ignore
     delete adminUser.password
 
     return res.status(201).json(adminUser)
