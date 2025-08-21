@@ -19,6 +19,6 @@ export class SeasonService {
   // public season = toSignal(this.season$, {initialValue: []})
 
   getSeasonList(): Observable<Race[]> {
-    return this.http.get<Race[]>(`${this.apiUrl()}/2025`)
+    return this.http.get<Race[]>(`${this.apiUrl()}`)
   }
 }
