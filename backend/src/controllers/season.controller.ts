@@ -29,16 +29,9 @@ export const addSeasonController = async (req: Request, res: Response) => {
 }
 
 export const deleteSeasonController = async (req: Request, res: Response) => {
-    const schema = z.object({
-        seasonId: z.number()
-    })
-    const parsedData = schema.safeParse(req.body)
-    if (!parsedData.success) return res.status(400).json({
-        message: 'Invalid request body',
-        errors: JSON.parse(parsedData.error.message)
-    })
-    const {seasonId} = parsedData.data
-    res.json(await deleteSeason(seasonId))
+   if (!req.params.seasonId) return res.status(400).json({message: 'SeasonId parameter is required'})
+    const {seasonId} = req.params
+    res.json(await deleteSeason(+seasonId))
 
 }
 

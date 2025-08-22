@@ -17,7 +17,7 @@ export class AuthService {
   token?: string | null = null
   auth: boolean = false
   adminToken? : string | null = null
-  currentUser = signal<Session | null> (null)
+  currentUser = signal<Session | null | undefined> (undefined)
 
   register(email: string, password: string) {
     return this.http.post(`${this.apiUrl}/register`, {email: email, password})
@@ -42,8 +42,8 @@ export class AuthService {
     sessionStorage.setItem('jwt', token)
   }
 
-  saveUser(userId: number) {
-    sessionStorage.setItem('userId', String(userId))
+  saveUser(user: Session) {
+    sessionStorage.setItem('user', JSON.stringify(user))
   }
 
   saveAdminToken(token: string) {

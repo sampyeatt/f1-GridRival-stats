@@ -1,24 +1,35 @@
 import {HttpClient} from '@angular/common/http'
 import {Injectable, inject, computed} from '@angular/core'
 import {environment} from '../../environments/environment.development'
-import {Race} from '../interface/api-interface'
+import {Season} from '../interface/api-interface'
 import {Observable} from 'rxjs'
-import {toSignal} from '@angular/core/rxjs-interop'
 
 @Injectable({
   providedIn: 'root'
 })
 
 export class SeasonService {
-  apiUrl = computed(() => `${environment.API_URL}/api/race`)
+  apiUrl = computed(() => `${environment.API_URL}/api/season`)
 
   private http = inject(HttpClient)
 
-  // private season$: Observable<Race[]> = this.getSeasonList()
-  //
-  // public season = toSignal(this.season$, {initialValue: []})
+  getAllSeasons(): Observable<Season[]> {
+    return this.http.get<Season[]>(`${this.apiUrl()}/all`)
+  }
 
-  getSeasonList(): Observable<Race[]> {
-    return this.http.get<Race[]>(`${this.apiUrl()}`)
+  getActiveSeason(): Observable<Season> {
+    return this.http.get<Season>(`${this.apiUrl()}/active`)
+  }
+
+  inactivateSeason(seasonId: number) {
+    return this.http.put(`${this.apiUrl()}/inactivate`, {seasonId: seasonId})
+  }
+
+  deleteSeason(seasonId: number) {
+    return this.http.delete(`${this.apiUrl()}/delete/${seasonId}`)
+  }
+
+  addSeason(seasonId: number) {
+    return this.http.post(`${this.apiUrl()}/add`, {seasonId: seasonId})
   }
 }

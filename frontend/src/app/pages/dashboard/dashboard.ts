@@ -14,9 +14,9 @@ import {Race, Result, TeamResult} from '../../interface/api-interface'
 import {BadgeModule} from 'primeng/badge'
 import {TabsModule} from 'primeng/tabs'
 import {Select} from 'primeng/select'
-import {SeasonService} from '../../services/season.service'
 import {filter} from 'rxjs'
 import {TeamResultsService} from '../../services/teamresults.service'
+import {RaceService} from '../../services/race.service'
 
 @Component({
   selector: 'app-dashboard',
@@ -40,7 +40,7 @@ export class DashboardComponent implements OnInit {
 
   public resultsService = inject(ResultsService)
   public teamResultsService = inject(TeamResultsService)
-  public seasonService = inject(SeasonService)
+  private raceService = inject(RaceService)
   private cdref = inject(ChangeDetectorRef)
 
   // @ViewChild('dynamicComponent ', {read: ViewContainerRef})
@@ -53,7 +53,7 @@ export class DashboardComponent implements OnInit {
   }
 
   loadRaces() {
-    this.seasonService.getSeasonList().subscribe({
+    this.raceService.getRaceList().subscribe({
       next: (data) => {
         this.cdref.markForCheck()
         this.races = data

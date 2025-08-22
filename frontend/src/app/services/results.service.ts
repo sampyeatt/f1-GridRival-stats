@@ -13,7 +13,7 @@ export class ResultsService {
   private http = inject(HttpClient)
 
   getResults(): Observable<Result[]> {
-    return this.http.get<Result[]>(`${this.apiUrl()}`)
+    return this.http.get<Result[]>(`${this.apiUrl()}/allResults`)
   }
 
   getNewDriverResults(): Observable<Result[]> {

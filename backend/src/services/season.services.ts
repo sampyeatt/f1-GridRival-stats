@@ -12,7 +12,7 @@ export  async  function getAllSeasons() {
     return await Season.findAll()
 }
 
-export  async  function upsertSeason(season: { seasonId: number, currentSeason: boolean}) {
+export  async  function upsertSeason(season: Partial<Season>) {
     const seasonInstance = new Season()
     seasonInstance.set(season)
     return seasonInstance.save()

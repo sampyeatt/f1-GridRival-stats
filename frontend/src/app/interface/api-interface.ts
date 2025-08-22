@@ -46,3 +46,8 @@ export interface Session {
     email: string
   }
 }
+
+export interface Season {
+  seasonId: number
+  currentSeason: boolean
+}
