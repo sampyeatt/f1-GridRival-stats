@@ -6,6 +6,6 @@ export const connection = new Sequelize({
     username: process.env.PG_USER_NAME as string,
     password: process.env.PG_PASSWORD as string,
     database: process.env.PG_DATABASE as string,
-    port: process.env.PG_PORT as any || 5432,
+    port: process.env.PG_PORT as any || 5435,
     models: [__dirname + '/../models']
 })

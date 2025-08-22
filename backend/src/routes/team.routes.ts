@@ -1,10 +1,10 @@
 import {Router} from 'express'
 import {getTeams, populateTeamTable} from '../controllers/team.controller'
-import {authenticateJWT} from '../shared/auth.util'
+import {authenticateJWT, authenticateJWTAdmin} from '../shared/auth.util'
 
 const router = Router()
 
-router.get('/', getTeams)
-router.post('/newSeason', populateTeamTable)
+router.get('/', authenticateJWT, getTeams)
+router.post('/newSeason', authenticateJWTAdmin, populateTeamTable)
 
 export default router

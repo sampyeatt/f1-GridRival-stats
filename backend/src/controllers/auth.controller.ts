@@ -1,9 +1,10 @@
 import {Request, Response} from 'express'
 import z from 'zod'
-import {addUser, getUserByEmail, updateUser} from '../services/user.service'
-import {encryptPassword, generateToken, verifyToken} from '../shared/auth.util'
+import {addUser, getAllById, getUserByEmail, updateToAdmin, updateUser} from '../services/user.service'
+import {generateAdminToken, generateToken, verifyToken} from '../shared/auth.util'
 import {addToken, deleteTokens, getToken} from '../services/token.service'
 import {sendConfirmationEmail, sendForgotPasswordEmail} from '../shared/email.util'
+import bcrypt from 'bcrypt'
 
 const passwordZodRules = z.string().min(6).max(100).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, {
     message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number'
@@ -11,7 +12,6 @@ const passwordZodRules = z.string().min(6).max(100).regex(/^(?=.*[a-z])(?=.*[A-Z
 
 export const registerController = async (req: Request, res: Response) => {
     const schema = z.object({
-        name: z.string().min(2).max(100),
         email: z.string().email(),
         password: passwordZodRules
     })
@@ -23,23 +23,21 @@ export const registerController = async (req: Request, res: Response) => {
         errors: JSON.parse(parsedData.error.message)
     })
 
-    let {name, email, password} = parsedData.data
-
-    password = await encryptPassword(password)
+    let {email, password} = req.body
 
     const existingUser = await getUserByEmail(email)
     if (existingUser) return res.status(400).json({message: 'User already exists'})
 
-    let user = await addUser(name, email, password)
+    const hash = await bcrypt.hash(password,  10)
+    const user = await addUser(email, hash)
+    const userId = user.get('userId')
+    console.log('user id', userId)
+    const token = await generateToken(userId)
+    await addToken(token, 'activation', userId)
+    const emailSent = await sendConfirmationEmail(email, token)
+    if (!emailSent) return res.status(500).json({message: 'Failed to send email'})
+    return res.status(201).json({message: 'User registered successfully'})
 
-    user = user.toJSON()
-    delete user.password
-
-    const token = await generateToken(user.userId!)
-    await addToken(token, 'activation', user.userId!)
-    await sendConfirmationEmail(email, token)
-
-    return res.status(201).json(user)
 }
 
 export const loginController = async (req: Request, res: Response) => {
@@ -53,29 +51,33 @@ export const loginController = async (req: Request, res: Response) => {
         errors: JSON.parse(parsedData.error.message)
     })
 
-
-    const {email, password} = parsedData.data
+    const {email, password} = req.body
 
     const user = await getUserByEmail(email)
     if (!user) return res.status(400).json({message: 'User Not Found'})
     if (user.get('status') !== 'active') return res.status(400).json({message: 'User is not active, please confirm your email'})
-    const dbPassword = await verifyToken(user.get('password')!)
-    if (dbPassword !== password) return res.status(400).json({message: 'Invalid credentials'})
+    const match = await bcrypt.compare(password, user.get('password'))
+    if (!match) return res.status(400).json({message: 'Invalid credentials'})
 
     const accessToken = await generateToken(user.get('userId')!)
     const refreshToken = await generateToken(user.get('userId')!, '7d')
-
     await deleteTokens(user.get('userId')!)
-
+    let adminToken = null
+    if (user.get('role') === 'admin') {
+        adminToken = await generateAdminToken(user.get('userId')!, password)
+        await addToken(adminToken, 'admin', user.get('userId')!)
+    }
     await addToken(refreshToken, 'refresh', user.get('userId')!)
     await addToken(accessToken, 'access', user.get('userId')!)
 
     const session = {
         accessToken,
         refreshToken,
+        adminToken,
         user: user.toJSON()
     }
 
+    // @ts-ignore
     delete session.user.password
 
     return res.status(200).json(session)
@@ -196,15 +198,80 @@ export const resetPasswordController = async (req: Request, res: Response) => {
     if (!dbToken || dbToken.get('type') !== 'reset') return res.status(400).json({message: 'Invalid token'})
 
     const userId = dbToken.get('userId')!
-
-    const encryptedPassword = await encryptPassword(password)
-
-    await updateUser({
-        id: userId,
-        password: encryptedPassword
+    bcrypt.hash(password, process.env.SALT_ROUNDS ?? 10, async (err, hash) => {
+        await updateUser({
+            id: userId,
+            password: hash
+        })
+        await deleteTokens(userId)
+        return res.status(200).json({message: 'Password reset successfully'})
     })
+}
 
-    await deleteTokens(userId)
+export const getUserRoleController = async (req: Request, res: Response) => {
+    if (!req.params.userId) return res.status(400).json({message: 'UserId parameter is required'})
+    const {userId} = req.params
+    const user = await getAllById(+userId)
+    if (!user) return res.status(404).json({message: 'User not found'})
+    const role = user.get('role')
+    return res.status(200).json({role})
+}
 
-    return res.status(200).json({message: 'Password reset successfully'})
+export const addUserAdminController = async (req: Request, res: Response) => {
+    const schema = z.object({
+        email: z.string().email(),
+        password: passwordZodRules,
+        role: z.enum(['admin', 'user'])
+    })
+    const parsedData = schema.safeParse(req.body)
+    if (!parsedData.success) return res.status(400).json({
+        message: 'Invalid request body',
+        errors: JSON.parse(parsedData.error.message)
+    })
+    const {email, password} = parsedData.data
+    let existingUser = await getUserByEmail(email)
+    if (!existingUser) return res.status(400).json({message: 'User does not exist'})
+    const match = await bcrypt.compare(password, existingUser.get('password'))
+    if (!match) return res.status(400).json({message: 'Invalid credentials'})
+
+    existingUser = existingUser.toJSON()
+    // @ts-ignore
+    delete existingUser.password
+
+    const token = await generateAdminToken(existingUser.userId!, password)
+    await addToken(token, 'admin', existingUser.userId!)
+    let adminUser = await updateToAdmin(existingUser.userId!)
+    adminUser = adminUser.toJSON()
+    // @ts-ignore
+    delete adminUser.password
+
+    return res.status(201).json(adminUser)
+}
+
+export const validateAdminController = async (req: Request, res: Response) => {
+    const schema = z.object({
+        token: z.string()
+    })
+    const parsedData = schema.safeParse(req.body)
+    if (!parsedData.success) return res.status(400).json({
+        message: 'Invalid request body',
+        errors: JSON.parse(parsedData.error.message)
+    })
+    const {token} = parsedData.data
+    const validated = await verifyToken(token)
+    return res.status(200).json({valid: !!validated})
+}
+
+export const validateUserController = async (req: Request, res: Response) => {
+    const schema = z.object({
+        token: z.string()
+    })
+    const parsedData = schema.safeParse(req.body)
+    if (!parsedData.success) return res.status(400).json({
+        message: 'Invalid request body',
+        errors: JSON.parse(parsedData.error.message)
+    })
+    const {token} = parsedData.data
+    const validated = await verifyToken(token)
+    return res.status(200).json({valid: !!validated})
 }

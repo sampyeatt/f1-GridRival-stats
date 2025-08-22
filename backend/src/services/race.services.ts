@@ -20,7 +20,7 @@ export async function getRaceByCircutKey(circut_key: number) {
     })
 }
 
-export async function getSeasonBySeasonId(seasonId: number) {
+export async function getRacesBySeasonId(seasonId: number) {
     return await Race.findAll({
         where: {
             seasonId: seasonId
@@ -40,11 +40,13 @@ export async function addSeasonRace(seasonId: number, data: {
     country_code: string,
     country_name: string,
     meeting_key: number,
-    sprint_key: number,
-    quali_key: number,
-    race_key: number,
+    sprint_key: number | undefined ,
+    quali_key: number | undefined,
+    race_key: number | undefined,
     seasonId: number,
-    round: number
+    round: number,
+    totalLaps: number,
+    raceId: string
 }) {
     const race = new Race()
     race.seasonId = seasonId
@@ -54,10 +56,21 @@ export async function addSeasonRace(seasonId: number, data: {
     race.country_code = data.country_code
     race.country_name = data.country_name
     race.meeting_key = data.meeting_key
-    race.sprint_key = data.sprint_key
-    race.quali_key = data.quali_key
-    race.race_key = data.race_key
+    if (race.sprint_key) race.sprint_key = +data.sprint_key!
+    if (race.quali_key) race.quali_key = +data.quali_key!
+    if (race.race_key) race.race_key = +data.race_key!
     race.seasonId = seasonId
     race.round = data.round
+    race.totalLaps = data.totalLaps
+    race.raceId = data.raceId
     return await Race.build(race).save()
+}
+
+export async function updateRaceBulk(raceData: any[]){
+    raceData.map(async (race) => {
+        const raceInstance = await Race.findByPk(race.meeting_key)
+        if (!raceInstance) return
+        raceInstance.set(race)
+        return await raceInstance.save()
+    })
 }

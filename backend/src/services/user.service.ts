@@ -5,12 +5,20 @@ export async function getAllUsers() {
     return await User.findAll()
 }
 
-export async function addUser(name: string, email: string, password: string) {
+export async function getAllById(userId: number) {
+    return await User.findByPk(userId)
+}
+
+export async function addUser(email: string, password: string) {
     const user = new User()
-    user.name = name
-    user.email = email
-    user.password = password
-    return User.build(user).save()
+    user.set({
+        name: email,
+        email: email,
+        password: password,
+        role: 'user',
+        status: 'pending'
+    })
+    return await user.save()
 
 }
 
@@ -22,8 +30,12 @@ export async function getUserByEmail(email: string) {
     })
 }
 
-export const updateUser = async ({name, status, id, password}: {name?: string, status?: 'active' | 'pending', id: number, password?: string}) => {4
-    console.log('name: ', name, ' status: ', status, ' id: ', id, '')
+export const updateUser = async ({name, status, id, password}: {
+    name?: string,
+    status?: 'active' | 'pending',
+    id: number,
+    password?: string
+}) => {
     const user = await User.findByPk(id)
     if (!user) throw new Error('User not found')
 
@@ -32,6 +44,13 @@ export const updateUser = async ({name, status, id, password}: {name?: string, s
     if (status) user.status = status
     if (password) user.password = password
     return await User.update(user, {
-        where: { userId: id }
+        where: {userId: id}
     })
+}
+
+export const updateToAdmin = async (userId: number) => {
+    const user = await User.findByPk(userId)
+    if (!user) throw new Error('User not found')
+    if (user.get('role') === 'user') user.set({role: 'admin'})
+    return await user.save()
 }

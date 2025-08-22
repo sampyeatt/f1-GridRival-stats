@@ -2,6 +2,7 @@ import {Table, Column, Model, BelongsTo, ForeignKey} from 'sequelize-typescript'
 import {Driver} from './Driver'
 import {Team} from './Team'
 import {Race} from './Race'
+import {Season} from './Season'
 
 @Table
 export class Results extends Model<Results> {
@@ -9,72 +10,101 @@ export class Results extends Model<Results> {
     @Column({
         allowNull: false,
     })
-    raceId?: string
+    declare raceId: string
 
     @Column({
         allowNull: false,
     })
-    points?: number
+    declare points: number
 
     @Column({
         allowNull: false,
         type: 'float'
     })
-    cost?: number
+    declare cost: number
 
     @Column({
         allowNull: false
     })
-    rank?: number
+    declare rank: number
 
     @Column({
         allowNull: false,
     })
-    seasonId?: number
+    declare round: number
 
     @Column({
         allowNull: false,
     })
-    round?: number
+    declare finishPosition: number
 
     @Column({
         allowNull: false,
+        defaultValue: 0
     })
-    finishPosition?: number
+    declare qualiPosition: number
+
+    @Column({
+        allowNull: false,
+        defaultValue: false
+    })
+    declare qualiDNS: boolean
+
+    @Column({
+        allowNull: false,
+        defaultValue: false
+    })
+    declare raceDNS: boolean
+
+    @Column({
+        allowNull: false,
+        defaultValue: false
+    })
+    declare qualiDSQ: boolean
+
+    @Column({
+        allowNull: false,
+        defaultValue: false
+    })
+    declare raceDSQ: boolean
 
     @Column({
         allowNull: false,
         type: 'float'
     })
-    positionDifference?: number
+    declare positionDifference: number
 
     @Column({
         allowNull: false,
     })
-    positionsForMoney?: number
+    declare positionsForMoney: number
 
     @Column({
         allowNull: false,
     })
-    easeToGainPoints?: number
+    declare easeToGainPoints: number
 
     @ForeignKey(() => Driver)
-    @Column({
-        allowNull: false,
-    })
-    driverId?: string
+    @Column
+    declare driverId?: string
 
     @ForeignKey(() => Team)
     @Column({
         allowNull: false,
     })
-    teamId?: string
+    declare teamId: string
 
     @ForeignKey(() => Race)
     @Column({
         allowNull: false,
     })
-    meeting_key?: number
+    declare meeting_key: number
+
+    @ForeignKey(() => Season)
+    @Column({
+        allowNull: false,
+    })
+    declare seasonId: number
 
     @BelongsTo(() => Race, 'meeting_key')
     race?: Race
@@ -84,6 +114,9 @@ export class Results extends Model<Results> {
 
     @BelongsTo(() => Team, 'teamId')
     team?: Team
+
+    @BelongsTo(() => Season, 'seasonId')
+    season?: Season
 
 
 }

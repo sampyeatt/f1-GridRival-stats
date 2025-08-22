@@ -1,0 +1,63 @@
+services:
+  db:
+    container_name: f1-grod-db
+    image: postgres:17.6-alpine
+    volumes:
+      - ./db/data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d/
+    ports:
+      - "5435:5435"
+    networks:
+      - internalnet
+    environment:
+      - POSTGRES_USER=f1-data-user
+      - POSTGRES_PASSWORD=database-dockerpassword-here
+      - POSTGRES_DB=postgres
+      - PGPORT=5435
+  backend:
+    container_name: f1-grod-backend
+    image: f1-grod-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    networks:
+      - internalnet
+    ports:
+      - "3000:3000"
+    secrets:
+      - my_secret
+  frontend:
+    container_name: f1-grod-frontend
+    image: f1-grod-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    networks:
+      - internalnet
+    depends_on:
+      - backend
+  nginx:
+    container_name: f1-grod-nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    expose:
+      - "443"
+    ports:
+      - "443:443"
+    networks:
+      - internalnet
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:rw
+      - ./nginx/nginx-selfsigned.crt:/etc/nginx/ssl/nginx-selfsigned.crt:ro
+      - ./nginx/nginx-selfsigned.key:/etc/nginx/ssl/nginx-selfsigned.key:ro
+    depends_on:
+      - backend
+      - frontend
+networks:
+  internalnet:
+    driver: bridge
+
+secrets:
+  my_secret:
+    file: ./backend/src/.env

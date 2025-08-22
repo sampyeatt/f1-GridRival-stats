@@ -4,7 +4,6 @@ import dotenv from 'dotenv'
 dotenv.config({
     path: './src/.env'
 })
-import _ from 'lodash'
 
 export function sendConfirmationEmail(email: string, token: string) {
     const html = `
