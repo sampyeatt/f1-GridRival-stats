@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import {LoginComponent} from './pages/login/login'
 import {RegisterComponent} from './pages/register/register'
 import {DashboardComponent} from './pages/dashboard/dashboard'
-import {AdminComponent} from './pages/admin/admin.component'
+import {ResultAdminComponent} from './pages/admin/result-admin/result-admin.component'
 import {BrowserModule} from '@angular/platform-browser'
 
 @NgModule({
@@ -15,7 +15,7 @@ import {BrowserModule} from '@angular/platform-browser'
     LoginComponent,
     RegisterComponent,
     DashboardComponent,
-    AdminComponent,
+    ResultAdminComponent,
     BrowserModule,
   ],
   providers:[]

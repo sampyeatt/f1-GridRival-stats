@@ -6,25 +6,25 @@ import {TagModule} from 'primeng/tag'
 import {SelectModule} from 'primeng/select'
 import {ButtonModule} from 'primeng/button'
 import {InputTextModule} from 'primeng/inputtext'
-import {Result, TeamResult} from '../../interface/api-interface'
-import {ResultsService} from '../../services/results.service'
+import {Result, TeamResult} from '../../../interface/api-interface'
+import {ResultsService} from '../../../services/results.service'
 import {FormsModule} from '@angular/forms'
 import {Router} from '@angular/router'
 import {IconFieldModule} from 'primeng/iconfield'
 import {Message} from 'primeng/message'
 import {Tab, TabList, TabPanel, TabPanels, Tabs} from 'primeng/tabs'
 import {Ripple} from 'primeng/ripple'
-import {TeamResultsService} from '../../services/teamresults.service'
+import {TeamResultsService} from '../../../services/teamresults.service'
 
 
 @Component({
   selector: 'app-admin',
   standalone: true,
   imports: [TableModule, ToastModule, CommonModule, TagModule, SelectModule, ButtonModule, InputTextModule, FormsModule, IconFieldModule, Message, Tabs, Tab, TabList, TabPanel, TabPanels, Ripple],
-  templateUrl: './admin.component.html',
-  styleUrl: './admin.component.css'
+  templateUrl: './result-admin.component.html',
+  styleUrl: './result-admin.component.css'
 })
-export class AdminComponent {
+export class ResultAdminComponent {
 
   driverResults?: Result[]
   teamResults?: TeamResult[]
