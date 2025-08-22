@@ -15,3 +15,15 @@ export async function addTeam(teamId: string, teamName: string) {
 export async function getTeamById(id: string) {
     return Team.findByPk(id)
 }
+
+export async function updateTeam(team: Team) {
+    const teamInstance = await Team.findByPk(team.teamId)
+    if (teamInstance) {
+        teamInstance.set(team)
+        return teamInstance.save()
+    }
+}
+
+export async function deleteTeam(teamId: string) {
+    return await Team.destroy({where: {teamId: teamId}})
+}

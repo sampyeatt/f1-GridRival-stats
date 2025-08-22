@@ -69,3 +69,21 @@ export interface Season {
   seasonId: number
   currentSeason: boolean
 }
+
+export interface Team {
+  teamId: string
+  teamName: string
+}
+
+export interface Driver {
+  driverId: string
+  driverName: string
+  driverNumber: number
+  shortName: string
+  active: boolean
+  teamId: string
+  team: {
+    teamId: string
+    teamName: string
+  }
+}

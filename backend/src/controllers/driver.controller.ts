@@ -1,13 +1,15 @@
 import {Request, Response} from 'express'
-import {addDriver, getActiveDrivers, getDriverById} from '../services/driver.service'
+import {addDriver, getActiveDrivers, getAllDrivers, getDriverById} from '../services/driver.service'
 import {getCurrentDrivers} from'../shared/f1api.util'
 import * as _ from 'lodash'
 import {getActiveSeason} from '../services/season.services'
 
-export const getDrivers = async (req: Request, res: Response) => {
-    const drivers = await getActiveDrivers()
+export const getDriversController = async (req: Request, res: Response) => {
+    res.json(await getActiveDrivers())
+}
 
-    res.json(drivers)
+export const getAllDriversController = async (req: Request, res: Response) => {
+    res.json(await getAllDrivers())
 }
 
 export const populateDriverTable = async (req: Request, res: Response) => {

@@ -9,6 +9,12 @@ export async function getActiveDrivers() {
     })
 }
 
+export async function getAllDrivers() {
+    return await Driver.findAll({
+        include: ['team']
+    })
+}
+
 export async function addDriver(driverId: string, name: string, surname: string, teamId: string, shortName: string, driverNumber: number) {
     const driver = new Driver()
     driver.driverId = driverId
