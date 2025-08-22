@@ -2,7 +2,7 @@ import {ChangeDetectorRef, Component, inject} from '@angular/core'
 import {RouterModule} from '@angular/router'
 import {CommonModule} from '@angular/common'
 import {ButtonModule} from 'primeng/button'
-import {Tab, TabList, TabPanel, TabPanels, Tabs} from 'primeng/tabs'
+import {TabsModule} from 'primeng/tabs'
 import {TableModule} from 'primeng/table'
 import {FormsModule, NgForm, ReactiveFormsModule} from '@angular/forms'
 import {SeasonService} from '../../../services/season.service'
@@ -16,11 +16,7 @@ import {IconFieldModule} from 'primeng/iconfield'
     RouterModule,
     CommonModule,
     ButtonModule,
-    Tab,
-    TabList,
-    Tabs,
-    TabPanels,
-    TabPanel,
+    TabsModule,
     TableModule,
     ReactiveFormsModule,
     IconFieldModule,

@@ -1,1 +1,50 @@
-<p-button label="Add All Seasons" class="flex p-8"></p-button>
+<p-tabs value="races" class="flex p-6">
+  <p-tablist class="flex py-6">
+    <p-tab value="manageRaces">Manage Races <i class="pi pi-arrow-down"></i></p-tab>
+  </p-tablist>
+  <p-tabpanels #dynamicComponent>
+    <p-tabpanel value="manageRaces">
+      <div class="flex justify-center py-4">
+        <p-button (onClick)="this.addRace()" label="Update All Racesl" class="px-3"><i class="pi pi-arrow-down"></i></p-button>
+        <p-select [options]="this.raceList" [(ngModel)]="selectedRace" (onChange)=this.getRaceById() optionLabel="meeting_name" placeholder="Select Race" class="w-full md:w-100" #dynamicComponent/>
+      </div>
+      @if (this.displayedRaces) {
+        <p-table [value]="this.displayedRaces" [tableStyle]="{'min-width': '50rem'}">
+          <ng-template #header>
+            <tr>
+              <th>Round</th>
+              <th>Meeting Name</th>
+              <th>Total Laps</th>
+              <th>Meeting Key</th>
+              <th>Sprint Key</th>
+              <th>Quali Key</th>
+              <th>Race Key</th>
+              <th></th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-result>
+            <tr>
+              <td>{{ result.round}}</td>
+              <td>{{ result.meeting_name }}</td>
+              <td>{{ result.totalLaps }}</td>
+              <td>{{ result.meeting_key }}</td>
+              <td>{{ result.sprint_key }}</td>
+              <td>{{ result.quali_key }}</td>
+              <td>{{ result.race_key }}</td>
+              <td>
+                <div style="width:12%" class="flex items-center justify-center gap-2">
+                  <p-button text rounded severity="secondary" (onClick)="this.updateRace(result)">
+                    <i class="pi pi-arrow-up-right"></i>
+                  </p-button>
+                  <p-button text rounded severity="secondary" (onClick)="this.deleteRace(result)">
+                    <i class="pi pi-times"></i>
+                  </p-button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      }
+    </p-tabpanel>
+  </p-tabpanels>
+</p-tabs>

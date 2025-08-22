@@ -31,9 +31,27 @@ export interface TeamResult {
   meeting_key: number
 }
 
-export interface Race {
+export interface RaceList {
   meeting_name: string
   meeting_key: number
+}
+
+export interface Race {
+  meeting_key: number
+  circut_key: number
+  meeting_name: string
+  circuit_short_name: string
+  country_code: string
+  country_name: string
+  sprint_key: number | null
+  quali_key: number
+  race_key: number
+  round: number
+  totalLaps: number
+  raceId: string
+  seasonId: number
+  createdAt: string
+  updatedAt: string
 }
 
 export interface Session {
