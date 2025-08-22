@@ -6,7 +6,7 @@ import {
     bulkAddTeamResults,
     getTeamResults,
     getTeamResultsByRound,
-    teamResultsToAdd
+    teamResultsToAdd, upsertTeamResultsBulk
 } from '../services/teamresults.service'
 import {TeamResults} from '../models/TeamResults'
 import {getRacesByYear} from '../shared/f1api.util'
@@ -93,4 +93,36 @@ export const getTeamResultsToAddController = async (req: Request, res: Response)
     const teamResults = await teamResultsToAdd(seasonId!, diff.meeting_key)
     res.json(teamResults)
 
+}
+
+export const importTeamResultsController = async (req: Request, res: Response) => {
+
+    console.log('Request Body: ', req.body)
+    const schema = z.array(z.object({
+        id: z.number(),
+        raceId: z.string(),
+        points: z.number(),
+        cost: z.number(),
+        rank: z.number(),
+        round: z.number(),
+        positionDifference: z.number(),
+        positionsForMoney: z.number(),
+        easeToGainPoints: z.number(),
+        teamId: z.string(),
+        meeting_key: z.number(),
+        seasonId: z.number(),
+        createdAt: z.string(),
+        updatedAt: z.string()
+    }))
+    const schemaValidator = schema.safeParse(req.body.data)
+    if (!schemaValidator.success) return res.status(400).json({
+        message: 'Invalid request body',
+        errors: schemaValidator.error
+    })
+
+    const races = req.body.data
+    const currentSeason = await getActiveSeason()
+    if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
+    _.map(races, result => upsertTeamResultsBulk(_.omit(result, 'id')))
+    res.json({message: 'Result imported queued for processing'})
 }

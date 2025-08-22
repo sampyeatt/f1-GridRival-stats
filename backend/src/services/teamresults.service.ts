@@ -140,3 +140,9 @@ export async function teamResultsToAdd(seasonId: number, meeting_key: number){
 
     return teamResults
 }
+
+export async function upsertTeamResultsBulk(resultData: Partial<TeamResults>) {
+    const teamResultInstance = new TeamResults()
+    teamResultInstance.set(resultData)
+    return teamResultInstance.save()
+}
