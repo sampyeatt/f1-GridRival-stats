@@ -2,8 +2,8 @@
   <div class="w-full md:w-5/12 flex flex-col items-center justify-center gap-3 py-15">
     <div class="flex flex-col gap-2 md:w-100">
       <form (submit)="onSubmit(loginForm)" #loginForm="ngForm">
-        <input [(ngModel)]="email" name="email" type="text" placeholder="email" required class="block w-full mb-3 p-2 border" />
-        <input [(ngModel)]="password"  name="password" type="password" placeholder="Password" required class="block w-full mb-4 p-2 border" />
+        <input [(ngModel)]="email" name="email" type="text" placeholder="email" required class="block w-full mb-3 p-2 border rounded-md"/>
+        <input [(ngModel)]="password"  name="password" type="password" placeholder="Password" required class="block w-full mb-4 p-2 border rounded-md" />
         <div class="flex">
           <p-button type="submit" label="Login" icon="pi pi-user" class="w-full max-w-[17.35rem]" styleClass="w-full mx-auto" [disabled]="loginForm.invalid" raised rounded/>
         </div>

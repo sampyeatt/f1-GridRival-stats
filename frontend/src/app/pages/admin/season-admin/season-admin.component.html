@@ -43,7 +43,7 @@
     <p-tabpanel value="addSeason">
       <form (submit)="addSeason(seasonForm)" #seasonForm="ngForm">
         <div style="width:30%" class="flex items-center justify-center gap-2">
-          <input [(ngModel)]="seasonId" name="seasonId" type="number" placeholder="Season Id" required class="block w-full mb-3 p-2 border"/>
+          <input [(ngModel)]="seasonId" name="seasonId" type="number" placeholder="Season Id" required class="block w-full mb-3 p-2 border rounded-md"/>
           <p-button text rounded severity="secondary"  type="submit" [disabled]="seasonForm.invalid">
             <i class="pi pi-save"></i>
           </p-button>
