@@ -1,9 +1,12 @@
 <nav class="bg-gray-800 text-white p-4 flex justify-between items-center">
   <span class="text-xl font-semibold">Grid Rivals Organzied Data</span>
   <div>
-    <a *ngIf="!this.authenticated" class="mr-4" routerLink="/login">Login</a>
-    <a *ngIf="!this.authenticated" class="mr-4" routerLink="/register">Register</a>
-    <a *ngIf="this.authenticated" class="mr-4" routerLink="/dashboard">Dashboard</a>
-    <p-button *ngIf="this.authenticated" (click)="this.logout()" variant="outlined" [raised]="true" [rounded]="true">Logout</p-button>
+    @if (!this.authenticated) {
+      <a class="mr-4" routerLink="/login">Login</a>
+      <a class="mr-4" routerLink="/register">Register</a>
+    } @else if (this.authenticated) {
+      <a class="mr-4" routerLink="/dashboard">Dashboard</a>
+      <p-button (onClick)="this.logout()" variant="outlined" rounded raised>Logout</p-button>
+    }
   </div>
 </nav>

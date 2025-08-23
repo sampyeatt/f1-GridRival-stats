@@ -5,7 +5,7 @@
   <p-tabpanels>
     <p-tabpanel value="manageRaces">
       <div class="flex justify-center py-4">
-        <p-button (onClick)="this.addRace()" label="Update All Racesl" class="px-3"><i class="pi pi-arrow-down"></i>
+        <p-button (onClick)="this.addRace()" label="Update All Racesl" class="px-3" raised rounded><i class="pi pi-arrow-down"></i>
         </p-button>
         <p-select [options]="this.raceList" [(ngModel)]="selectedRace" (onChange)=this.getRaceById() optionLabel="meeting_name" placeholder="Select Race" class="w-full md:w-100"/>
       </div>

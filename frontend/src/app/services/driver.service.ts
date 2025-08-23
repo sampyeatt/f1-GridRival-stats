@@ -20,8 +20,8 @@ export class DriverService {
     return this.http.post(`${this.apiUrl()}/newSeason`, {})
   }
 
-  updateDriver(team: Driver) {
-    return this.http.put(`${this.apiUrl()}/update`, {data: team})
+  updateDriver(driver: Driver) {
+    return this.http.put(`${this.apiUrl()}/update`, {data: driver})
   }
 
   deleteDriver(teamId: string) {

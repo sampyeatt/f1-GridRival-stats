@@ -8,7 +8,7 @@ import {CommonModule} from '@angular/common'
 import {FormsModule, ReactiveFormsModule} from '@angular/forms'
 import {IconFieldModule} from 'primeng/iconfield'
 import {TeamService} from '../../../services/team.service'
-import {Race, Team} from '../../../interface/api-interface'
+import {Team} from '../../../interface/api-interface'
 import {TooltipModule} from 'primeng/tooltip'
 import {InputTextModule} from 'primeng/inputtext'
 

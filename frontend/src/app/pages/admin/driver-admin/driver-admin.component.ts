@@ -10,6 +10,9 @@ import {SelectModule} from 'primeng/select'
 import {DriverService} from '../../../services/driver.service'
 import {Driver, Team} from '../../../interface/api-interface'
 import {TeamService} from '../../../services/team.service'
+import {TooltipModule} from 'primeng/tooltip'
+import {InputTextModule} from 'primeng/inputtext'
+import {ToggleButtonModule} from 'primeng/togglebutton'
 
 @Component({
   selector: 'app-driver-admin',
@@ -23,7 +26,10 @@ import {TeamService} from '../../../services/team.service'
     ReactiveFormsModule,
     IconFieldModule,
     FormsModule,
-    SelectModule
+    SelectModule,
+    TooltipModule,
+    InputTextModule,
+    ToggleButtonModule
   ],
   templateUrl: './driver-admin.component.html',
   styleUrl: './driver-admin.component.css'
@@ -40,6 +46,7 @@ export class DriverAdminComponent implements OnInit{
       teamName: 'All Teams'
     }]
   selectedTeam?: Team
+  clonedDriver: { [key: string]: Driver } = {}
 
   ngOnInit() {
     this.getDrivers()
@@ -88,6 +95,7 @@ export class DriverAdminComponent implements OnInit{
       },
       error: (err) => {}
     })
+    delete this.clonedDriver[driver.driverId]
   }
 
   deleteDriver(driver: Driver){
@@ -97,6 +105,28 @@ export class DriverAdminComponent implements OnInit{
         console.log(data)
         this.getDrivers()
       },
+    })
+  }
+
+  onRowEditInitDriver(results: Driver) {
+    this.clonedDriver[results.driverId] = {...results}
+  }
+
+  onRowEditCancelDriver(results: Driver, index: number) {
+    this.drivers![index] = this.clonedDriver[results.driverId]
+    delete this.clonedDriver[results.driverId]
+  }
+
+  addDriversForSeasonStart(){
+    this.driverService.addDriversNewSeason().subscribe({
+      next: (data) => {
+        this.cdref.markForCheck()
+        console.log(data)
+        this.getDrivers()
+      },
+      error: (err) => {
+        console.error('Error Loading posts: ', err)
+      }
     })
   }
 

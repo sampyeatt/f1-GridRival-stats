@@ -6,9 +6,9 @@
   <p-tabpanels >
     <p-tabpanel value="manageSeasons">
       <div class="flex justify-center py-4">
-        <p-button (onClick)="this.getAllSeasonData()" label="Get All" class="px-3">
+        <p-button (onClick)="this.getAllSeasonData()" label="Get All" class="px-3" raised rounded>
           <i class="pi pi-angle-double-down"></i></p-button>
-        <p-button (onClick)="this.getActiveSeasonData()" label="Get Active" class="px-3">
+        <p-button (onClick)="this.getActiveSeasonData()" label="Get Active" class="px-3" raised rounded>
           <i class="pi pi-angle-down"></i></p-button>
       </div>
       @if(this.seasonResults) {
