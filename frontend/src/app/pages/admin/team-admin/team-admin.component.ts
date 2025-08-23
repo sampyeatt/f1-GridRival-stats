@@ -8,7 +8,9 @@ import {CommonModule} from '@angular/common'
 import {FormsModule, ReactiveFormsModule} from '@angular/forms'
 import {IconFieldModule} from 'primeng/iconfield'
 import {TeamService} from '../../../services/team.service'
-import {Team} from '../../../interface/api-interface'
+import {Race, Team} from '../../../interface/api-interface'
+import {TooltipModule} from 'primeng/tooltip'
+import {InputTextModule} from 'primeng/inputtext'
 
 @Component({
   selector: 'app-team-admin',
@@ -22,7 +24,9 @@ import {Team} from '../../../interface/api-interface'
       ReactiveFormsModule,
       IconFieldModule,
       FormsModule,
-      SelectModule
+      SelectModule,
+      TooltipModule,
+      InputTextModule
     ],
   templateUrl: './team-admin.component.html',
   styleUrl: './team-admin.component.css'
@@ -33,6 +37,7 @@ export class TeamAdminComponent implements OnInit{
   private cdref = inject(ChangeDetectorRef)
 
   teams: Team[] = []
+  clonedTeam: { [key: string]: Team } = {}
 
   ngOnInit() {
     this.getAllTeams()
@@ -75,6 +80,7 @@ export class TeamAdminComponent implements OnInit{
         console.error('Error Loading posts: ', err)
       }
     })
+    delete this.clonedTeam[team.teamId]
   }
 
   deleteTeam(team: Team){
@@ -88,5 +94,14 @@ export class TeamAdminComponent implements OnInit{
         console.error('Error Loading posts: ', err)
       }
     })
+  }
+
+  onRowEditInitTeam(results: Team) {
+    this.clonedTeam[results.teamId] = {...results}
+  }
+
+  onRowEditCancelTeam(results: Team, index: number) {
+    this.teams![index] = this.clonedTeam[results.teamId]
+    delete this.clonedTeam[results.teamId]
   }
 }

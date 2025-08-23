@@ -13,8 +13,10 @@
         <p-table [value]="this.displayedRaces" dataKey="meeting_key" editMode="row" [tableStyle]="{'min-width': '50rem'}">
           <ng-template #header>
             <tr>
-              <th>Round</th>
-              <th>Meeting Name</th>
+              <th pSortableColumn="round">Round
+              <p-sortIcon field="round"/></th>
+              <th pSortableColumn="meeting_name">Meeting Name
+                <p-sortIcon field="meeting_name"/></th>
               <th>Total Laps</th>
               <th>Meeting Key</th>
               <th>Sprint Key</th>

@@ -26,7 +26,6 @@ import {InputTextModule} from 'primeng/inputtext'
     IconFieldModule,
     FormsModule,
     SelectModule,
-    RippleModule,
     TooltipModule,
     InputTextModule
   ],
@@ -99,7 +98,6 @@ export class RaceAdminComponent implements OnInit {
         console.error('Error Loading posts: ', err)
       }
     })
-
     delete this.clonedRace[race.raceId]
   }
 

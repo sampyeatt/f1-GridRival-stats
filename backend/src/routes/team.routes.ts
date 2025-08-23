@@ -6,7 +6,7 @@ const router = Router()
 
 router.get('/', authenticateJWT, getTeams)
 router.post('/newSeason', authenticateJWTAdmin, populateTeamTable)
-router.post('/update', authenticateJWTAdmin, updateTeamController)
+router.put('/update', authenticateJWTAdmin, updateTeamController)
 router.delete('/delete/:teamId', authenticateJWTAdmin, deleteTeamController)
 
 export default router

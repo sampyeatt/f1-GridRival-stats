@@ -32,7 +32,7 @@ export const updateTeamController = async (req: Request, res: Response) => {
         teamId: z.string(),
         teamName: z.string()
     })
-    const schemaValidator = schema.safeParse(req.body)
+    const schemaValidator = schema.safeParse(req.body.data)
     if (!schemaValidator.success) return res.status(400).json({
         message: 'Invalid request body',
         errors: schemaValidator.error
