@@ -13,7 +13,7 @@ import {ResultsService} from '../../services/results.service'
 import {RaceList, Result, TeamResult} from '../../interface/api-interface'
 import {BadgeModule} from 'primeng/badge'
 import {TabsModule} from 'primeng/tabs'
-import {Select} from 'primeng/select'
+import {SelectModule} from 'primeng/select'
 import {filter} from 'rxjs'
 import {TeamResultsService} from '../../services/teamresults.service'
 import {RaceService} from '../../services/race.service'
@@ -22,7 +22,7 @@ import {RaceService} from '../../services/race.service'
   selector: 'app-dashboard',
   standalone: true,
   imports: [
-    TableModule, CommonModule, ButtonModule, BadgeModule, FormsModule, TabsModule, Select
+    TableModule, CommonModule, ButtonModule, BadgeModule, FormsModule, TabsModule, SelectModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './dashboard.html',

@@ -1,7 +1,9 @@
 
 <div class="py-6">
-  <p-select [options]="this.races" [(ngModel)]="selectedRace" (onChange)=filterResults() optionLabel="meeting_name" placeholder="Select Race" class="w-full md:w-100"  />
-  <p-tabs value="driver"  >
+  <div class="flex justify-center">
+    <p-select [options]="this.races" [(ngModel)]="selectedRace" (onChange)=filterResults() optionLabel="meeting_name" placeholder="Select Race" class="w-full md:w-100 px-1"  />
+  </div>
+  <p-tabs value="driver">
     <p-tablist class="flex justify-center py-6">
       <p-tab value="driver">Drivers</p-tab>
       <p-tab value="team">Teams</p-tab>
