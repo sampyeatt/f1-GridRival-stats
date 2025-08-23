@@ -37,6 +37,10 @@ export class AuthService {
 
   }
 
+  refreshToken() {
+    return this.http.post<Session>(`${this.apiUrl}/refresh`, {token: this.currentUser()?.refreshToken})
+  }
+
   saveToken(token: string) {
     this.token = token
     sessionStorage.setItem('jwt', token)

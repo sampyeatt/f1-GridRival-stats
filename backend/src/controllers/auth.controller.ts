@@ -5,6 +5,7 @@ import {generateAdminToken, generateToken, verifyToken} from '../shared/auth.uti
 import {addToken, deleteTokens, getToken} from '../services/token.service'
 import {sendConfirmationEmail, sendForgotPasswordEmail} from '../shared/email.util'
 import bcrypt from 'bcrypt'
+import {getUsers} from './user.controller'
 
 const passwordZodRules = z.string().min(6).max(100).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, {
     message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number'
@@ -101,10 +102,15 @@ export const refreshTokenController = async (req: Request, res: Response) => {
     if (!dbRefreshToken || dbRefreshToken.get('type') !== 'refresh') return res.status(400).json({message: 'Invalid token'})
 
     const userId = dbRefreshToken.get('userId')!
+    const user = await getAllById(userId)
     const accessToken = await generateToken(userId)
     const newRefreshToken = await generateToken(userId, '7d')
-    await deleteTokens(userId)
 
+    await deleteTokens(userId)
+    if (user && user.get('role') === 'admin') {
+        const newAdmin = await generateAdminToken(userId, user.get('password'))
+        await addToken(newAdmin, 'admin', userId)
+    }
 
     await addToken(newRefreshToken, 'refresh', userId)
     await addToken(accessToken, 'access', userId)

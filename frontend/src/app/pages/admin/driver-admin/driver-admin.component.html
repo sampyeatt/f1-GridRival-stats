@@ -2,12 +2,12 @@
   <p-tablist class="flex py-6">
     <p-tab value="manageDriver">Manage Drivers <i class="pi pi-arrow-down"></i></p-tab>
   </p-tablist>
-  <p-tabpanels #dynamicComponent>
+  <p-tabpanels >
     <p-tabpanel value="manageDriver">
       <div class="flex justify-center py-4">
 <!--        <p-button (onClick)="this.getAllTeams()" label="Update All Teams" class="px-3"><i class="pi pi-car"></i></p-button>-->
 <!--        <p-button (onClick)="this.addTeamsForSeasonStart()" label="Season Start" class="px-3"><i class="pi pi-plus-circle"></i></p-button>-->
-        <p-select [options]="this.teams" [(ngModel)]="selectedTeam" (onChange)=this.filterResults() optionLabel="teamName" placeholder="Select Team" class="w-full md:w-100" #dynamicComponent/>
+        <p-select [options]="this.teams" [(ngModel)]="selectedTeam" (onChange)=this.filterResults() optionLabel="teamName" placeholder="Select Team" class="w-full md:w-100" />
       </div>
       @if (this.displayedDrivers) {
         <p-table [value]="this.displayedDrivers" [tableStyle]="{'min-width': '50rem'}">

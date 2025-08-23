@@ -195,13 +195,14 @@ export const updateRaceController = async (req: Request, res: Response) => {
         createdAt: z.string(),
         updatedAt: z.string(),
     })
-    const schemaValidator = schema.safeParse(req.body)
+    const schemaValidator = schema.safeParse(req.body.data)
     if (!schemaValidator.success) return res.status(400).json({
         message: 'Invalid request body',
-        errors: schemaValidator.error
+        errors: schemaValidator.error.issues
     })
-    const raceData = req.body.data
-    const raceUpdated = await updateRaceBulk(raceData.toArray)
+    const raceData =[req.body.data]
+    console.log('RaceDatra', raceData)
+    const raceUpdated = await updateRaceBulk(raceData)
     if (raceUpdated.length !== 0) return res.status(200).json({message: 'Races updated', success: true})
     else return res.status(404).json({message: 'Races failed to update', success: false})
 }

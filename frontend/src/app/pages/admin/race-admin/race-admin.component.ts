@@ -9,6 +9,9 @@ import {RaceList, Race} from '../../../interface/api-interface'
 import {SelectModule} from 'primeng/select'
 import {IconFieldModule} from 'primeng/iconfield'
 import {RouterModule} from '@angular/router'
+import {RippleModule} from 'primeng/ripple'
+import {TooltipModule} from 'primeng/tooltip'
+import {InputTextModule} from 'primeng/inputtext'
 
 @Component({
   selector: 'app-race-admin',
@@ -22,12 +25,15 @@ import {RouterModule} from '@angular/router'
     ReactiveFormsModule,
     IconFieldModule,
     FormsModule,
-    SelectModule
+    SelectModule,
+    RippleModule,
+    TooltipModule,
+    InputTextModule
   ],
   templateUrl: './race-admin.component.html',
   styleUrl: './race-admin.component.css'
 })
-export class RaceAdminComponent implements OnInit{
+export class RaceAdminComponent implements OnInit {
 
   private raceService = inject(RaceService)
   private cdref = inject(ChangeDetectorRef)
@@ -39,7 +45,7 @@ export class RaceAdminComponent implements OnInit{
   races?: Race[] = []
   displayedRaces?: Race[] = []
   selectedRace?: RaceList
-  tempvalue?: string = ''
+  clonedRace: { [key: string]: Race } = {}
 
 
   ngOnInit() {
@@ -60,7 +66,7 @@ export class RaceAdminComponent implements OnInit{
     })
   }
 
-  getAllRaces(){
+  getAllRaces() {
     this.raceService.getAllRaces().subscribe({
       next: (data) => {
         this.cdref.markForCheck()
@@ -74,15 +80,15 @@ export class RaceAdminComponent implements OnInit{
     })
   }
 
-  getRaceById(){
-    if(this.selectedRace && this.selectedRace.meeting_key !== 0 && this.races){
+  getRaceById() {
+    if (this.selectedRace && this.selectedRace.meeting_key !== 0 && this.races) {
       this.displayedRaces = this.races.filter(result => result.meeting_key === this.selectedRace!.meeting_key)
     } else if (this.selectedRace && this.selectedRace.meeting_key === 0) {
       this.displayedRaces = this.races
     }
   }
 
-  updateRace(race: Race){
+  updateRace(race: Race) {
     this.raceService.updateRace(race).subscribe({
       next: (data) => {
         this.cdref.markForCheck()
@@ -93,9 +99,11 @@ export class RaceAdminComponent implements OnInit{
         console.error('Error Loading posts: ', err)
       }
     })
+
+    delete this.clonedRace[race.raceId]
   }
 
-  deleteRace(race: Race){
+  deleteRace(race: Race) {
     this.raceService.deleteRace(race.meeting_key).subscribe({
       next: (data) => {
         this.cdref.markForCheck()
@@ -108,7 +116,7 @@ export class RaceAdminComponent implements OnInit{
     })
   }
 
-  addRace(){
+  addRace() {
     this.raceService.addRaceBulk().subscribe({
       next: (data) => {
         this.cdref.markForCheck()
@@ -119,5 +127,15 @@ export class RaceAdminComponent implements OnInit{
         console.error('Error Loading posts: ', err)
       }
     })
+  }
+
+
+  onRowEditInitRace(results: Race) {
+    this.clonedRace[results.raceId] = {...results}
+  }
+
+  onRowEditCancelRace(results: Race, index: number) {
+    this.races![index] = this.clonedRace[results.raceId]
+    delete this.clonedRace[results.raceId]
   }
 }

@@ -66,8 +66,8 @@ export async function addSeasonRace(seasonId: number, data: {
     return await Race.build(race).save()
 }
 
-export async function updateRaceBulk(raceData: any[]){
-    return raceData.map(async (race) => {
+export async function updateRaceBulk(raceData: Race[]){
+    return raceData.map(async (race: Race) => {
         const raceInstance = await Race.findByPk(race.meeting_key)
         if (!raceInstance) return
         raceInstance.set(race)

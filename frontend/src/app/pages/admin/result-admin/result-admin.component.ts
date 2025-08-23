@@ -11,16 +11,27 @@ import {ResultsService} from '../../../services/results.service'
 import {FormsModule} from '@angular/forms'
 import {Router} from '@angular/router'
 import {IconFieldModule} from 'primeng/iconfield'
-import {Message} from 'primeng/message'
-import {Tab, TabList, TabPanel, TabPanels, Tabs} from 'primeng/tabs'
-import {Ripple} from 'primeng/ripple'
+import {MessageModule} from 'primeng/message'
+import {TabsModule} from 'primeng/tabs'
 import {TeamResultsService} from '../../../services/teamresults.service'
+import {TooltipModule} from 'primeng/tooltip'
 
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [TableModule, ToastModule, CommonModule, TagModule, SelectModule, ButtonModule, InputTextModule, FormsModule, IconFieldModule, Message, Tabs, Tab, TabList, TabPanel, TabPanels, Ripple],
+  imports: [TableModule,
+    ToastModule,
+    CommonModule,
+    TagModule,
+    SelectModule,
+    ButtonModule,
+    InputTextModule,
+    FormsModule,
+    IconFieldModule,
+    MessageModule,
+    TabsModule,
+    TooltipModule],
   templateUrl: './result-admin.component.html',
   styleUrl: './result-admin.component.css'
 })
@@ -114,7 +125,8 @@ export class ResultAdminComponent {
   onRowEditSaveDriver(results: Result) {
     if (results.cost > 0) {
       delete this.clonedDriverResult[results.id]
-    } else {    }
+    } else {
+    }
   }
 
   onRowEditCancelDriver(results: Result, index: number) {
@@ -129,7 +141,8 @@ export class ResultAdminComponent {
   onRowEditSaveTeam(results: Result) {
     if (results.cost > 0) {
       delete this.clonedTeamResults[results.id]
-    } else {    }
+    } else {
+    }
   }
 
   onRowEditCancelTeam(results: Result, index: number) {

@@ -13,92 +13,98 @@
       <p-tab value="driver">Drivers</p-tab>
       <p-tab value="team">Teams</p-tab>
     </p-tablist>
-    <p-tabpanels #dynamicComponent>
+    <p-tabpanels >
       <p-tabpanel value="driver">
-        <p-table class="py-6 flex justify-center" *ngIf="this.driverResults" [value]="this.driverResults" dataKey="driverId" editMode="row" [tableStyle]="{'min-width': '50rem'}">
-          <ng-template #header>
-            <tr>
-              <th style="width:12%" pSortableColumn="driverId">Diver
-                <p-sortIcon field="driverId"/>
-              </th>
-              <th style="width:12%" pSortableColumn="cost">Cost
-                <p-sortIcon field="cost"/>
-              </th>
-              <th style="width:12%" pSortableColumn="points">Points
-                <p-sortIcon field="points"/>
-              </th>
-              <th style="width:12%" pSortableColumn="positionsForMoney">Pos 4 $
-                <p-sortIcon field="positionsForMoney"/>
-              </th>
-              <th style="width:12%" pSortableColumn="easeToGainPoints">Ease
-                <p-sortIcon field="easeToGainPoints"/>
-              </th>
-              <th style="width:12%"></th>
-            </tr>
-          </ng-template>
-          <ng-template #body let-result let-editing="editing" let-ri="rowIndex">
-            <tr [pEditableRow]="result">
-              <td>
-                {{ result.driverId }}
-              </td>
-              <td>
-                <p-cellEditor>
-                  <ng-template #input>
-                    <input pInputText type="text" [(ngModel)]="result.cost" required style="width:50%"/>
-                  </ng-template>
-                  <ng-template #output>
-                    {{ result.cost }}
-                  </ng-template>
-                </p-cellEditor>
-              </td>
-              <td>
-                <p-cellEditor>
-                  <ng-template #input>
-                    <input pInputText type="text" [(ngModel)]="result.points" required style="width:50%"/>
-                  </ng-template>
-                  <ng-template #output>
-                    {{ result.points }}
-                  </ng-template>
-                </p-cellEditor>
-              </td>
-              <td>
-                <p-cellEditor>
-                  <ng-template #input>
-                    <input pInputText type="text" [(ngModel)]="result.positionsForMoney" required style="width:50%"/>
-                  </ng-template>
-                  <ng-template #output>
-                    {{ result.positionsForMoney }}
-                  </ng-template>
-                </p-cellEditor>
-              </td>
-              <td>
-                <p-cellEditor>
-                  <ng-template #input>
-                    <input pInputText type="text" [(ngModel)]="result.easeToGainPoints" required style="width:50%"/>
-                  </ng-template>
-                  <ng-template #output>
-                    {{ result.easeToGainPoints }}
-                  </ng-template>
-                </p-cellEditor>
-              </td>
-              <td>
-                <div class="flex items-center justify-center gap-2">
-                  <button *ngIf="!editing" class="accent-blue-400 " pButton pRipple type="button" pInitEditableRow (click)="onRowEditInitDriver(result)" text rounded severity="secondary">
-                    <i class="pi pi-pencil"></i>
-                  </button>
-                  <div style="width:12%">
-                    <button *ngIf="editing" pButton pRipple type="button" pSaveEditableRow (click)="onRowEditSaveDriver(result)" text rounded severity="secondary">
-                      <i class="pi pi-check"></i>
-                    </button>
-                    <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow (click)="onRowEditCancelDriver(result, ri)" text rounded severity="secondary">
-                      <i class="pi pi-times"></i>
-                    </button>
+        @if (this.driverResults) {
+          <p-table class="py-6 flex justify-center" [value]="this.driverResults" dataKey="driverId" editMode="row" [tableStyle]="{'min-width': '50rem'}">
+            <ng-template #header>
+              <tr>
+                <th style="width:12%" pSortableColumn="driverId">Diver
+                  <p-sortIcon field="driverId"/>
+                </th>
+                <th style="width:12%" pSortableColumn="cost">Cost
+                  <p-sortIcon field="cost"/>
+                </th>
+                <th style="width:12%" pSortableColumn="points">Points
+                  <p-sortIcon field="points"/>
+                </th>
+                <th style="width:12%" pSortableColumn="positionsForMoney">Pos 4 $
+                  <p-sortIcon field="positionsForMoney"/>
+                </th>
+                <th style="width:12%" pSortableColumn="easeToGainPoints">Ease
+                  <p-sortIcon field="easeToGainPoints"/>
+                </th>
+                <th style="width:12%"></th>
+              </tr>
+            </ng-template>
+            <ng-template #body let-result let-editing="editing" let-ri="rowIndex">
+              <tr [pEditableRow]="result">
+                <td>
+                  {{ result.driverId }}
+                </td>
+                <td>
+                  <p-cellEditor>
+                    <ng-template #input>
+                      <input pInputText type="text" [(ngModel)]="result.cost" required style="width:50%"/>
+                    </ng-template>
+                    <ng-template #output>
+                      {{ result.cost }}
+                    </ng-template>
+                  </p-cellEditor>
+                </td>
+                <td>
+                  <p-cellEditor>
+                    <ng-template #input>
+                      <input pInputText type="text" [(ngModel)]="result.points" required style="width:50%"/>
+                    </ng-template>
+                    <ng-template #output>
+                      {{ result.points }}
+                    </ng-template>
+                  </p-cellEditor>
+                </td>
+                <td>
+                  <p-cellEditor>
+                    <ng-template #input>
+                      <input pInputText type="text" [(ngModel)]="result.positionsForMoney" required style="width:50%"/>
+                    </ng-template>
+                    <ng-template #output>
+                      {{ result.positionsForMoney }}
+                    </ng-template>
+                  </p-cellEditor>
+                </td>
+                <td>
+                  <p-cellEditor>
+                    <ng-template #input>
+                      <input pInputText type="text" [(ngModel)]="result.easeToGainPoints" required style="width:50%"/>
+                    </ng-template>
+                    <ng-template #output>
+                      {{ result.easeToGainPoints }}
+                    </ng-template>
+                  </p-cellEditor>
+                </td>
+                <td>
+                  <div class="flex items-center justify-center gap-2">
+                    @if(!editing) {
+                      <p-button type="button" pInitEditableRow (onClick)="onRowEditInitDriver(result)" text rounded severity="success" pTooltip="Edit Race Line">
+                        <i class="pi pi-pencil"></i>
+                      </p-button>
+                    }
+                    @if(editing) {
+                      <div style="width:12%">
+                        <p-button type="button" pSaveEditableRow (onClick)="onRowEditSaveDriver(result)" text rounded severity="info" pTooltip="Save Changes">
+                          <i class="pi pi-check"></i>
+                        </p-button>
+                        <p-button type="button" pCancelEditableRow (onClick)="onRowEditCancelDriver(result, ri)" text rounded severity="warn" pTooltip="Cancel Changes">
+                          <i class="pi pi-times"></i>
+                        </p-button>
+                      </div>
+                    }
                   </div>
-                </div>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        }
       </p-tabpanel>
       <p-tabpanel value="team">
         <p-table class="py-6 flex justify-center" *ngIf="this.teamResults" [value]="this.teamResults" dataKey="teamId" editMode="row" [tableStyle]="{'min-width': '50rem'}">

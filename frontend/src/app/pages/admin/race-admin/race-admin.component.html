@@ -2,14 +2,15 @@
   <p-tablist class="flex py-6">
     <p-tab value="manageRaces">Manage Races <i class="pi pi-arrow-down"></i></p-tab>
   </p-tablist>
-  <p-tabpanels #dynamicComponent>
+  <p-tabpanels>
     <p-tabpanel value="manageRaces">
       <div class="flex justify-center py-4">
-        <p-button (onClick)="this.addRace()" label="Update All Racesl" class="px-3"><i class="pi pi-arrow-down"></i></p-button>
-        <p-select [options]="this.raceList" [(ngModel)]="selectedRace" (onChange)=this.getRaceById() optionLabel="meeting_name" placeholder="Select Race" class="w-full md:w-100" #dynamicComponent/>
+        <p-button (onClick)="this.addRace()" label="Update All Racesl" class="px-3"><i class="pi pi-arrow-down"></i>
+        </p-button>
+        <p-select [options]="this.raceList" [(ngModel)]="selectedRace" (onChange)=this.getRaceById() optionLabel="meeting_name" placeholder="Select Race" class="w-full md:w-100"/>
       </div>
       @if (this.displayedRaces) {
-        <p-table [value]="this.displayedRaces" [tableStyle]="{'min-width': '50rem'}">
+        <p-table [value]="this.displayedRaces" dataKey="meeting_key" editMode="row" [tableStyle]="{'min-width': '50rem'}">
           <ng-template #header>
             <tr>
               <th>Round</th>
@@ -22,21 +23,80 @@
               <th></th>
             </tr>
           </ng-template>
-          <ng-template #body let-result>
-            <tr>
-              <td>{{ result.round}}</td>
-              <td>{{ result.meeting_name }}</td>
-              <td>{{ result.totalLaps }}</td>
-              <td>{{ result.meeting_key }}</td>
-              <td>{{ result.sprint_key }}</td>
-              <td>{{ result.quali_key }}</td>
-              <td>{{ result.race_key }}</td>
+          <ng-template #body let-result let-editing="editing" let-ri="rowIndex">
+            <tr [pEditableRow]="result">
+              <td>
+                <p-cellEditor>
+                  <ng-template #input>
+                    <input pInputText type="number" [(ngModel)]="result.round" required style="width:50%"/>
+                  </ng-template>
+                  <ng-template #output>{{ result.round }}</ng-template>
+                </p-cellEditor>
+              </td>
+              <td>
+                <p-cellEditor>
+                  <ng-template #input>
+                    <input pInputText type="text" [(ngModel)]="result.meeting_name" required style="width:50%"/>
+                  </ng-template>
+                  <ng-template #output>{{ result.meeting_name }}</ng-template>
+                </p-cellEditor>
+              </td>
+              <td>
+                <p-cellEditor>
+                  <ng-template #input>
+                    <input pInputText type="number" [(ngModel)]="result.totalLaps" required style="width:50%"/>
+                  </ng-template>
+                  <ng-template #output>{{ result.totalLaps }}</ng-template>
+                </p-cellEditor>
+              </td>
+              <td>
+                <p-cellEditor>
+                  <ng-template #input>
+                    <input pInputText type="number" [(ngModel)]="result.meeting_key" required style="width:50%"/>
+                  </ng-template>
+                  <ng-template #output>{{ result.meeting_key }}</ng-template>
+                </p-cellEditor>
+              </td>
+              <td>
+                <p-cellEditor>
+                  <ng-template #input>
+                    <input pInputText type="number" [(ngModel)]="result.sprint_key" required style="width:50%"/>
+                  </ng-template>
+                  <ng-template #output>{{ result.sprint_key }}</ng-template>
+                </p-cellEditor>
+              </td>
+              <td>
+                <p-cellEditor>
+                  <ng-template #input>
+                    <input pInputText type="number" [(ngModel)]="result.quali_key" required style="width:50%"/>
+                  </ng-template>
+                  <ng-template #output>{{ result.quali_key }}</ng-template>
+                </p-cellEditor>
+              </td>
+              <td>
+                <p-cellEditor>
+                  <ng-template #input>
+                    <input pInputText type="number" [(ngModel)]="result.race_key" required style="width:50%"/>
+                  </ng-template>
+                  <ng-template #output>{{ result.race_key }}</ng-template>
+                </p-cellEditor>
+              </td>
               <td>
                 <div style="width:12%" class="flex items-center justify-center gap-2">
-                  <p-button text rounded severity="secondary" (onClick)="this.updateRace(result)">
-                    <i class="pi pi-arrow-up-right"></i>
-                  </p-button>
-                  <p-button text rounded severity="secondary" (onClick)="this.deleteRace(result)">
+                  @if (!editing) {
+                    <p-button type="button" pInitEditableRow (onClick)="onRowEditInitRace(result)" text rounded severity="success" pTooltip="Edit Race Line">
+                      <i class="pi pi-pencil"></i>
+                    </p-button>
+                  }
+                  @if (editing) {
+                    <p-button text rounded severity="info" (onClick)="this.updateRace(result)" pSaveEditableRow pTooltip="Save Changes">
+                      <i class="pi pi-arrow-up-right"></i>
+                    </p-button>
+                    <p-button text rounded severity="warn" pSaveEditableRow (onClick)="onRowEditCancelRace(result, ri)" pTooltip="Cancel Changes">
+                      <i class="pi pi-eraser"></i>
+                    </p-button>
+                  }
+                  <p-button text rounded severity="danger" (onClick)="this.deleteRace(result)" pTooltip="Delete Race">
                     <i class="pi pi-times"></i>
                   </p-button>
                 </div>
