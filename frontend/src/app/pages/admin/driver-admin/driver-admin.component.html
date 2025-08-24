@@ -1,1 +1,82 @@
-<p>driver-admin works!</p>
+<p-tabs value="drivers" class="flex p-6">
+  <p-tablist class="flex py-6">
+    <p-tab value="manageDriver">Manage Drivers <i class="pi pi-arrow-down"></i></p-tab>
+  </p-tablist>
+  <p-tabpanels>
+    <p-tabpanel value="manageDriver">
+      <div class="flex justify-center py-4">
+        <p-select [options]="this.teams" [(ngModel)]="selectedTeam" (onChange)=this.filterResults() optionLabel="teamName" placeholder="Select Team" class="w-full md:w-100"/>
+        <p-button (onClick)="this.addDriversForSeasonStart()" label="Season Start" class="px-3" rounded raised><i class="pi pi-plus-circle"></i></p-button>
+      </div>
+      @if (this.displayedDrivers) {
+        <p-table [value]="this.displayedDrivers" dataKey="driverId" editMode="row" [tableStyle]="{'min-width': '50rem'}">
+          <ng-template #header>
+            <tr>
+              <th>Driver Number</th>
+              <th>Driver Name</th>
+              <th>Team Name</th>
+              <th>Active</th>
+              <th></th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-result let-editing="editing" let-ri="rowIndex">
+            <tr [pEditableRow]="result">
+              <td>
+                <p-cellEditor>
+                  <ng-template #input>
+                    <input pInputText type="text" [(ngModel)]="result.driverNumber" required style="width:50%"/>
+                  </ng-template>
+                  <ng-template #output>{{ result.driverNumber }}</ng-template>
+                </p-cellEditor>
+              </td>
+              <td>
+                <p-cellEditor>
+                  <ng-template #input>
+                    <input pInputText type="text" [(ngModel)]="result.driverName" required style="width:50%"/>
+                  </ng-template>
+                  <ng-template #output>{{ result.driverName }}</ng-template>
+                </p-cellEditor>
+              </td>
+              <td>
+                <p-cellEditor>
+                  <ng-template #input>
+                    <p-select [options]="this.teams" appendTo="body" [(ngModel)]="result.teamId" optionLabel="teamName" optionValue="teamId" placeholder="Select Team"/>
+                  </ng-template>
+                  <ng-template #output>{{ result.team.teamName }}</ng-template>
+                </p-cellEditor>
+              </td>
+              <td>
+                <p-cellEditor>
+                  <ng-template #input>
+                    <p-toggleButton [(ngModel)]="result.active" [invalid]="!result.active" [onLabel]="'Active'" [offLabel]="'Inactive'" class=" w-24"/>
+                  </ng-template>
+                  <ng-template #output>@if(result.active){Active} @else {Inactive} </ng-template>
+                </p-cellEditor>
+              </td>
+              <td>
+                <div style="width:12%" class="flex items-center justify-center gap-2">
+                  @if (!editing) {
+                    <p-button type="button" pInitEditableRow (onClick)="onRowEditInitDriver(result)" text rounded severity="success" pTooltip="Edit Driver Line">
+                      <i class="pi pi-pencil"></i>
+                    </p-button>
+                  }
+                  @if (editing) {
+                    <p-button text rounded severity="info" (onClick)="this.updateDriver(result)" pSaveEditableRow pTooltip="Save Changes">
+                      <i class="pi pi-arrow-up-right"></i>
+                    </p-button>
+                    <p-button text rounded severity="warn" pSaveEditableRow (onClick)="onRowEditCancelDriver(result, ri)" pTooltip="Cancel Changes">
+                      <i class="pi pi-eraser"></i>
+                    </p-button>
+                  }
+                  <p-button text rounded severity="danger" (onClick)="this.deleteDriver(result)" pTooltip="Delete Driver">
+                    <i class="pi pi-times"></i>
+                  </p-button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      }
+    </p-tabpanel>
+  </p-tabpanels>
+</p-tabs>

@@ -1,11 +1,17 @@
 import {getRaceByMeetingKey, getRaceLaps, getRacesByYear} from '../shared/f1api.util'
 import _ from 'lodash'
 import {Request, Response} from 'express'
-import {addSeasonRace, getRaceByCircutKey, getRacesBySeasonId, updateRaceBulk} from '../services/race.services'
+import {
+    addSeasonRace, deleteRace,
+    getRaceByCircutKey,
+    getRaceDataByMeetingKey,
+    getRacesBySeasonId,
+    updateRaceBulk
+} from '../services/race.services'
 import z from 'zod'
 import {getActiveSeason} from '../services/season.services'
 
-export const getRacesBySeasonIdController = async (req: Request, res: Response) => {
+export const getRacesListController = async (req: Request, res: Response) => {
     const currentSeason = await getActiveSeason()
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
     const seasonId = currentSeason.toJSON().seasonId as number
@@ -15,6 +21,23 @@ export const getRacesBySeasonIdController = async (req: Request, res: Response) 
     const trimmedResults = _.map(results, result => _.pick(result.toJSON(), ['meeting_key', 'meeting_name']))
 
     res.json(trimmedResults)
+}
+
+export const getAllRacesController = async (req: Request, res: Response) => {
+    const currentSeason = await getActiveSeason()
+    if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
+    const seasonId = currentSeason.toJSON().seasonId as number
+
+    const results = await getRacesBySeasonId(+seasonId!)
+
+    res.json(results)
+}
+
+export const getRacesByMeetingKeyController = async (req: Request, res: Response) => {
+    const meeting_key = req.params.meeting_key
+    if (_.isNil(meeting_key)) throw new Error('Meeting key parameter is required')
+    const results = _.map(await getRaceDataByMeetingKey(+meeting_key), rece => rece.toJSON())
+    res.json(results)
 }
 
 export const addRaceBulkController = async (req: Request, res: Response) => {
@@ -149,5 +172,45 @@ export const updateCurrentSeason = async (req: Request, res: Response) => {
     // @ts-ignore data is an array of arrays so its resulst will have eleeement of array of objects.
     const combinedRaceData = _.map(data, race => _.merge(race[0], race[1], race[2]))
     const racesUpdated = await updateRaceBulk(combinedRaceData)
-    res.json(racesUpdated)
+    if (racesUpdated.length !== 0) return res.status(200).json({message: 'Races updated', success: true})
+    else return res.status(404).json({message: 'Races failed to update', success: false})
+
+}
+
+export const updateRaceController = async (req: Request, res: Response) => {
+    const schema = z.object({
+        meeting_key: z.number(),
+        circut_key: z.number(),
+        meeting_name: z.string(),
+        circuit_short_name: z.string(),
+        country_code: z.string(),
+        country_name: z.string(),
+        sprint_key: z.number().nullish(),
+        quali_key: z.number(),
+        race_key: z.number(),
+        round: z.number(),
+        totalLaps: z.number(),
+        raceId: z.string(),
+        seasonId: z.number(),
+        createdAt: z.string(),
+        updatedAt: z.string(),
+    })
+    const schemaValidator = schema.safeParse(req.body.data)
+    if (!schemaValidator.success) return res.status(400).json({
+        message: 'Invalid request body',
+        errors: schemaValidator.error.issues
+    })
+    const raceData =[req.body.data]
+    console.log('RaceDatra', raceData)
+    const raceUpdated = await updateRaceBulk(raceData)
+    if (raceUpdated.length !== 0) return res.status(200).json({message: 'Races updated', success: true})
+    else return res.status(404).json({message: 'Races failed to update', success: false})
+}
+
+export const deleteRaceController = async (req: Request, res: Response) => {
+    const meeting_key = req.params.meeting_key
+    if (_.isNil(meeting_key)) throw new Error('Meeting key parameter is required')
+    const raceDeleted = await deleteRace(+meeting_key)
+    if (!raceDeleted) return res.status(404).json({message: 'Race failed to delete', success: false})
+    res.status(200).json({message: 'Race deleted', success: true})
 }

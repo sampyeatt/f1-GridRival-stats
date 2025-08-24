@@ -10,10 +10,10 @@ import {CommonModule} from '@angular/common'
 import {ButtonModule} from 'primeng/button'
 import {FormsModule} from '@angular/forms'
 import {ResultsService} from '../../services/results.service'
-import {Race, Result, TeamResult} from '../../interface/api-interface'
+import {RaceList, Result, TeamResult} from '../../interface/api-interface'
 import {BadgeModule} from 'primeng/badge'
 import {TabsModule} from 'primeng/tabs'
-import {Select} from 'primeng/select'
+import {SelectModule} from 'primeng/select'
 import {filter} from 'rxjs'
 import {TeamResultsService} from '../../services/teamresults.service'
 import {RaceService} from '../../services/race.service'
@@ -22,7 +22,7 @@ import {RaceService} from '../../services/race.service'
   selector: 'app-dashboard',
   standalone: true,
   imports: [
-    TableModule, CommonModule, ButtonModule, BadgeModule, FormsModule, TabsModule, Select
+    TableModule, CommonModule, ButtonModule, BadgeModule, FormsModule, TabsModule, SelectModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './dashboard.html',
@@ -32,8 +32,8 @@ import {RaceService} from '../../services/race.service'
 export class DashboardComponent implements OnInit {
   results?: Result[]
   selectedResult?: Result[]
-  races?: Race[]
-  selectedRace?: Race
+  races?: RaceList[]
+  selectedRace?: RaceList
   teamResults?: TeamResult[]
   selectedTeamResult?: TeamResult[]
 
@@ -57,7 +57,7 @@ export class DashboardComponent implements OnInit {
       next: (data) => {
         this.cdref.markForCheck()
         this.races = data
-        this.selectedRace = this.races[data.length-1]
+        this.selectedRace = this.races[data.length - 1]
       },
       error: (err) => {
         console.error('Error Loading posts: ', err)

@@ -13,7 +13,7 @@ export  async  function getAllSeasons() {
 }
 
 export  async  function upsertSeason(season: Partial<Season>) {
-    const seasonInstance = new Season()
+    let seasonInstance = await Season.findByPk(season.seasonId) || new Season()
     seasonInstance.set(season)
     return seasonInstance.save()
 }

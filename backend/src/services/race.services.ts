@@ -66,11 +66,15 @@ export async function addSeasonRace(seasonId: number, data: {
     return await Race.build(race).save()
 }
 
-export async function updateRaceBulk(raceData: any[]){
-    raceData.map(async (race) => {
+export async function updateRaceBulk(raceData: Race[]){
+    return raceData.map(async (race: Race) => {
         const raceInstance = await Race.findByPk(race.meeting_key)
         if (!raceInstance) return
         raceInstance.set(race)
         return await raceInstance.save()
     })
+}
+
+export async function deleteRace(meeting_key: number) {
+    return await Race.destroy({where: {meeting_key: meeting_key}})
 }

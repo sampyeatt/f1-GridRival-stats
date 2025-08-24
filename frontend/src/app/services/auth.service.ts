@@ -1,7 +1,7 @@
 import {HttpClient} from '@angular/common/http'
 import {inject, Injectable, signal} from '@angular/core'
 import {Router} from '@angular/router'
-import {environment} from '../../environments/environment'
+import {environment} from '../../environments/environment.development'
 import {Session} from '../interface/api-interface'
 import {share} from 'rxjs'
 
@@ -35,6 +35,10 @@ export class AuthService {
   login(email: string, password: string) {
     return this.http.post<Session>(`${this.apiUrl}/login`, {email: email, password}).pipe(share())
 
+  }
+
+  refreshToken() {
+    return this.http.post<Session>(`${this.apiUrl}/refresh`, {token: this.currentUser()?.refreshToken})
   }
 
   saveToken(token: string) {

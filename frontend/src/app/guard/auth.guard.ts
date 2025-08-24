@@ -13,6 +13,18 @@ export const authGuard: CanActivateFn = (route, state) => {
   if (auth.isAuthenticated()) {
     return true
   } else {
+    if (auth.currentUser() !== null) {
+      auth.refreshToken().subscribe({
+        next: (res) => {
+          auth.saveToken(res.accessToken)
+          auth.saveUser(res)
+          return true
+        },
+        error: (err) => {
+          console.log(err)
+        }
+      })
+    }
     router.navigate(['/login'])
     return false
   }
@@ -25,6 +37,19 @@ export const authGuardAdmin: CanActivateFn = (route, state) => {
   if (auth.isAdminAuthenticated()) {
     return true
   } else {
+    if (auth.currentUser() !== null) {
+      auth.refreshToken().subscribe({
+        next: (res) => {
+          auth.saveToken(res.accessToken)
+          if (res.adminToken) auth.saveAdminToken(res.adminToken)
+          auth.saveUser(res)
+          return true
+        },
+        error: (err) => {
+          console.log(err)
+        }
+      })
+    }
     router.navigate(['/login'])
     return false
   }
