@@ -129,7 +129,8 @@ export const addRaceController = async (req: Request, res: Response) => {
             }
         }).value())
     const combinedRaceData = _.merge(race[0], race[1], race[2])
-    const raceAdded = await addSeasonRace(seasonId!, combinedRaceData!)
+    console.log('Combined', combinedRaceData)
+    const raceAdded = await addSeasonRace(seasonId, combinedRaceData!)
     res.json(raceAdded)
 }
 
