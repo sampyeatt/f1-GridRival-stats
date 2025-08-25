@@ -53,7 +53,6 @@ export const addRaceBulkController = async (req: Request, res: Response) => {
     if (raceData.length === 0) return res.status(404).json({message: 'Race not found'})
     const data = await Promise.all(_.map(raceData, async (race) => {
         const raceSessionData = await getRaceByMeetingKey(seasonId!, race.meeting_key)
-        console.log('receSeessionData', raceSessionData)
         return await Promise.all(_(raceSessionData)
             .reject({'session_type': 'Practice'})
             .reject({'session_name': 'Sprint Qualifying'})
