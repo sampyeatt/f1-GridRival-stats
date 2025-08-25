@@ -30,6 +30,11 @@ export async function getRaceByMeetingKey(seasonId: number, meeting_key: number)
     return response.data
 }
 
+export async function getRaceSessions(seasonId: number) {
+    const response = await axios.get(`https://api.openf1.org/v1/sessions?year=${seasonId}`)
+    return response.data
+}
+
 export async function getRacesByYear(seasonId: number) {
     const response = await axios.get(`https://api.openf1.org/v1/meetings?year=${seasonId}`)
     return response.data
