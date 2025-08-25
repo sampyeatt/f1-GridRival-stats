@@ -61,9 +61,9 @@ export async function addSeasonRace(seasonId: number, data: {
         totalLaps: data.totalLaps,
         raceId: data.raceId
     })
-    if (race.sprint_key !== undefined) race.set({sprint_key: data.sprint_key!})
-    if (race.quali_key !== undefined) race.set({quali_key: data.quali_key!})
-    if (race.race_key !== undefined) race.set({race_key: data.race_key!})
+    if (data.sprint_key) race.set({sprint_key: data.sprint_key})
+    if (data.quali_key) race.set({quali_key: data.quali_key})
+    if (data.race_key) race.set({race_key: data.race_key})
     console.log('race', race)
     return await race.save()
 }
