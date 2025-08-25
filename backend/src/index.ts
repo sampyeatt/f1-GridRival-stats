@@ -44,4 +44,7 @@ app.use((err: Error, req: Request, res: Response, next: any) => {
     res.status(500).send({message: 'Internal server error'})
 })
 
-app.listen(port, () => console.log(`Example app listening on port http://localhost:${port}!`))
+app.listen(port, () => {
+    console.log(`Example app listening on port http://localhost:${port}!`)
+    console.log(`Database connected to ${process.env.PG_HOST}`)
+})
