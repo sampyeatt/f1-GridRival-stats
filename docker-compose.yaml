@@ -28,6 +28,7 @@ services:
       - my_secret
     depends_on:
       - db
+      - secrets
   frontend:
     container_name: f1-grod-frontend
     image: f1-grod-frontend

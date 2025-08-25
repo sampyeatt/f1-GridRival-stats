@@ -5,6 +5,7 @@ dotenv.config({
     path: './src/.env'
 })
 
+console.log(process.env.PG_HOST)
 export const connection = new Sequelize({
     dialect: 'postgres',
     host: process.env.PG_HOST as string,
