@@ -158,6 +158,11 @@ export const confirmEmailController = async (req: Request, res: Response) => {
 
     await deleteTokens(userId)
 
+    const accessToken = await generateToken(userId)
+    const newRefreshToken = await generateToken(userId, '7d')
+    await addToken(newRefreshToken, 'refresh', userId)
+    await addToken(accessToken, 'access', userId)
+
     return res.status(200).json({message: 'Email confirmed successfully'})
 }
 
