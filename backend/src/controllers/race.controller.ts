@@ -44,11 +44,8 @@ export const addRaceBulkController = async (req: Request, res: Response) => {
     const currentSeason = await getActiveSeason()
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
     const seasonId = currentSeason.toJSON().seasonId as number
-    console.log('SeasonId: ', seasonId)
     const raceData = await getRacesByYear(seasonId!)
-    console.log('RaceData: ', raceData)
     const f1DataRaces = await getRaceLaps(seasonId!)
-    console.log('F1DataRaces: ', f1DataRaces)
     const sordertRaces = _.orderBy(raceData, ['date_start'], ['asc'])
     if (raceData.length === 0) return res.status(404).json({message: 'Race not found'})
     const data = await Promise.all(_.map(raceData, async (race) => {
@@ -98,18 +95,15 @@ export const addRaceController = async (req: Request, res: Response) => {
         message: 'Invalid request body',
         errors: schemaValidator.error
     })
-    const meeting_key = req.body
+    const {meeting_key} = req.body
     const currentSeason = await getActiveSeason()
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
     const seasonId = currentSeason.toJSON().seasonId as number
-    console.log('SeasonId: ', seasonId)
 
     const raceData = await getRacesByYear(seasonId)
     const f1DataRaces = await getRaceLaps(seasonId)
     const sordertRaces = _.orderBy(raceData, ['date_start'], ['asc'])
-    console.log('meeting_key: ', meeting_key)
     const raceSessionData = await getRaceByMeetingKey(seasonId, meeting_key)
-    console.log('RaceSessionData: ', raceSessionData)
     if (raceSessionData.length === 0) return res.status(404).json({message: 'Race not found'})
     const race = await Promise.all(_(raceSessionData)
         .reject({'session_type': 'Practice'})
