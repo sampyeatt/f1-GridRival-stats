@@ -26,6 +26,8 @@ services:
       - "3000:3000"
     secrets:
       - my_secret
+    depends_on:
+      - db
   frontend:
     container_name: f1-grod-frontend
     image: f1-grod-frontend
