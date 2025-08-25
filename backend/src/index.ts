@@ -23,7 +23,7 @@ const port = 3000
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cors({
-    origin: [ 'http://f1-grod-frontend:4200', 'http://192.168.0.151:8080', 'http://localhost:3000', 'http://localhost:4200'],
+    origin: [ 'http://f1-grod-frontend:4200', 'http://192.168.0.151:8080', 'http://localhost:3000', 'http://localhost:4200', 'https://gord.anonymousplatypus.work/'],
     credentials: true,
 }))
 
