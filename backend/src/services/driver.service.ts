@@ -17,13 +17,8 @@ export async function getAllDrivers() {
 
 export async function addDriver(driverId: string, name: string, surname: string, teamId: string, shortName: string, driverNumber: number) {
     const driver = new Driver()
-    driver.driverId = driverId
-    driver.driverName = `${name} ${surname}`
-    driver.shortName = shortName
-    driver.teamId = teamId
-    driver.active = true
-    driver.driverNumber = driverNumber
-    return Driver.build(driver).save()
+    driver.set({driverId: driverId, driverName: `${name} ${surname}`, shortName: shortName, teamId: teamId, active: true, driverNumber: driverNumber})
+    return driver.save()
 }
 
 export async function getDriverById(id: string) {

@@ -49,21 +49,22 @@ export async function addSeasonRace(seasonId: number, data: {
     raceId: string
 }) {
     const race = new Race()
-    race.seasonId = seasonId
-    race.circut_key = data.circuit_key
-    race.meeting_name = data.meeting_name
-    race.circuit_short_name = data.circuit_short_name
-    race.country_code = data.country_code
-    race.country_name = data.country_name
-    race.meeting_key = data.meeting_key
-    if (race.sprint_key) race.sprint_key = +data.sprint_key!
-    if (race.quali_key) race.quali_key = +data.quali_key!
-    if (race.race_key) race.race_key = +data.race_key!
-    race.seasonId = seasonId
-    race.round = data.round
-    race.totalLaps = data.totalLaps
-    race.raceId = data.raceId
-    return await Race.build(race).save()
+    race.set({
+        seasonId: seasonId,
+        circut_key: data.circuit_key,
+        meeting_name: data.meeting_name,
+        circuit_short_name: data.circuit_short_name,
+        country_code: data.country_code,
+        country_name: data.country_name,
+        meeting_key: data.meeting_key,
+        round: data.round,
+        totalLaps: data.totalLaps,
+        raceId: data.raceId
+    })
+    if (race.sprint_key) race.set({sprint_key: data.sprint_key!})
+    if (race.quali_key) race.set({quali_key: data.quali_key!})
+    if (race.race_key) race.set({race_key: data.race_key!})
+    return await race.save()
 }
 
 export async function updateRaceBulk(raceData: Race[]){
