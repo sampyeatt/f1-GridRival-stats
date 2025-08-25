@@ -42,9 +42,9 @@ services:
       context: ./nginx
       dockerfile: Dockerfile
     expose:
-      - "80"
+      - "8080"
     ports:
-      - "80:80"
+      - "8080:80"
     networks:
       - internalnet
     volumes:
