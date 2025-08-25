@@ -9,7 +9,7 @@ export function sendConfirmationEmail(email: string, token: string) {
     const html = `
 <h1>Confirm your email</h1>
 <p>Click the link below to confirm your email</p>
-<a href="http://localhost:3000/api/auth/confirm-email/${token}">Confirm email</a>
+<a href="http://192.168.0.151:8080/api/auth/confirm-email/${token}">Confirm email</a>
 `
 
     const resend = new Resend(process.env.RESEND_API_KEY!)
