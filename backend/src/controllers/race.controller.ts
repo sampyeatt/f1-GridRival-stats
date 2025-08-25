@@ -44,12 +44,16 @@ export const addRaceBulkController = async (req: Request, res: Response) => {
     const currentSeason = await getActiveSeason()
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
     const seasonId = currentSeason.toJSON().seasonId as number
+    console.log('SeasonId: ', seasonId)
     const raceData = await getRacesByYear(seasonId!)
+    console.log('RaceData: ', raceData)
     const f1DataRaces = await getRaceLaps(seasonId!)
+    console.log('F1DataRaces: ', f1DataRaces)
     const sordertRaces = _.orderBy(raceData, ['date_start'], ['asc'])
     if (raceData.length === 0) return res.status(404).json({message: 'Race not found'})
     const data = await Promise.all(_.map(raceData, async (race) => {
         const raceSessionData = await getRaceByMeetingKey(seasonId!, race.meeting_key)
+        console.log('receSeessionData', raceSessionData)
         return await Promise.all(_(raceSessionData)
             .reject({'session_type': 'Practice'})
             .reject({'session_name': 'Sprint Qualifying'})
@@ -75,10 +79,12 @@ export const addRaceBulkController = async (req: Request, res: Response) => {
             }).value())
     }))
 
+    console.log('Data', data)
     const raceAdded = await Promise.all(_(_.groupBy(data.flat(), 'meeting_key')).map(async race => {
         const combinedRaceData = _.merge(race[0], race[1], race[2])
         const raceAlreadyAdded = await getRaceByCircutKey(combinedRaceData!.circuit_key)
         if (raceAlreadyAdded) return {message: 'Race already added'}
+        console.log('CombinedRaceData', combinedRaceData)
         return await addSeasonRace(seasonId!, combinedRaceData!)
     }).value())
     res.json(raceAdded)
