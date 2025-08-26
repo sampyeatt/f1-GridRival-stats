@@ -1,7 +1,7 @@
 
 <div class="py-6">
   <div class="flex justify-center">
-    <p-select [options]="this.races" [(ngModel)]="selectedRace" (onChange)=filterResults() optionLabel="meeting_name" placeholder="Select Race" class="w-full md:w-100 px-1"  />
+    <p-select [options]="this.races" [(ngModel)]="selectedRace" (onChange)=filterResults() optionLabel="meeting_name" placeholder="Select Race" class="w-full md:w-100 px-1"  animate="enter-animation"/>
   </div>
   <p-tabs value="driver">
     <p-tablist class="flex justify-center py-6">
