@@ -37,7 +37,7 @@ export const registerController = async (req: Request, res: Response) => {
     await addToken(token, 'activation', userId)
     const emailSent = await sendConfirmationEmail(email, token)
     console.log('email sent', emailSent)
-    if (!emailSent) return res.status(500).json({message: 'Failed to send email'})
+    if (!emailSent.data) return res.status(500).json({message: 'Failed to send email'})
     return res.status(201).json({message: 'User registered successfully'})
 
 }
