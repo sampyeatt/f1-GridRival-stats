@@ -39,13 +39,11 @@ export const updateUser = async ({name, status, id, password}: {
     const user = await User.findByPk(id)
     if (!user) throw new Error('User not found')
 
-    user.userId = id
-    if (name) user.name = name
-    if (status) user.status = status
-    if (password) user.password = password
-    return await User.update(user, {
-        where: {userId: id}
-    })
+    user.set({userId: id})
+    if (name) user.set({name: name})
+    if (status) user.set({status: status})
+    if (password) user.set({password: password})
+    return await user.save()
 }
 
 export const updateToAdmin = async (userId: number) => {
