@@ -17,13 +17,12 @@ import {SelectModule} from 'primeng/select'
 import {filter} from 'rxjs'
 import {TeamResultsService} from '../../services/teamresults.service'
 import {RaceService} from '../../services/race.service'
-import {BrowserModule} from '@angular/platform-browser'
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [
-    TableModule, CommonModule, ButtonModule, BadgeModule, FormsModule, TabsModule, SelectModule, BrowserModule
+    TableModule, CommonModule, ButtonModule, BadgeModule, FormsModule, TabsModule, SelectModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './dashboard.html',
