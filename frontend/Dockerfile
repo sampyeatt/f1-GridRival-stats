@@ -3,6 +3,6 @@ WORKDIR /app
 COPY package*.json .
 RUN npm install -g @angular/cli
 RUN npm install
-CMD ["ng", "build"]
+CMD ["npm","run","build"]
 COPY . .
-CMD ["ng", "serve", "--host", "0.0.0.0"]
+CMD ["npm", "run", "serve", "--host", "0.0.0.0"]

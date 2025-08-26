@@ -65,6 +65,9 @@
               "buildTarget": "frontend:build:development"
             }
           },
+          "options": {
+            "allowedHosts": ["localhost","grod.anonymousplatypus.work"]
+          },
           "defaultConfiguration": "development"
         },
         "extract-i18n": {
