@@ -17,7 +17,7 @@ export function sendConfirmationEmail(email: string, token: string) {
     console.log('Email', email)
 
     return resend.emails.send({
-        from: 'onboarding@resend.dev',
+        from: 'onboarding@grod.anonymousplatypus.work',
         to: email,
         subject: 'Please confirm your email',
         html: html
