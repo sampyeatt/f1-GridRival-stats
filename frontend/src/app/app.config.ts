@@ -4,7 +4,6 @@ import {routes} from './app.routes'
 import {provideClientHydration, withEventReplay} from '@angular/platform-browser'
 import {provideHttpClient, withFetch, withInterceptors} from '@angular/common/http'
 import {providePrimeNG} from 'primeng/config'
-import {provideAnimationsAsync} from '@angular/platform-browser/animations/async'
 import {authInterceptor} from './interceptors/auth.interceptor'
 import {DarkMode} from './component/theme/theme'
 
@@ -19,7 +18,6 @@ export const appConfig: ApplicationConfig = {
       theme: {
         preset: DarkMode
       }
-    }),
-    provideAnimationsAsync(),
+    })
   ]
 }
