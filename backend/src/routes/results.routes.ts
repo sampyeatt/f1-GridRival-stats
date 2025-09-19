@@ -9,7 +9,7 @@ const router = Router()
 
 router.get('/allResults', authenticateJWT, getResultsController)
 router.get('/round/:round', getResultsByRoundController)
-router.get('/drivers', authenticateJWTAdmin, getDriverResultsToAddController)
+router.get('/drivers/:meeting_key', authenticateJWTAdmin, getDriverResultsToAddController)
 router.post('/bulkadd', authenticateJWTAdmin, addResultBulkController)
 router.post('/add', authenticateJWTAdmin, addResultArrayController)
 router.put('/update', authenticateJWTAdmin, updateResultsController)

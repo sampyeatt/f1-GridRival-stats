@@ -117,14 +117,18 @@ export const updateResultsController = async (req: Request, res: Response) => {
 }
 
 export const getDriverResultsToAddController = async (req: Request, res: Response) => {
+    const schema = z.string()
+    const schemaValidator = schema.safeParse(req.params.meeting_key)
+    if (!schemaValidator.success) return res.status(400).json({
+        message: 'Invalid request body',
+        errors: schemaValidator.error
+    })
+    const meeting_key = req.params.meeting_key
+    if (_.isNil(meeting_key)) throw new Error('Meeting key parameter is required')
     const currentSeason = await getActiveSeason()
     if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
     const seasonId = currentSeason.toJSON().seasonId as number
-    const dbRaces = _.map(await getRacesBySeasonId(seasonId), race => race.toJSON())
-    const races: Meeting[] = await getRacesByYear(seasonId)
-    const diff: Meeting = _.minBy(_.reject(_.differenceBy(races, dbRaces, 'meeting_key'), {meeting_name: 'Pre-Season Testing'}), 'date_start') as Meeting
-    if (!diff) return res.json([])
-    const newRaces = await getResultsObjToAdd(seasonId, diff.meeting_key)
+    const newRaces = await getResultsObjToAdd(seasonId, +meeting_key)
 
     res.json({newRaces})
 }

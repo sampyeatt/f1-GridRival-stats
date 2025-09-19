@@ -10,7 +10,7 @@ const router = Router()
 
 router.get('/teamresults', authenticateJWT, getTeamResultsController)
 router.get('/byRound/:round', authenticateJWT, getTeamResultsByRoundController)
-router.get('/teams', authenticateJWTAdmin, getTeamResultsToAddController)
+router.get('/teams/:meeting_key', authenticateJWTAdmin, getTeamResultsToAddController)
 router.post('/', authenticateJWTAdmin, addTeamResultBulkController)
 router.post('/add', authenticateJWTAdmin, addTeamResultArrayController)
 router.post('/bulkimport', authenticateJWTAdmin, importTeamResultsController)
