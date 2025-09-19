@@ -5,8 +5,13 @@
     <p-select [options]="this.races" [(ngModel)]="selectedRace" optionLabel="meeting_name" placeholder="Select Race" class="w-full md:w-100 px-1" />
   </div>
   @if (this.driverResults && this.driverResults.length > 0) {
-    <p-button (onClick)="this.onSaveResults()" raised rounded>
-      <i class="pi pi-save "> Save Results</i></p-button>
+    <p-button (onClick)="this.onSaveDriverResults()" raised rounded>
+      <i class="pi pi-save "> Save Driver Results</i></p-button>
+  }
+
+  @if (this.teamResults && this.teamResults.length > 0) {
+    <p-button (onClick)="this.onSaveTeamResults()" raised rounded>
+      <i class="pi pi-save "> Save Team Results</i></p-button>
   }
   @if (this.resultSubmitSuccess) {
     <p-message severity="success" class="flex justify-center">Driver Results Saved to Database</p-message>
@@ -48,7 +53,7 @@
                 <td>
                   <p-cellEditor>
                     <ng-template #input>
-                      <input pInputText type="text" [(ngModel)]="result.cost" required style="width:50%"/>
+                      <input pInputText type="number" [(ngModel)]="result.cost" required style="width:50%"/>
                     </ng-template>
                     <ng-template #output>
                       {{ result.cost }}
@@ -58,7 +63,7 @@
                 <td>
                   <p-cellEditor>
                     <ng-template #input>
-                      <input pInputText type="text" [(ngModel)]="result.points" required style="width:50%"/>
+                      <input pInputText type="number" [(ngModel)]="result.points" required style="width:50%"/>
                     </ng-template>
                     <ng-template #output>
                       {{ result.points }}
@@ -68,7 +73,7 @@
                 <td>
                   <p-cellEditor>
                     <ng-template #input>
-                      <input pInputText type="text" [(ngModel)]="result.positionsForMoney" required style="width:50%"/>
+                      <input pInputText type="number" [(ngModel)]="result.positionsForMoney" required style="width:50%"/>
                     </ng-template>
                     <ng-template #output>
                       {{ result.positionsForMoney }}
@@ -78,7 +83,7 @@
                 <td>
                   <p-cellEditor>
                     <ng-template #input>
-                      <input pInputText type="text" [(ngModel)]="result.easeToGainPoints" required style="width:50%"/>
+                      <input pInputText type="number" [(ngModel)]="result.easeToGainPoints" required style="width:50%"/>
                     </ng-template>
                     <ng-template #output>
                       {{ result.easeToGainPoints }}
@@ -139,7 +144,7 @@
               <td>
                 <p-cellEditor>
                   <ng-template #input>
-                    <input pInputText type="text" [(ngModel)]="result.cost" required style="width:50%"/>
+                    <input pInputText type="number" [(ngModel)]="result.cost" required style="width:50%"/>
                   </ng-template>
                   <ng-template #output>
                     {{ result.cost }}
@@ -149,7 +154,7 @@
               <td>
                 <p-cellEditor>
                   <ng-template #input>
-                    <input pInputText type="text" [(ngModel)]="result.points" required style="width:50%"/>
+                    <input pInputText type="number" [(ngModel)]="result.points" required style="width:50%"/>
                   </ng-template>
                   <ng-template #output>
                     {{ result.points }}
@@ -159,7 +164,7 @@
               <td>
                 <p-cellEditor>
                   <ng-template #input>
-                    <input pInputText type="text" [(ngModel)]="result.positionsForMoney" required style="width:50%"/>
+                    <input pInputText type="number" [(ngModel)]="result.positionsForMoney" required style="width:50%"/>
                   </ng-template>
                   <ng-template #output>
                     {{ result.positionsForMoney }}
@@ -169,7 +174,7 @@
               <td>
                 <p-cellEditor>
                   <ng-template #input>
-                    <input pInputText type="text" [(ngModel)]="result.easeToGainPoints" required style="width:50%"/>
+                    <input pInputText type="number" [(ngModel)]="result.easeToGainPoints" required style="width:50%"/>
                   </ng-template>
                   <ng-template #output>
                     {{ result.easeToGainPoints }}

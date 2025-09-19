@@ -1,5 +1,6 @@
 import {Request, Response} from 'express'
 import {
+    addResults,
     bulkAddResults, getResultByRaceIdDriverId, getResultsObjToAdd,
     getResutls,
     getResutlsByRound,
@@ -75,17 +76,15 @@ export const addResultArrayController = async (req: Request, res: Response) => {
     const schemaValidator = schema.safeParse(req.body.results)
     if (!schemaValidator.success) return res.status(400).json({
         message: 'Invalid request body',
-        errors: schemaValidator.error
+        errors: schemaValidator.error.issues
     })
 
     const {results} = req.body
 
-    const resultsAdded = await Promise.all(_.map(results, async (result) => {
-        const checkResult = await getResultByRaceIdDriverId(result.raceId, result.driverId)
+    const resultsAdded = await Promise.all(_.map(results, async (result: Results) => {
+        const checkResult = await getResultByRaceIdDriverId(result.raceId, result.driverId!)
         if (checkResult) return {message: 'Result already added'}
-        return 'yes'
-        // TODO test
-        // return await addResults(result.raceId, result.points, result.cost, result.seasonId, result.round, result.driverId, result.teamId, result.finishPosition, result.positionDifference, result.positionsForMoney, result.easeToGainPoints, result.rank, result.meeting_key)
+        return await addResults(result)
     }))
 
     if (resultsAdded.length !== 0) return res.status(200).json({message: 'Results not found', success: true})
@@ -117,6 +116,7 @@ export const updateResultsController = async (req: Request, res: Response) => {
 }
 
 export const getDriverResultsToAddController = async (req: Request, res: Response) => {
+
     const schema = z.string()
     const schemaValidator = schema.safeParse(req.params.meeting_key)
     if (!schemaValidator.success) return res.status(400).json({
@@ -130,7 +130,7 @@ export const getDriverResultsToAddController = async (req: Request, res: Respons
     const seasonId = currentSeason.toJSON().seasonId as number
     const newRaces = await getResultsObjToAdd(seasonId, +meeting_key)
 
-    res.json({newRaces})
+    res.json(newRaces)
 }
 
 export const importRaceDataController = async (req: Request, res: Response) => {

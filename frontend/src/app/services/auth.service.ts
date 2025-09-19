@@ -33,6 +33,7 @@ export class AuthService {
   }
 
   login(email: string, password: string) {
+    console.log('login', this.apiUrl)
     return this.http.post<Session>(`${this.apiUrl}/login`, {email: email, password}).pipe(share())
 
   }

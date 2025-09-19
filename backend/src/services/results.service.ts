@@ -45,35 +45,10 @@ export async function getResultByRaceIdDriverId(raceId: string, driverId: string
     })
 }
 
-export function addResults(
-    raceId: string,
-    points: number,
-    cost: number,
-    seasonId: number,
-    round: number,
-    driverId: string,
-    teamId: string,
-    finishPosition: number,
-    positionDifference: number,
-    positionsForMoney: number,
-    easeToGainPoints: number,
-    rank: number,
-    meeting_key: number) {
+export function addResults(raceData: Partial<Results>) {
     const result = new Results()
-    result.raceId = raceId
-    result.points = points
-    result.cost = cost
-    result.seasonId = seasonId
-    result.round = round
-    result.driverId = driverId
-    result.teamId = teamId
-    result.finishPosition = finishPosition
-    result.positionDifference = positionDifference
-    result.positionsForMoney = positionsForMoney
-    result.easeToGainPoints = easeToGainPoints
-    result.rank = rank
-    result.meeting_key = meeting_key
-    return Results.build(result).save()
+    result.set(raceData)
+    return result.save()
 }
 
 export async function getTotalPointsDriver(driverId: string, teamId: string, qualiPos: number, racePos: number, sprintPos = 0, teammatePos: number, lapsCompleted: number, totalLaps: number, seasonId: number, round: number, dqed: boolean) {
@@ -160,6 +135,7 @@ export async function updateQulaiResults(driverId: string, meeting_key: number, 
 }
 
 export async function getResultsObjToAdd(seasonId: number, meeting_key: number) {
+
     const race = await getRaceDataByMeetingKey(meeting_key)
     if (!race) return {message: 'Race DB not found'}
     const raceJson = race.toJSON()

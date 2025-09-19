@@ -1,3 +1,3 @@
 export const environment = {
-  API_URL: 'https://grod.anonymousplatypus.work'
+  API_URL: 'http://localhost:3000'
 }

@@ -83,8 +83,9 @@ export class ResultAdminComponent implements OnInit{
     if (this.selectedRace) {
       this.resultsService.getNewDriverResults(this.selectedRace).subscribe({
         next: (data) => {
-          this.cdref.markForCheck()
+          console.log(data)
           this.driverResults = data
+          this.cdref.markForCheck()
         },
         error: (err) => {
           console.error('Error Loading posts: ', err)
@@ -98,8 +99,9 @@ export class ResultAdminComponent implements OnInit{
     if (this.selectedRace) {
       this.teamResultsService.getNewTeamResults(this.selectedRace).subscribe({
         next: (data) => {
-          this.cdref.markForCheck()
+          console.log(data)
           this.teamResults = data
+          this.cdref.markForCheck()
         },
         error: (err) => {
           console.error('Error Loading posts: ', err)
@@ -109,8 +111,11 @@ export class ResultAdminComponent implements OnInit{
 
   }
 
-  onSaveResults() {
+  onSaveDriverResults() {
     this.saveDriverResults(this.driverResults!)
+  }
+
+  onSaveTeamResults() {
     this.saveTeamResults(this.teamResults!)
   }
 
