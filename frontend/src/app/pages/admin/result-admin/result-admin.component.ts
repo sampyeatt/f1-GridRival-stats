@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, inject} from '@angular/core'
+import {ChangeDetectorRef, Component, inject, OnInit} from '@angular/core'
 import {TableModule} from 'primeng/table'
 import {ToastModule} from 'primeng/toast'
 import {CommonModule} from '@angular/common'
@@ -36,7 +36,7 @@ import {RaceService} from '../../../services/race.service'
   templateUrl: './result-admin.component.html',
   styleUrl: './result-admin.component.css'
 })
-export class ResultAdminComponent {
+export class ResultAdminComponent implements OnInit{
 
   driverResults?: Result[]
   teamResults?: TeamResult[]
@@ -54,6 +54,9 @@ export class ResultAdminComponent {
   public router = inject(Router)
   private cdref = inject(ChangeDetectorRef)
 
+  ngOnInit() {
+    this.loadRaces()
+  }
 
   // TODO add name of race being reviewed to html
   onFindResults() {
@@ -61,7 +64,6 @@ export class ResultAdminComponent {
     this.resultSubmitError = false
     this.getDriverResults()
     this.getTeamResults()
-    this.loadRaces()
   }
 
   loadRaces() {
