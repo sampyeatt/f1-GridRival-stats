@@ -142,6 +142,7 @@ export class ResultAdminComponent {
     })
   }
 
+
   onRowEditInitDriver(results: Result) {
     this.clonedDriverResult[results.id] = {...results}
   }
