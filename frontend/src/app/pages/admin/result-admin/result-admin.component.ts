@@ -6,7 +6,7 @@ import {TagModule} from 'primeng/tag'
 import {SelectModule} from 'primeng/select'
 import {ButtonModule} from 'primeng/button'
 import {InputTextModule} from 'primeng/inputtext'
-import {Result, TeamResult} from '../../../interface/api-interface'
+import {RaceList, Result, TeamResult} from '../../../interface/api-interface'
 import {ResultsService} from '../../../services/results.service'
 import {FormsModule} from '@angular/forms'
 import {Router} from '@angular/router'
@@ -15,6 +15,7 @@ import {MessageModule} from 'primeng/message'
 import {TabsModule} from 'primeng/tabs'
 import {TeamResultsService} from '../../../services/teamresults.service'
 import {TooltipModule} from 'primeng/tooltip'
+import {RaceService} from '../../../services/race.service'
 
 
 @Component({
@@ -42,11 +43,14 @@ export class ResultAdminComponent {
   resultSubmitSuccess: boolean = false
   resultSubmitError: boolean = false
 
+  races?: RaceList[]
+  selectedRace?: RaceList
   clonedDriverResult: { [s: number]: Result } = {}
   clonedTeamResults: { [s: number]: TeamResult } = {}
 
   private resultsService = inject(ResultsService)
   private teamResultsService = inject(TeamResultsService)
+  private raceService = inject(RaceService)
   public router = inject(Router)
   private cdref = inject(ChangeDetectorRef)
 
@@ -57,30 +61,50 @@ export class ResultAdminComponent {
     this.resultSubmitError = false
     this.getDriverResults()
     this.getTeamResults()
+    this.loadRaces()
+  }
+
+  loadRaces() {
+    this.raceService.getRaceList().subscribe({
+      next: (data) => {
+        this.cdref.markForCheck()
+        this.races = data
+        this.selectedRace = this.races[data.length - 1]
+      },
+      error: (err) => {
+        console.error('Error Loading posts: ', err)
+      }
+    })
   }
 
   getDriverResults() {
-    this.resultsService.getNewDriverResults().subscribe({
-      next: (data) => {
-        this.cdref.markForCheck()
-        this.driverResults = data
-      },
-      error: (err) => {
-        console.error('Error Loading posts: ', err)
-      }
-    })
+    if (this.selectedRace) {
+      this.resultsService.getNewDriverResults(this.selectedRace).subscribe({
+        next: (data) => {
+          this.cdref.markForCheck()
+          this.driverResults = data
+        },
+        error: (err) => {
+          console.error('Error Loading posts: ', err)
+        }
+      })
+    }
+
   }
 
   getTeamResults() {
-    this.teamResultsService.getNewTeamResults().subscribe({
-      next: (data) => {
-        this.cdref.markForCheck()
-        this.teamResults = data
-      },
-      error: (err) => {
-        console.error('Error Loading posts: ', err)
-      }
-    })
+    if (this.selectedRace) {
+      this.teamResultsService.getNewTeamResults(this.selectedRace).subscribe({
+        next: (data) => {
+          this.cdref.markForCheck()
+          this.teamResults = data
+        },
+        error: (err) => {
+          console.error('Error Loading posts: ', err)
+        }
+      })
+    }
+
   }
 
   onSaveResults() {
