@@ -1,6 +1,9 @@
 <div class="py-6">
   <p-button (onClick)="this.onFindResults()" class="px-10" raised rounded enterkeyhint="enter">Get New Results<i class="pi pi-flag"></i>
   </p-button>
+  <div class="flex justify-center p-3">
+    <p-select [options]="this.races" [(ngModel)]="selectedRace" optionLabel="meeting_name" placeholder="Select Race" class="w-full md:w-100 px-1" />
+  </div>
   @if (this.driverResults && this.driverResults.length > 0) {
     <p-button (onClick)="this.onSaveResults()" raised rounded>
       <i class="pi pi-save "> Save Results</i></p-button>
