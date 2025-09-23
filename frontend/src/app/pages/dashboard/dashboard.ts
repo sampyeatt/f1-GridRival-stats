@@ -3,10 +3,10 @@ import {
   inject,
   CUSTOM_ELEMENTS_SCHEMA,
   OnInit,
-  ChangeDetectorRef
+  ChangeDetectorRef, PLATFORM_ID
 } from '@angular/core'
-import {TableModule} from 'primeng/table'
-import {CommonModule} from '@angular/common'
+import {TableModule, TableRowCollapseEvent, TableRowExpandEvent} from 'primeng/table'
+import {CommonModule, isPlatformBrowser} from '@angular/common'
 import {ButtonModule} from 'primeng/button'
 import {FormsModule} from '@angular/forms'
 import {ResultsService} from '../../services/results.service'
@@ -14,15 +14,16 @@ import {RaceList, Result, TeamResult} from '../../interface/api-interface'
 import {BadgeModule} from 'primeng/badge'
 import {TabsModule} from 'primeng/tabs'
 import {SelectModule} from 'primeng/select'
-import {filter} from 'rxjs'
 import {TeamResultsService} from '../../services/teamresults.service'
 import {RaceService} from '../../services/race.service'
+import {Ripple} from 'primeng/ripple'
+import {ChartModule} from 'primeng/chart'
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [
-    TableModule, CommonModule, ButtonModule, BadgeModule, FormsModule, TabsModule, SelectModule
+    TableModule, CommonModule, ButtonModule, BadgeModule, FormsModule, TabsModule, SelectModule, Ripple, ChartModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './dashboard.html',
@@ -36,12 +37,15 @@ export class DashboardComponent implements OnInit {
   selectedRace?: RaceList
   teamResults?: TeamResult[]
   selectedTeamResult?: TeamResult[]
-
+  options: any
+  data: any
+  expandedRows = {}
 
   public resultsService = inject(ResultsService)
   public teamResultsService = inject(TeamResultsService)
   private raceService = inject(RaceService)
   private cdref = inject(ChangeDetectorRef)
+  platformId = inject(PLATFORM_ID)
 
   // @ViewChild('dynamicComponent ', {read: ViewContainerRef})
 
@@ -112,6 +116,72 @@ export class DashboardComponent implements OnInit {
 
   }
 
+  onRowExpand(event: TableRowExpandEvent) {
+    console.log('Expanded: ', event.data)
+    this.buildChart(event.data)
+  }
 
-  protected readonly filter = filter
+  onRowCollapse(event: TableRowCollapseEvent) {
+    console.log('Expandednt: ', event.data)
+    this.data = undefined
+  }
+
+  buildChart(expandedDriver: Result) {
+    if (isPlatformBrowser(this.platformId)) {
+      const documentStyle = getComputedStyle(document.documentElement)
+      const textColor = documentStyle.getPropertyValue('--p-text-color')
+      const textColorSecondary = documentStyle.getPropertyValue('--p-text-muted-color')
+      const surfaceBorder = documentStyle.getPropertyValue('--p-content-border-color')
+
+      const filteredResults = this.results?.filter(
+        result => result.driverId === expandedDriver.driverId
+      ).sort((a, b) => a.round - b.round)
+
+      this.data = {
+        labels: this.races!.map(race => race.meeting_name),
+        datasets: [
+          {
+            label: 'Points Scored',
+            data: filteredResults!.map(result => result.points),
+            fill: false,
+            borderColor: documentStyle.getPropertyValue('--p-cyan-500'),
+            tension: 0.4
+          }
+        ]
+      }
+
+      this.options = {
+        maintainAspectRatio: false,
+        aspectRatio: 0.6,
+        plugins: {
+          legend: {
+            labels: {
+              color: textColor
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: textColorSecondary
+            },
+            grid: {
+              color: surfaceBorder,
+              drawBorder: false
+            }
+          },
+          y: {
+            ticks: {
+              color: textColorSecondary
+            },
+            grid: {
+              color: surfaceBorder,
+              drawBorder: false
+            }
+          }
+        }
+      }
+      this.cdref.markForCheck()
+    }
+  }
 }

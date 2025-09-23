@@ -11,9 +11,10 @@
     <p-tabpanels >
       <p-tabpanel value="driver" >
         <div class="flex justify-center py-6">
-          <p-table *ngIf="this.selectedResult" [value]="this.selectedResult" [tableStyle]="{ 'min-width': '50rem' }"  >
+          <p-table *ngIf="this.selectedResult" [value]="this.selectedResult" dataKey="driverId" [tableStyle]="{ 'min-width': '50rem' }" [expandedRowKeys]="expandedRows"  (onRowExpand)="onRowExpand($event)" (onRowCollapse)="onRowCollapse($event)">
             <ng-template #header pTemplate="header">
               <tr>
+                <th></th>
                 <th pSortableColumn="driver.driverName">
                   DriverId
                   <p-sortIcon field="driver.driverName"/>
@@ -27,7 +28,7 @@
                   <p-sortIcon field="points" />
                 </th>
                 <th pSortableColumn="positionsForMoney">
-                  Positions To Gain $
+                  Pos To Gain $
                   <p-sortIcon field="positionsForMoney" />
                 </th>
                 <th pSortableColumn="easeToGainPoints">
@@ -36,8 +37,11 @@
                 </th>
               </tr>
             </ng-template>
-            <ng-template #body let-result pTemplate="body">
+            <ng-template #body let-result let-expanded="expanded" pTemplate="body">
               <tr>
+                <td>
+                  <p-button type="button" pRipple [pRowToggler]="result" [text]="true" rounded [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" />
+                </td>
                 <td>{{ result.driver.driverName }}</td>
                 <td>{{ result.cost }}</td>
                 <td>{{ result.points }}</td>
@@ -48,6 +52,11 @@
                   <p-badge [value]="result.easeToGainPoints" [severity]="resultSeverity(result)"/>
                 </td>
               </tr>
+            </ng-template>
+            <ng-template #expandedrow>
+              <div class="card">
+                <p-chart type="line" [data]="this.data" [options]="this.options" class="h-[30rem]" />
+              </div>
             </ng-template>
           </p-table>
         </div>
