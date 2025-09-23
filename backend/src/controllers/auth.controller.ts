@@ -116,7 +116,16 @@ export const refreshTokenController = async (req: Request, res: Response) => {
     await addToken(newRefreshToken, 'refresh', userId)
     await addToken(accessToken, 'access', userId)
 
-    return res.status(200).json({accessToken, refreshToken: newRefreshToken})
+    const session = {
+        accessToken,
+        refreshToken: newRefreshToken,
+        user: user?.toJSON()
+    }
+
+    // @ts-ignore
+    delete session.user?.password
+
+    return res.status(200).json(session)
 }
 
 export const logoutController = async (req: Request, res: Response) => {
