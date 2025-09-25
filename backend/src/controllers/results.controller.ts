@@ -87,6 +87,7 @@ export const addResultArrayController = async (req: Request, res: Response) => {
         return await addResults(result)
     }))
 
+    console.log(resultsAdded)
     if (resultsAdded.length !== 0) return res.status(200).json({message: 'Results not found', success: true})
 }
 

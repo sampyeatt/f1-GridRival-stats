@@ -1,7 +1,7 @@
 import { connection } from "./connection"
 
 connection.sync({
-    logging: false,
+    logging: false
     // alter: true
 })
 

@@ -45,13 +45,15 @@ export async function getResultByRaceIdDriverId(raceId: string, driverId: string
     })
 }
 
-export function addResults(raceData: Partial<Results>) {
+export async function addResults(raceData: Partial<Results>) {
+    if (raceData.driverId === 'antonelli') console.log('whats happening', raceData)
+
     const result = new Results()
     result.set(raceData)
-    return result.save()
+    return await result.save()
 }
 
-export async function getTotalPointsDriver(driverId: string, teamId: string, qualiPos: number, racePos: number, sprintPos = 0, teammatePos: number, lapsCompleted: number, totalLaps: number, seasonId: number, round: number, dqed: boolean) {
+export async function getTotalPointsDriver(driverId: string, teamId: string, qualiPos: number, racePos: number, sprintPos = 0, teammatePos: number, lapsCompleted: number, totalLaps: number, seasonId: number, round: number, dqed: boolean, qualidqed: boolean) {
 
     let eightRaceDB = (await Results.findAll({
         attributes: ['finishPosition', 'raceId', 'round'],
@@ -70,13 +72,36 @@ export async function getTotalPointsDriver(driverId: string, teamId: string, qua
         eightRaceDB = _.reject(eightRaceDB, (item => item.round === originalPos.round))
         eightRaceAvg = Math.ceil((_.sumBy(eightRaceDB, 'finishPosition') + (originalPos.finishPosition! * (8 - (round - 1)))) / 8)
     }
-    const quailPoints = QualiPointsDriver[String(qualiPos) as keyof typeof QualiPointsDriver]
+    const quailPoints = (!qualidqed) ? QualiPointsDriver[String(qualiPos) as keyof typeof QualiPointsDriver] : 0
     const sprintPoints = SprintPointsDriver[String(sprintPos) as keyof typeof SprintPointsDriver]
     const racePoints = (!dqed) ? RacePointsDriver[String(racePos) as keyof typeof RacePointsDriver] : 0
     const beatTeammatePoints = (!dqed) ? BeatingTeammatePoints[String(Math.max(teammatePos - racePos, 0)) as keyof typeof BeatingTeammatePoints] : 0
-    const improvedPoints = (!dqed) ? ImprovedPoints[String(_.round(eightRaceAvg - racePos, 0)) as keyof typeof ImprovedPoints] : 0
+    const improvedPoints = (!dqed || !qualidqed) ? ImprovedPoints[String(_.round(eightRaceAvg - racePos, 0)) as keyof typeof ImprovedPoints] : 0
     const completionPoints = (!dqed) ? await getCompletionPoints((lapsCompleted / totalLaps) * 100) : 0
     const overtakePoints = (!dqed) ? Math.max((qualiPos - racePos), 0) * 3 : 0
+    // if (driverId === 'ocon') {
+    //     console.log(`*********************************`)
+    //     console.log('Driver: ', driverId)
+    //     console.log('Team: ', teamId)
+    //     console.log('QualiPos: ', qualiPos)
+    //     console.log('RacePos: ', racePos)
+    //     console.log('SprintPos: ', sprintPos)
+    //     console.log('TeammatePos: ', teammatePos)
+    //     console.log('LapsCompleted: ', lapsCompleted)
+    //     console.log('TotalLaps: ', totalLaps)
+    //     console.log('SeasonId: ', seasonId)
+    //     console.log('Round: ', round)
+    //     console.log('EightRaceDB: ', eightRaceDB)
+    //     console.log('EightRaceAvg: ', eightRaceAvg)
+    //     console.log('QuailPoints: ', quailPoints)
+    //     console.log('SprintPoints: ', sprintPoints)
+    //     console.log('RacePoints: ', racePoints)
+    //     console.log('BeatTeammatePoints: ', beatTeammatePoints)
+    //     console.log('ImprovedPoints: ', improvedPoints)
+    //     console.log('CompletionPoints: ', completionPoints)
+    //     console.log('OvertakePoints: ', overtakePoints)
+    //     console.log(`*********************************`)
+    // }
     return _.sum([quailPoints, racePoints, sprintPoints, overtakePoints, beatTeammatePoints, completionPoints, improvedPoints])
 }
 
@@ -174,14 +199,25 @@ export async function getResultsObjToAdd(seasonId: number, meeting_key: number) 
                 sprintPosition = (sprint.dnf || sprint.dns || sprint.dsq) ? _.findIndex(sprintResults, {driver_number: +key}) + 1 : sprint.position
             }
 
-            const qualiPosition = (quali.dnf || quali.dns || quali.dsq) ? _.findIndex(qualiResults, {driver_number: +key}) + 1 : quali.position
+
+
+            const qualiPosition = (quali.dnf || quali.dns || quali.dsq || quali.position === null) ? _.findIndex(qualiResults, {driver_number: +key}) + 1 : quali.position
             const racePosition = (!raceR) ? 20 : (raceR.dnf || raceR.dns || raceR.dsq) ? _.findIndex(raceResults, {driver_number: +key}) + 1 : raceR.position
             const teammatePos = (!teammateResult) ? 20 : (teammateResult.dnf || teammateResult.dns || teammateResult.dsq) ? _.findIndex(raceResults, {driver_number: teammateResult.driver_number!}) + 1 : teammateResult.position
 
+
             const numberOfLaps = (raceR) ? raceR.number_of_laps : teammateResult.number_of_laps
             const dnsdsq = (raceR) ? (raceR.dsq || raceR.dns) : !raceR
+            const qualiDqed = (quali.dns || quali.dsq || quali.position === null)
+            // if (driverId === 'ocon') {
+            //     console.log(`*********************************`)
+            //     console.log('Driver: ', driverId)
+            //     console.log('Quali: ', quali)
+            //     console.log('qualiDqed: ', qualiDqed)
+            //     console.log(`*********************************`)
+            // }
 
-            const points = await getTotalPointsDriver(driverId!, teamId!, qualiPosition, racePosition, sprintPosition, teammatePos, numberOfLaps, laps, seasonId, round, dnsdsq)
+            const points = await getTotalPointsDriver(driverId!, teamId!, qualiPosition, racePosition, sprintPosition, teammatePos, numberOfLaps, laps, seasonId, round, dnsdsq, qualiDqed)
 
             return {
                 driverId: driverId,

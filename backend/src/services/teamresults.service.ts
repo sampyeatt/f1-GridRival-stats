@@ -76,8 +76,16 @@ export async function teamResultsToAdd(seasonId: number, meeting_key: number) {
         .map(async (value, key: string) => {
 
             const points = _(value).map(driverResult => {
+
                 const racePoint = (!driverResult.raceDNS && !driverResult.raceDSQ) ? RacePointsTeam[String(driverResult.finishPosition) as keyof typeof RacePointsTeam] : 0
                 const qualiPoint = (!driverResult.qualiDSQ) ? QualiPointsTeam[String(driverResult.qualiPosition) as keyof typeof QualiPointsTeam] : 0
+                if (key === 'mercedes' || key === 'red_bull') {
+                    console.log('*********************************')
+                    console.log('driverResult: ', driverResult)
+                    console.log('racePoint: ', racePoint)
+                    console.log('qualiPoint: ', qualiPoint)
+                    console.log('*********************************')
+                }
                 return (racePoint + qualiPoint)
             }).sum()
             return {
@@ -117,6 +125,7 @@ export async function teamResultsToAdd(seasonId: number, meeting_key: number) {
 }
 
 export function upsertTeamResultsBulk(resultData: Partial<TeamResults>) {
+    console.log('resultData: ', resultData)
     const teamResultInstance = new TeamResults()
     teamResultInstance.set(resultData)
     return teamResultInstance.save()

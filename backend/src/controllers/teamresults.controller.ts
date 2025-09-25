@@ -51,6 +51,7 @@ export const addTeamResultArrayController = async (req: Request, res: Response) 
     const {results} = req.body
 
     const resultsAdded = await Promise.all(_.map(results, async (result: TeamResults) => {
+
         return await upsertTeamResultsBulk(result)
     }))
 

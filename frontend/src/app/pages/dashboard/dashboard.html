@@ -11,7 +11,7 @@
       <p-tabpanel value="driver">
         @if (this.selectedResult) {
           <div class="flex justify-center py-6">
-            <p-table [value]="this.selectedResult" dataKey="driverId" [expandedRowKeys]="expandedRows" (onRowExpand)="onRowExpand($event)" (onRowCollapse)="onRowCollapse($event)" rowExpandMode="single" [tableStyle]="{ 'width': '70rem' }">
+            <p-table [value]="this.selectedResult" dataKey="driverId" [expandedRowKeys]="expandedRows" (onRowExpand)="onRowExpand($event)" (onRowCollapse)="onRowCollapse($event)" rowExpandMode="single" [tableStyle]="{ 'width': '75rem' }">
               <ng-template #header pTemplate="header">
                 <tr>
                   <th></th>

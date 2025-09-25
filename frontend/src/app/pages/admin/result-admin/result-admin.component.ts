@@ -122,10 +122,11 @@ export class ResultAdminComponent implements OnInit{
   saveDriverResults(driverResults: Result[]) {
     this.resultsService.saveUpdatedDriverResults(driverResults!).subscribe({
       next: (data) => {
-        this.cdref.markForCheck()
+        console.log('t', data)
         this.driverResults = undefined
         this.resultSubmitSuccess = true
         this.resultSubmitError = false
+        this.cdref.markForCheck()
       },
       error: (err) => {
         this.resultSubmitError = true
@@ -137,10 +138,10 @@ export class ResultAdminComponent implements OnInit{
   saveTeamResults(teamResults: TeamResult[]) {
     this.teamResultsService.saveUpdatedTeamResults(teamResults!).subscribe({
       next: (data) => {
-        this.cdref.markForCheck()
-        this.driverResults = undefined
+        this.teamResults = undefined
         this.resultSubmitSuccess = true
         this.resultSubmitError = false
+        this.cdref.markForCheck()
       },
       error: (err) => {
         this.resultSubmitError = true
