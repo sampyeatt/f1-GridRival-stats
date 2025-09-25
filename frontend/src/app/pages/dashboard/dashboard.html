@@ -5,7 +5,7 @@
 
   <p-tabs value="driver">
     <div class="flex justify-center py-6">
-      <p-tablist >
+      <p-tablist>
         <p-tab value="driver">Drivers</p-tab>
         <p-tab value="team">Teams</p-tab>
       </p-tablist>
@@ -14,7 +14,7 @@
       <p-tabpanel value="driver">
         @if (this.selectedResult) {
           <div class="flex justify-center py-6">
-            <p-table [value]="this.selectedResult" dataKey="driverId" [expandedRowKeys]="expandedRows" (onRowExpand)="onRowExpand($event)" (onRowCollapse)="onRowCollapse($event)" rowExpandMode="single" [tableStyle]="{ 'width': '75rem' }">
+            <p-table [value]="this.selectedResult" scrollable dataKey="driverId" [expandedRowKeys]="expandedRows" (onRowExpand)="onRowExpandDriver($event)" (onRowCollapse)="onRowCollapseDriver($event)" rowExpandMode="single" [tableStyle]="{ 'max-width': '75rem' }">
               <ng-template #header pTemplate="header">
                 <tr>
                   <th></th>
@@ -44,11 +44,11 @@
                 <tr>
                   <td>
                     @if (!expanded) {
-                       <p-button type="button" pRipple [pRowToggler]="result" [text]="true" rounded class="pi pi-chevron-right"/>
-                       }
+                      <p-button type="button" pRipple [pRowToggler]="result" [text]="true" rounded class="pi pi-chevron-right"/>
+                    }
                     @if (expanded) {
-                       <p-button type="button" pRipple [pRowToggler]="result" [text]="true" rounded class="pi pi-chevron-down" />
-                       }
+                      <p-button type="button" pRipple [pRowToggler]="result" [text]="true" rounded class="pi pi-chevron-down"/>
+                    }
                   </td>
                   <td>{{ result.driver.driverName }}</td>
                   <td>{{ result.cost }}</td>
@@ -74,45 +74,63 @@
       </p-tabpanel>
       <p-tabpanel value="team">
         <div class="flex justify-center py-6">
-          <p-table *ngIf="this.selectedTeamResult" [value]="this.selectedTeamResult" [tableStyle]="{ 'min-width': '50rem' }">
-            <ng-template #header pTemplate="header">
-              <tr>
-                <th pSortableColumn="criverId">
-                  TeamId
-                  <p-sortIcon field="driverId"/>
-                </th>
-                <th pSortableColumn="cost">
-                  Cost
-                  <p-sortIcon field="cost"/>
-                </th>
-                <th pSortableColumn="points">
-                  Points
-                  <p-sortIcon field="points"/>
-                </th>
-                <th pSortableColumn="positionsForMoney">
-                  Positions To Gain $
-                  <p-sortIcon field="positionsForMoney"/>
-                </th>
-                <th pSortableColumn="easeToGainPoints">
-                  Ease to Gain
-                  <p-sortIcon field="easeToGainPoints"/>
-                </th>
-              </tr>
-            </ng-template>
-            <ng-template #body let-teamresult pTemplate="body">
-              <tr>
-                <td>{{ teamresult.team.teamName }}</td>
-                <td>{{ teamresult.cost }}</td>
-                <td>{{ teamresult.points }}</td>
-                <td>
-                  {{ teamresult.positionsForMoney }}
-                </td>
-                <td>
-                  <p-badge [value]="teamresult.easeToGainPoints" [ngStyle]="{backgroundColor: `${posSev( teamresult)}`}"/>
-                </td>
-              </tr>
-            </ng-template>
-          </p-table>
+          @if (this.selectedTeamResult) {
+            <p-table scrollable [value]="this.selectedTeamResult" dataKey="teamId" [expandedRowKeys]="expandedRows" (onRowExpand)="onRowExpandTeam($event)" (onRowCollapse)="onRowCollapseTeam($event)" rowExpandMode="single" [tableStyle]="{ 'max-width': '75rem' }">
+              <ng-template #header pTemplate="header">
+                <tr>
+                  <th></th>
+                  <th pSortableColumn="criverId">
+                    TeamId
+                    <p-sortIcon field="driverId"/>
+                  </th>
+                  <th pSortableColumn="cost">
+                    Cost
+                    <p-sortIcon field="cost"/>
+                  </th>
+                  <th pSortableColumn="points">
+                    Points
+                    <p-sortIcon field="points"/>
+                  </th>
+                  <th pSortableColumn="positionsForMoney">
+                    Positions To Gain $
+                    <p-sortIcon field="positionsForMoney"/>
+                  </th>
+                  <th pSortableColumn="easeToGainPoints">
+                    Ease to Gain
+                    <p-sortIcon field="easeToGainPoints"/>
+                  </th>
+                </tr>
+              </ng-template>
+              <ng-template #body let-teamresult let-expanded="expanded" pTemplate="body">
+                <tr>
+                  <td>
+                    @if (!expanded) {
+                      <p-button type="button" pRipple [pRowToggler]="teamresult" [text]="true" rounded class="pi pi-chevron-right"/>
+                    }
+                    @if (expanded) {
+                      <p-button type="button" pRipple [pRowToggler]="teamresult" [text]="true" rounded class="pi pi-chevron-down"/>
+                    }
+                  </td>
+                  <td>{{ teamresult.team.teamName }}</td>
+                  <td>{{ teamresult.cost }}</td>
+                  <td>{{ teamresult.points }}</td>
+                  <td>
+                    {{ teamresult.positionsForMoney }}
+                  </td>
+                  <td>
+                    <p-badge [value]="teamresult.easeToGainPoints" [ngStyle]="{backgroundColor: `${posSev( teamresult)}`}"/>
+                  </td>
+                </tr>
+              </ng-template>
+              <ng-template #expandedrow pTemplate="rowexpansion">
+                <tr>
+                  <td colspan="7">
+                    <p-chart type="line" [data]="this.data" [options]="this.options" width="70rem" height="20rem"/>
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+          }
         </div>
       </p-tabpanel>
     </p-tabpanels>

@@ -114,14 +114,7 @@ export class DashboardComponent implements OnInit {
     })
   }
 
-  resultSeverity(result: Result) {
-    if (result.easeToGainPoints > 2) return 'danger'
-    else if (result.easeToGainPoints <= 2 && result.easeToGainPoints > 0) return 'warn'
-    else return 'success'
-  }
-
   posSev(posSev: Result) {
-    let color = '#FFFFFF'
     return this.severityColors.get(posSev.easeToGainPoints)
   }
 
@@ -136,17 +129,25 @@ export class DashboardComponent implements OnInit {
 
   }
 
-  onRowExpand(event: TableRowExpandEvent) {
+  onRowExpandDriver(event: TableRowExpandEvent) {
     console.log('Expanded: ', event.data)
-    this.buildChart(event.data)
+    this.buildChartDriver(event.data)
   }
 
-  onRowCollapse(event: TableRowCollapseEvent) {
+  onRowCollapseDriver(event: TableRowCollapseEvent) {
     console.log('Expandednt: ', event.data)
     this.data = undefined
   }
 
-  buildChart(expandedDriver: Result) {
+  onRowExpandTeam(event: TableRowExpandEvent) {
+    this.buildChartTeam(event.data)
+  }
+
+  onRowCollapseTeam(event: TableRowCollapseEvent) {
+    this.data = undefined
+  }
+
+  buildChartDriver(expandedDriver: Result) {
     if (isPlatformBrowser(this.platformId)) {
       const documentStyle = getComputedStyle(document.documentElement)
       const textColor = documentStyle.getPropertyValue('--p-text-color')
@@ -155,6 +156,65 @@ export class DashboardComponent implements OnInit {
 
       const filteredResults = this.results?.filter(
         result => result.driverId === expandedDriver.driverId
+      ).sort((a, b) => a.round - b.round)
+
+      this.data = {
+        labels: this.races!.map(race => race.meeting_name),
+        datasets: [
+          {
+            label: 'Points Scored',
+            data: filteredResults!.map(result => result.points),
+            fill: false,
+            borderColor: documentStyle.getPropertyValue('--p-cyan-500'),
+            tension: 0.4
+          }
+        ]
+      }
+
+      this.options = {
+        maintainAspectRatio: false,
+        aspectRatio: 0.6,
+        plugins: {
+          legend: {
+            labels: {
+              color: textColor
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: textColorSecondary
+            },
+            grid: {
+              color: surfaceBorder,
+              drawBorder: false
+            }
+          },
+          y: {
+            ticks: {
+              color: textColorSecondary
+            },
+            grid: {
+              color: surfaceBorder,
+              drawBorder: false
+            }
+          }
+        }
+      }
+      this.cdref.markForCheck()
+    }
+  }
+
+  buildChartTeam(expandedTeam: TeamResult) {
+    if (isPlatformBrowser(this.platformId)) {
+      const documentStyle = getComputedStyle(document.documentElement)
+      const textColor = documentStyle.getPropertyValue('--p-text-color')
+      const textColorSecondary = documentStyle.getPropertyValue('--p-text-muted-color')
+      const surfaceBorder = documentStyle.getPropertyValue('--p-content-border-color')
+
+      const filteredResults = this.results?.filter(
+        result => result.teamId === expandedTeam.teamId
       ).sort((a, b) => a.round - b.round)
 
       this.data = {
