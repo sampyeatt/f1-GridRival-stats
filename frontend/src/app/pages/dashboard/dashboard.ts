@@ -41,6 +41,21 @@ export class DashboardComponent implements OnInit {
   data: any
   expandedRows = {}
 
+  severityColors = new Map<number, string>([
+    [-5, '#00ccff'],
+    [-4, '#99ebff'],
+    [-3, '#2eb82e'],
+    [-2, '#70db70'],
+    [-1, '#adebad'],
+    [0, '#eef6ee'],
+    [1, '#ffc6b3'],
+    [2, '#ff794d'],
+    [3, '#ff4000'],
+    [4, '#b32d00'],
+    [5, '#802000'],
+  ])
+
+
   public resultsService = inject(ResultsService)
   public teamResultsService = inject(TeamResultsService)
   private raceService = inject(RaceService)
@@ -103,6 +118,11 @@ export class DashboardComponent implements OnInit {
     if (result.easeToGainPoints > 2) return 'danger'
     else if (result.easeToGainPoints <= 2 && result.easeToGainPoints > 0) return 'warn'
     else return 'success'
+  }
+
+  posSev(posSev: Result) {
+    let color = '#FFFFFF'
+    return this.severityColors.get(posSev.easeToGainPoints)
   }
 
   filterResults() {

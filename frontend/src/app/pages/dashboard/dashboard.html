@@ -2,11 +2,14 @@
   <div class="flex justify-center">
     <p-select [options]="this.races" [(ngModel)]="selectedRace" (onChange)=filterResults() optionLabel="meeting_name" placeholder="Select Race" class="w-full md:w-100 px-1" animate="enter-animation"/>
   </div>
+
   <p-tabs value="driver">
-    <p-tablist class="flex justify-center py-6">
-      <p-tab value="driver">Drivers</p-tab>
-      <p-tab value="team">Teams</p-tab>
-    </p-tablist>
+    <div class="flex justify-center py-6">
+      <p-tablist >
+        <p-tab value="driver">Drivers</p-tab>
+        <p-tab value="team">Teams</p-tab>
+      </p-tablist>
+    </div>
     <p-tabpanels>
       <p-tabpanel value="driver">
         @if (this.selectedResult) {
@@ -40,16 +43,21 @@
               <ng-template #body let-result let-expanded="expanded" pTemplate="body">
                 <tr>
                   <td>
-                    <p-button type="button" pRipple [pRowToggler]="result" [text]="true" rounded [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"/>
+                    @if (!expanded) {
+                       <p-button type="button" pRipple [pRowToggler]="result" [text]="true" rounded class="pi pi-chevron-right"/>
+                       }
+                    @if (expanded) {
+                       <p-button type="button" pRipple [pRowToggler]="result" [text]="true" rounded class="pi pi-chevron-down" />
+                       }
                   </td>
                   <td>{{ result.driver.driverName }}</td>
                   <td>{{ result.cost }}</td>
                   <td>{{ result.points }}</td>
                   <td>
-                    <p-badge [value]="result.positionsForMoney" [severity]="resultSeverity(result)"/>
+                    {{ result.positionsForMoney }}
                   </td>
                   <td>
-                    <p-badge [value]="result.easeToGainPoints" [severity]="resultSeverity(result)"/>
+                    <p-badge [value]="result.easeToGainPoints" [ngStyle]="{backgroundColor: `${posSev( result)}`}"/>
                   </td>
                 </tr>
               </ng-template>
@@ -97,10 +105,10 @@
                 <td>{{ teamresult.cost }}</td>
                 <td>{{ teamresult.points }}</td>
                 <td>
-                  <p-badge [value]="teamresult.positionsForMoney" [severity]="resultSeverity(teamresult)"/>
+                  {{ teamresult.positionsForMoney }}
                 </td>
                 <td>
-                  <p-badge [value]="teamresult.easeToGainPoints" [severity]="resultSeverity(teamresult)"/>
+                  <p-badge [value]="teamresult.easeToGainPoints" [ngStyle]="{backgroundColor: `${posSev( teamresult)}`}"/>
                 </td>
               </tr>
             </ng-template>
