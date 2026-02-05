@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="CargoProjects">
+    <cargoProject FILE="$PROJECT_DIR$/Cargo.toml">
+      <package file="$PROJECT_DIR$/src-tauri">
+        <feature name="default" enabled="true" />
+      </package>
+      <package file="$PROJECT_DIR$">
+        <feature name="default" enabled="true" />
+      </package>
+    </cargoProject>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="778afedf-d166-4586-9461-1f636012888a" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/f1-GridRival-stats.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/f1-GridRival-stats.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/tailwindcss.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/watcherTasks.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.vscode/extensions.json" beforeDir="false" afterPath="$PROJECT_DIR$/.vscode/extensions.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.vscode/launch.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.vscode/tasks.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/.dockerignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/Dockerfile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/package-lock.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/controllers/auth.controller.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/controllers/driver.controller.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/controllers/race.controller.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/controllers/results.controller.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/controllers/season.controller.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/controllers/team.controller.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/controllers/teamresults.controller.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/controllers/user.controller.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/database/connection.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/database/index.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/index.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/models/Driver.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/models/Race.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/models/Results.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/models/Season.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/models/Team.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/models/TeamResults.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/models/Token.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/models/User.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/routes/auth.routes.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/routes/driver.routes.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/routes/race.routes.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/routes/results.routes.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/routes/season.routes.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/routes/team.routes.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/routes/teamresults.routes.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/routes/user.routes.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/driver.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/race.services.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/results.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/season.services.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/team.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/teamresults.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/token.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/services/user.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/shared/auth.util.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/shared/constants.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/shared/email.util.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/shared/f1api.util.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/shared/general.util.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/shared/interface.util.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/shared/logger.util.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tsconfig.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/.dockerignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/.editorconfig" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/.postcssrc.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/.vscode/extensions.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/.vscode/launch.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/.vscode/tasks.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/Dockerfile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/angular.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/public/favicon.ico" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/app.config.server.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/app.config.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/app.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/app.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/app.module.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/app.routes.server.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/app.routes.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/app.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/component/admin-nav-bar/admin-nav-bar.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/component/admin-nav-bar/admin-nav-bar.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/component/admin-nav-bar/admin-nav-bar.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/component/nav-bar/nav-bar.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/component/nav-bar/nav-bar.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/component/nav-bar/nav-bar.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/component/theme/theme.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/guard/auth.guard.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/interceptors/auth.interceptor.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/interface/api-interface.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/admin/driver-admin/driver-admin.component.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/admin/driver-admin/driver-admin.component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/admin/driver-admin/driver-admin.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/admin/race-admin/race-admin.component.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/admin/race-admin/race-admin.component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/admin/race-admin/race-admin.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/admin/result-admin/result-admin.component.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/admin/result-admin/result-admin.component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/admin/result-admin/result-admin.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/admin/season-admin/season-admin.component.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/admin/season-admin/season-admin.component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/admin/season-admin/season-admin.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/admin/team-admin/team-admin.component.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/admin/team-admin/team-admin.component.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/admin/team-admin/team-admin.component.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/dashboard/dashboard.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/dashboard/dashboard.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/dashboard/dashboard.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/login/login.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/login/login.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/login/login.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/register/register.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/register/register.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/pages/register/register.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/services/auth.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/services/driver.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/services/race.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/services/results.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/services/season.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/services/team.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/services/teamresults.service.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/environments/environment.development.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/environments/environment.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/main.server.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/main.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/server.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/styles.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tsconfig.app.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tsconfig.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/tsconfig.spec.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/vite.config.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/nginx/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/nginx/Dockerfile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/nginx/nginx.conf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="QgrMtMT3" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="39ECZJqGQStRD9Kbff3SG31OrRj" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "git-widget-placeholder": "feat-tauri",
+    "nodejs_package_manager_path": "npm",
+    "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
+    "org.rust.cargo.project.model.impl.CargoExternalSystemProjectAware.subscribe.first.balloon": "",
+    "settings.editor.selected.configurable": "preferences.keymap",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RustProjectSettings">
+    <option name="toolchainHomeDirectory" value="/usr/bin" />
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-WS-253.30387.83" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="778afedf-d166-4586-9461-1f636012888a" name="Changes" comment="" />
+      <created>1770251898850</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1770251898850</updated>
+      <workItem from="1770251900218" duration="40000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
