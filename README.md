@@ -1,59 +1,134 @@
-# F1GridRivalStats
+# F1 GridRival Stats
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.1.4.
+An analyst's bench for [GridRival](https://gridrival.com) fantasy F1. It ingests
+real Formula 1 results, recomputes each driver's and constructor's GridRival
+points and salary for every round, and shows cost, points, positions-to-gain-$
+and an ease-to-gain index so you can decide who to buy.
 
-## Development server
+## Stack
 
-To start a local development server, run:
+| | |
+|---|---|
+| Frontend | Angular 20 (standalone, zoneless, signals) + PrimeNG + Tailwind |
+| Backend | Express 5 + Sequelize + TypeScript |
+| Database | Postgres 17 |
+| Results data | [Jolpica-F1](https://github.com/jolpica/jolpica-f1) (`api.jolpi.ca`) |
+| Edge | nginx, serving the app and proxying `/api/` on one origin |
 
-```bash
-ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Running it
 
 ```bash
-ng generate --help
+docker compose up --build
 ```
 
-## Building
+Then open <http://localhost:8080>. The backend applies any pending migrations
+before it accepts traffic.
 
-To build the project run:
+Secrets are read from `backend/src/.env` on the host at deploy time (via
+compose's `env_file`) and are **not** baked into the image:
+
+```
+PG_HOST=f1-grod-db
+PG_PORT=5435
+PG_USER_NAME=f1-data-user
+PG_PASSWORD=...
+PG_DATABASE=postgres
+JWT_SECRET=...            # required; the server refuses to start without it
+RESEND_API_KEY=...        # confirmation and password-reset email
+```
+
+Optional:
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `SCHEDULER_ENABLED` | `true` | Set `false` to run the API without the ingest scheduler |
+| `SCHEDULER_TICK_CRON` | `*/15 * * * *` | How often to check for due ingests |
+| `SCHEDULER_SYNC_CRON` | `0 3 * * 1` | Weekly calendar and driver refresh |
+| `CORS_ORIGINS` | unset | Comma-separated allowlist. Off by default — everything is same-origin |
+| `JOLPICA_BASE_URL` | `https://api.jolpi.ca/ergast/f1` | Results API root |
+
+## Local development
+
+Two terminals, no containers:
 
 ```bash
-ng build
+cd backend  && npm install && npm run migrate && npm run dev     # :3000
+cd frontend && npm install && npm start                          # :4200
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+`ng serve` proxies `/api` to `localhost:3000` (see `proxy.conf.json`), so the
+frontend talks to your local backend rather than production. There is one
+environment file and `API_URL` is empty — every request is same-origin in every
+deployment.
 
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+## Getting data in
 
 ```bash
-ng test
+cd backend
+npm run migrate                 # apply pending migrations
+npm run backfill -- 2025        # ingest and score a whole season (~75 requests)
+npm run grant-admin you@example.com
 ```
 
-## Running end-to-end tests
+`grant-admin` exists because promoting a user is admin-only, so the first admin
+has to be made out of band.
 
-For end-to-end (e2e) testing, run:
+After that the scheduler takes over. It is shaped like a race weekend rather
+than a poll: a round is checked 30 minutes after the flag, again at +2h and
++24h to catch stewards' decisions, and then every 6 hours while the result is
+still provisional. On a week with no racing the tick is one indexed query and
+no upstream call at all.
 
-```bash
-ng e2e
+Everything it does is recorded in the `IngestRun` table and visible on the
+**Scheduler** admin screen, which also has manual overrides. Ingest is
+idempotent — every write is an upsert onto a composite key — so re-running a
+round is always safe, and is the supported way to pick up a corrected
+classification.
+
+## Starting a new season
+
+Two steps, both in the app:
+
+1. **Seasons** → *Add Season* → the year. Marking a season current clears the
+   flag on the previous one, so exactly one season is ever current and every
+   screen follows it across.
+2. **Scheduler** → **Rebuild season**. One pass over the whole season: the
+   calendar, then the drivers and constructors, then every round that has been
+   run, then the scores derived from them. Rounds still in the future are
+   recorded as skipped and picked up later by the scheduler.
+
+That is `POST /api/scheduler/season`, and it is the same `refreshSeason` the
+`npm run backfill` script calls — the script is the way to run it without a
+browser. It takes a few minutes: three upstream requests per round, and Jolpica
+rate-limits. Safe to re-run at any point in a season.
+
+## Backend commands
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Development server with reload |
+| `npm test` | Vitest suite |
+| `npm run typecheck` | Typecheck sources and tests |
+| `npm run migrate` | Apply pending migrations (`-- down` rolls one back) |
+| `npm run backfill -- <season>` | Ingest and score a full season |
+| `npm run grant-admin <email>` | Promote an account to admin |
+| `npm run fixtures:refresh` | Re-download the Jolpica test fixtures |
+
+## How it fits together
+
+```
+api.jolpi.ca ──► ingest.service ──► Postgres ──► scoring ──► dashboard
+                      │                │
+                  RawIngest        IngestRun
+              (raw payloads,     (what ran, what
+               replay without     changed, what
+               re-fetching)       failed)
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Ingest writes only facts — positions, statuses, laps. Scoring derives points,
+rank, cost and the dashboard indices from them and writes those back, so a
+scoring change is a re-score over stored data rather than 75 more API requests.
 
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+The scoring rules live in `backend/src/services/scoring.ts` as pure functions
+with no database access, and the point tables in `shared/constants.ts` are
+configuration — they encode one league's settings.

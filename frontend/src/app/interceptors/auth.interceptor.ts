@@ -1,74 +1,50 @@
-import {HttpHandlerFn, HttpInterceptorFn, HttpRequest} from '@angular/common/http'
+import {HttpErrorResponse, HttpInterceptorFn, HttpRequest} from '@angular/common/http'
 import {inject} from '@angular/core'
+import {catchError, switchMap, throwError} from 'rxjs'
 import {AuthService} from '../services/auth.service'
-import {BehaviorSubject, catchError, filter, switchMap, take, throwError} from 'rxjs'
-let refreshing: boolean = false
-const refreshTokenSubject: BehaviorSubject<any> = new BehaviorSubject<any>(null);
+
+/**
+ * Attaches the bearer tokens, and retries once through a refresh on a 401.
+ *
+ * The previous version returned values RxJS cannot use — a bare `Error` from
+ * `catchError`, and a `Subscription` from the refresh branch — so the retry it
+ * appeared to implement never actually happened. It also kept its
+ * "refreshing" flag in module scope, which under SSR is shared by every user
+ * the process is serving; that state now lives on AuthService.
+ */
+
+/** Endpoints whose own 401 must not trigger a refresh attempt. */
+function isAuthEndpoint(req: HttpRequest<unknown>): boolean {
+    return /\/api\/auth\/(refresh|login|register)$/.test(req.url)
+}
+
+function withTokens(req: HttpRequest<unknown>, accessToken: string, adminToken: string | null) {
+    const setHeaders: Record<string, string> = {Authorization: `Bearer ${accessToken}`}
+    if (adminToken) setHeaders['AdminAuth'] = `Bearer ${adminToken}`
+    return req.clone({setHeaders})
+}
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const authService = inject(AuthService)
-  const token = authService.loadToken()
-  if (token) {
-    const authReq = addToken(req, token, authService)
-    return next(authReq).pipe(
-      // @ts-ignore
-      catchError(error => {
-        if (error.status === 401) {
-          console.log('Test', error)
-          return handle401Error(req, next, authService)
-        } else {
-          return new Error(error)
-        }
-      })
+    const auth = inject(AuthService)
+    const token = auth.loadToken()
+    if (!token) return next(req)
+
+    return next(withTokens(req, token, auth.loadAdminToken())).pipe(
+        catchError((error: HttpErrorResponse) => {
+            // Refreshing after a failed refresh would recurse until the stack
+            // gave out; a failed login is not a session problem either.
+            if (error.status !== 401 || isAuthEndpoint(req)) {
+                return throwError(() => error)
+            }
+
+            return auth.refreshSession().pipe(
+                switchMap(session => next(withTokens(req, session.accessToken, session.adminToken))),
+                catchError(refreshError => {
+                    // The refresh itself failed: the session is genuinely over.
+                    auth.logout()
+                    return throwError(() => refreshError)
+                })
+            )
+        })
     )
-  }
-  return next(req)
-}
-
-const handle401Error = (req: HttpRequest<any>, next: HttpHandlerFn, authService: AuthService) => {
-  console.log('Refreshing token')
-  if (!refreshing) {
-    refreshing = true
-    const user = authService.currentUser()
-    if (!user) return new Error('User not found')
-    return authService.refreshToken().subscribe({
-      next: (res) => {
-        refreshing = false
-        authService.saveToken(res.accessToken)
-        authService.saveUser(res)
-        return next(addToken(req, res.accessToken, authService))
-      },
-      error: (err) => {
-        refreshing = false
-        authService.logout()
-        return new Error(err)
-      }
-    })
-  } else {
-    return refreshTokenSubject.pipe(
-      filter(token => token != null),
-      take(1),
-      switchMap(accessToken => {
-        return next(addToken(req, accessToken, authService));
-      })
-    );
-  }
-}
-
-const addToken = (req: HttpRequest<any>, token: string, authService: AuthService) => {
-  const adminToken = authService.loadAdminToken();
-  if(!adminToken){
-    return req.clone({
-      setHeaders:{
-        Authorization: `Bearer ${token}`
-      }
-    })
-  } else {
-    return req.clone({
-      setHeaders:{
-        Authorization: `Bearer ${token}`,
-        AdminAuth: `Bearer ${adminToken}`
-      }
-    })
-  }
 }

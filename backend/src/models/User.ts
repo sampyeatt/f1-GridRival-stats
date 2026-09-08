@@ -2,12 +2,10 @@ import {
     Table,
     Column,
     Model,
-    HasMany,
     PrimaryKey,
     AutoIncrement,
     DataType,
-    Default,
-    BelongsTo
+    Default
 } from 'sequelize-typescript'
 
 @Table

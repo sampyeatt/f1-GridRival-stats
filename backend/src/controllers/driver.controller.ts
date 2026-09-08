@@ -1,49 +1,63 @@
-import {Request, Response} from 'express'
-import {addDriver, getActiveDrivers, getAllDrivers, getDriverById, updateDriver} from '../services/driver.service'
-import {getCurrentDrivers} from'../shared/f1api.util'
-import * as _ from 'lodash'
-import {getActiveSeason} from '../services/season.services'
+import {NextFunction, Request, Response} from 'express'
 import {z} from 'zod'
+import {getActiveDrivers, getAllDrivers, updateDriver} from '../services/driver.service'
+import {getActiveSeason} from '../services/season.services'
+import {ingestDriversAndTeams} from '../services/ingest.service'
 
-export const getDriversController = async (req: Request, res: Response) => {
-    res.json(await getActiveDrivers())
+export const getDriversController = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        res.json(await getActiveDrivers())
+    } catch (error) {
+        next(error)
+    }
 }
 
-export const getAllDriversController = async (req: Request, res: Response) => {
-    res.json(await getAllDrivers())
+export const getAllDriversController = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        res.json(await getAllDrivers())
+    } catch (error) {
+        next(error)
+    }
 }
 
-export const populateDriverTable = async (req: Request, res: Response) => {
-    const currentSeason = await getActiveSeason()
-    if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason.toJSON().seasonId as number
+/**
+ * Syncs drivers and constructors for the active season.
+ *
+ * The old version passed an async callback to _.forEach, which does not await,
+ * so it answered "Drivers added successfully" before a single row was written.
+ */
+export const syncDriversController = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const season = await getActiveSeason()
+        if (!season) return res.status(404).json({message: 'Active Season not found'})
 
-    const drivers = await getCurrentDrivers(seasonId!)
-
-    await _.forEach(drivers, async (driver) => {
-        const driverExists = await getDriverById(driver.driverId)
-        if (driverExists) return {message: 'Driver already exists'}
-        await addDriver(driver.driverId, driver.name, driver.surname, driver.teamId, driver.shortName, driver.number)
-    })
-
-    res.json({message: 'Drivers added successfully'})
+        const counts = await ingestDriversAndTeams(season.get('seasonId') as number)
+        res.json({message: `Synced ${counts.drivers} drivers and ${counts.teams} teams`, ...counts, success: true})
+    } catch (error) {
+        next(error)
+    }
 }
 
-export const updateDriverController = async (req: Request, res: Response) => {
-    const schema = z.object({
-        driverId: z.string(),
-        driverName: z.string(),
-        driverNumber: z.number(),
-        shortName: z.string(),
-        teamId: z.string(),
-        active: z.boolean()
-    })
-    const schemaValidator = schema.safeParse(req.body.data)
-    if (!schemaValidator.success) return res.status(400).json({
-        message: 'Invalid request body',
-        errors: schemaValidator.error.issues
-    })
-    const updated = await updateDriver(req.body.data)
-    if (!updated) return res.status(404).json({message: 'Driver update failed', success: false})
-    res.json({message: 'Driver updated successfully', success: true})
+export const updateDriverController = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const schema = z.object({
+            driverId: z.string(),
+            driverName: z.string().optional(),
+            driverNumber: z.number().int().optional(),
+            shortName: z.string().optional(),
+            teamId: z.string().optional(),
+            active: z.boolean().optional()
+        })
+        const parsed = schema.safeParse(req.body.data)
+        if (!parsed.success) return res.status(400).json({
+            message: 'Invalid request body',
+            errors: parsed.error.issues
+        })
+
+        const updated = await updateDriver(parsed.data)
+        if (!updated) return res.status(404).json({message: 'Driver not found', success: false})
+        res.json({message: 'Driver updated', success: true, data: updated.toJSON()})
+    } catch (error) {
+        next(error)
+    }
 }

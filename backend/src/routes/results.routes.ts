@@ -1,18 +1,17 @@
 import {Router} from 'express'
 import {
-    addResultArrayController, addResultBulkController, getDriverResultsToAddController, getResultsByRoundController,
-    getResultsController, importRaceDataController, updateResultsController
+    getResultsByRoundController,
+    getResultsController,
+    ingestAndScoreRoundController,
+    rescoreRoundController
 } from '../controllers/results.controller'
 import {authenticateJWT, authenticateJWTAdmin} from '../shared/auth.util'
 
 const router = Router()
 
 router.get('/allResults', authenticateJWT, getResultsController)
-router.get('/round/:round', getResultsByRoundController)
-router.get('/drivers/:meeting_key', authenticateJWTAdmin, getDriverResultsToAddController)
-router.post('/bulkadd', authenticateJWTAdmin, addResultBulkController)
-router.post('/add', authenticateJWTAdmin, addResultArrayController)
-router.put('/update', authenticateJWTAdmin, updateResultsController)
-router.post('/bulkImport', authenticateJWTAdmin, importRaceDataController)
+router.get('/round/:round', authenticateJWT, getResultsByRoundController)
+router.post('/ingest', authenticateJWTAdmin, ingestAndScoreRoundController)
+router.post('/rescore/:round', authenticateJWTAdmin, rescoreRoundController)
 
 export default router

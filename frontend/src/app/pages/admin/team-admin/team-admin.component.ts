@@ -56,19 +56,6 @@ export class TeamAdminComponent implements OnInit{
     })
   }
 
-  addTeamsForSeasonStart(){
-    this.teamService.addTeamsNewSeason().subscribe({
-      next: (data) => {
-        this.cdref.markForCheck()
-        console.log(data)
-        this.getAllTeams()
-      },
-      error: (err) => {
-        console.error('Error Loading posts: ', err)
-      }
-    })
-  }
-
   updateTeam(team: Team){
     this.teamService.updateTeam(team).subscribe({
       next: (data) => {

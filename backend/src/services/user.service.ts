@@ -1,8 +1,10 @@
 import {User} from '../models/User'
 
 
+export const PUBLIC_USER_FIELDS = ['userId', 'name', 'email', 'role', 'status'] as const
+
 export async function getAllUsers() {
-    return await User.findAll()
+    return await User.findAll({attributes: [...PUBLIC_USER_FIELDS]})
 }
 
 export async function getAllById(userId: number) {
@@ -44,6 +46,11 @@ export const updateUser = async ({name, status, id, password}: {
     if (status) user.set({status: status})
     if (password) user.set({password: password})
     return await user.save()
+}
+
+/** Used to roll a registration back when the confirmation email fails. */
+export const deleteUser = async (userId: number) => {
+    return await User.destroy({where: {userId}})
 }
 
 export const updateToAdmin = async (userId: number) => {

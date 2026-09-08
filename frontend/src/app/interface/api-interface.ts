@@ -1,62 +1,73 @@
+/**
+ * API contract shapes.
+ *
+ * Source of truth is the Zod schemas and Sequelize models in backend/src.
+ * When the React migration lands, this file is what moves into a shared
+ * package consumed by both apps — keep it a faithful mirror until then.
+ */
+
+export type RaceStatus = 'classified' | 'dnf' | 'dns' | 'dsq'
+export type QualiStatus = 'classified' | 'dns' | 'dsq'
+
 export interface Result {
-  id: number
+  seasonId: number
+  round: number
   driverId: string
-  raceId: string
+  teamId: string
   points: number
   cost: number
   rank: number
-  seasonId: number
-  round: number
-  finishPosition: number
+  racePosition: number
   qualiPosition: number
+  sprintPosition: number | null
+  lapsCompleted: number
+  raceStatus: RaceStatus
+  qualiStatus: QualiStatus
   positionDifference: number
   positionsForMoney: number
   easeToGainPoints: number
-  teamId: string
-  meeting_key: number
+  provisional: boolean
+  driver?: Driver
 }
 
 export interface TeamResult {
-  id: number
-  raceId: string
+  seasonId: number
+  round: number
+  teamId: string
   points: number
   cost: number
   rank: number
-  seasonId: number
-  round: number
   positionDifference: number
   positionsForMoney: number
   easeToGainPoints: number
-  teamId: string
-  meeting_key: number
+  provisional: boolean
+  team?: Team
 }
 
+/** Trimmed race, used for the round picker. */
 export interface RaceList {
-  meeting_name: string
-  meeting_key: number
+  round: number
+  raceName: string
+  hasSprint: boolean
+  date: string
 }
 
 export interface Race {
-  meeting_key: number
-  circut_key: number
-  meeting_name: string
-  circuit_short_name: string
-  country_code: string
-  country_name: string
-  sprint_key: number | null
-  quali_key: number
-  race_key: number
-  round: number
-  totalLaps: number
-  raceId: string
   seasonId: number
-  createdAt: string
-  updatedAt: string
+  round: number
+  raceName: string
+  circuitId: string
+  circuitName: string
+  country: string
+  locality: string
+  date: string
+  hasSprint: boolean
+  totalLaps: number
 }
 
 export interface Session {
   accessToken: string
-  refreshToken: string,
+  refreshToken: string
   adminToken: string | null
   user: {
     userId: number
@@ -82,8 +93,40 @@ export interface Driver {
   shortName: string
   active: boolean
   teamId: string
-  team: {
-    teamId: string
-    teamName: string
-  }
+  team?: Team
+}
+
+export type IngestOutcome = 'ingested' | 'unchanged' | 'skipped' | 'failed'
+
+export interface IngestRun {
+  id: number
+  kind: string
+  seasonId: number
+  round: number | null
+  trigger: string
+  outcome: IngestOutcome
+  detail: string | null
+  classificationChanged: boolean
+  durationMs: number
+  startedAt: string
+}
+
+export interface SeasonRefreshSummary {
+  seasonId: number
+  races: number
+  drivers: number
+  teams: number
+  rounds: Array<{round: number; outcome: IngestOutcome; detail: string}>
+}
+
+export interface SchedulerStatus {
+  seasonId: number
+  now: string
+  due: Array<{round: number; trigger: string; canFinalise: boolean}>
+  rounds: Array<{
+    round: number
+    startsAt: string | null
+    lastIngestedAt: string | null
+    provisional: boolean
+  }>
 }

@@ -14,9 +14,7 @@
           "builder": "@angular/build:application",
           "options": {
             "browser": "src/main.ts",
-            "polyfills": [
-              "zone.js"
-            ],
+            "polyfills": [],
             "tsConfig": "tsconfig.app.json",
             "assets": [
               {
@@ -30,12 +28,6 @@
           },
           "configurations": {
             "production": {
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.development.ts",
-                  "with": "src/environments/environment.ts"
-                }
-              ],
               "budgets": [
                 {
                   "type": "initial",
@@ -69,7 +61,11 @@
             }
           },
           "options": {
-            "allowedHosts": ["localhost","grod.anonymousplatypus.work"]
+            "allowedHosts": [
+              "localhost",
+              "grod.anonymousplatypus.work"
+            ],
+            "proxyConfig": "proxy.conf.json"
           },
           "defaultConfiguration": "development"
         },

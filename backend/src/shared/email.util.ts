@@ -14,8 +14,6 @@ export function sendConfirmationEmail(email: string, token: string) {
 
     const resend = new Resend(process.env.RESEND_API_KEY!)
 
-    console.log('Email', email)
-
     return resend.emails.send({
         from: 'onboarding@grod.anonymousplatypus.work',
         to: email,

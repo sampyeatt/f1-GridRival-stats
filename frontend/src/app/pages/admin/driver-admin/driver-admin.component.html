@@ -6,7 +6,7 @@
     <p-tabpanel value="manageDriver">
       <div class="flex justify-center py-4">
         <p-select [options]="this.teams" [(ngModel)]="selectedTeam" (onChange)=this.filterResults() optionLabel="teamName" placeholder="Select Team" class="w-full md:w-100"/>
-        <p-button (onClick)="this.addDriversForSeasonStart()" label="Season Start" class="px-3" rounded raised><i class="pi pi-plus-circle"></i></p-button>
+        <p-button (onClick)="this.syncDrivers()" label="Sync drivers" class="px-3" rounded raised><i class="pi pi-plus-circle"></i></p-button>
       </div>
       @if (this.displayedDrivers) {
         <p-table [value]="this.displayedDrivers" dataKey="driverId" editMode="row" [tableStyle]="{'min-width': '50rem'}">
@@ -68,7 +68,7 @@
                       <i class="pi pi-eraser"></i>
                     </p-button>
                   }
-                  <p-button text rounded severity="danger" (onClick)="this.deleteDriver(result)" pTooltip="Delete Driver">
+                  <p-button text rounded severity="danger" (onClick)="this.deactivateDriver(result)" pTooltip="Mark inactive">
                     <i class="pi pi-times"></i>
                   </p-button>
                 </div>

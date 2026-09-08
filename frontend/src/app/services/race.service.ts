@@ -1,43 +1,37 @@
 import {HttpClient} from '@angular/common/http'
-import {Injectable, inject, computed} from '@angular/core'
+import {Injectable, inject} from '@angular/core'
 import {environment} from '../../environments/environment'
 import {Race, RaceList} from '../interface/api-interface'
 import {Observable} from 'rxjs'
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({providedIn: 'root'})
 export class RaceService {
-  apiUrl = computed(() => `${environment.API_URL}/api/race`)
+  private apiUrl = `${environment.API_URL}/api/race`
 
   private http = inject(HttpClient)
 
   getRaceList(): Observable<RaceList[]> {
-    return this.http.get<RaceList[]>(`${this.apiUrl()}/list`)
+    return this.http.get<RaceList[]>(`${this.apiUrl}/list`)
   }
 
   getAllRaces(): Observable<Race[]> {
-    return this.http.get<Race[]>(`${this.apiUrl()}/all`)
+    return this.http.get<Race[]>(`${this.apiUrl}/all`)
   }
 
-  getRace(meeting_key: string): Observable<Race[]> {
-    return this.http.get<Race[]>(`${this.apiUrl()}/bykey/${meeting_key}`)
+  getRace(round: number): Observable<Race> {
+    return this.http.get<Race>(`${this.apiUrl}/round/${round}`)
   }
 
-  bulkUpdateRace() {
-    return this.http.put(`${this.apiUrl()}/bulkUpdate`, {})
+  /** Pulls the calendar from Jolpica and upserts it. Safe to re-run. */
+  syncSchedule() {
+    return this.http.post(`${this.apiUrl}/sync`, {})
   }
 
-  updateRace(race: Race) {
-    console.log(race)
-    return this.http.put(`${this.apiUrl()}/update`, {data: race})
+  updateRace(race: Partial<Race> & {round: number}) {
+    return this.http.put(`${this.apiUrl}/update`, {data: race})
   }
 
-  deleteRace(meeting_key: number) {
-    return this.http.delete(`${this.apiUrl()}/delete/${meeting_key}`)
-  }
-
-  addRaceBulk() {
-    return this.http.post(`${this.apiUrl()}/addRaceBulk`, {})
+  deleteRace(round: number) {
+    return this.http.delete(`${this.apiUrl}/delete/${round}`)
   }
 }

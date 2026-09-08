@@ -1,221 +1,124 @@
-import {getRaceByMeetingKey, getRaceLaps, getRacesByYear, getRaceSessions} from '../shared/f1api.util'
+import {Request, Response, NextFunction} from 'express'
 import _ from 'lodash'
-import {Request, Response} from 'express'
-import {
-    addSeasonRace, deleteRace,
-    getRaceByCircutKey,
-    getRaceDataByMeetingKey,
-    getRacesBySeasonId,
-    updateRaceBulk
-} from '../services/race.services'
 import z from 'zod'
+import {
+    deleteRace,
+    getRaceByRound,
+    getRacesBySeasonId,
+    updateRace
+} from '../services/race.services'
 import {getActiveSeason} from '../services/season.services'
+import {ingestSchedule} from '../services/ingest.service'
 
-export const getRacesListController = async (req: Request, res: Response) => {
-    const currentSeason = await getActiveSeason()
-    if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason.toJSON().seasonId as number
+/**
+ * The previous addRaceBulk/addRace/updateCurrentSeason trio merged two upstream
+ * payloads by array index and derived round numbers from list position. Jolpica
+ * supplies the round directly, so all three collapse into one schedule sync.
+ */
 
-    const results = await getRacesBySeasonId(+seasonId!)
-
-    const trimmedResults = _.map(results, result => _.pick(result.toJSON(), ['meeting_key', 'meeting_name']))
-
-    res.json(trimmedResults)
+async function activeSeasonId(res: Response): Promise<number | null> {
+    const season = await getActiveSeason()
+    if (!season) {
+        res.status(404).json({message: 'Active Season not found'})
+        return null
+    }
+    return season.get('seasonId') as number
 }
 
-export const getAllRacesController = async (req: Request, res: Response) => {
-    const currentSeason = await getActiveSeason()
-    if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason.toJSON().seasonId as number
+export const getRacesListController = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const seasonId = await activeSeasonId(res)
+        if (seasonId === null) return
 
-    const results = await getRacesBySeasonId(+seasonId!)
-
-    res.json(results)
+        const races = await getRacesBySeasonId(seasonId)
+        res.json(_.map(races, race => _.pick(race.toJSON(), ['round', 'raceName', 'hasSprint', 'date'])))
+    } catch (error) {
+        next(error)
+    }
 }
 
-export const getRacesByMeetingKeyController = async (req: Request, res: Response) => {
-    const meeting_key = req.params.meeting_key
-    if (_.isNil(meeting_key)) throw new Error('Meeting key parameter is required')
-    const results = _.map(await getRaceDataByMeetingKey(+meeting_key), rece => rece.toJSON())
-    res.json(results)
+export const getAllRacesController = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const seasonId = await activeSeasonId(res)
+        if (seasonId === null) return
+        res.json(await getRacesBySeasonId(seasonId))
+    } catch (error) {
+        next(error)
+    }
 }
 
-export const addRaceBulkController = async (req: Request, res: Response) => {
-    const currentSeason = await getActiveSeason()
-    if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason.toJSON().seasonId as number
-    let raceData = await getRacesByYear(seasonId)
-    const f1DataRaces = await getRaceLaps(seasonId)
-    const sordertRaces = _.orderBy(raceData, ['date_start'], ['asc'])
-    if (raceData.length === 0) return res.status(404).json({message: 'Race not found'})
-    const raceSessionData = _(await getRaceSessions(seasonId))
-        .reject({'session_type': 'Practice'})
-        .reject({'session_name': 'Sprint Qualifying'}).value()
-    raceData = _.reject(raceData, {'meeting_name': 'Pre-Season Testing'})
-    const data = await Promise.all(_.map(raceData, async (race) => {
-        const meetingName = _.find(raceData, {meeting_key: race.meeting_key})
-        const round = _.findIndex(sordertRaces, {meeting_key: race.meeting_key})
-        const dataRace = _.find(f1DataRaces, {round: round})
-        const sprint_key = _.find(raceSessionData, {meeting_key: race.meeting_key, session_name: 'Sprint'})
-        const race_key = _.find(raceSessionData, {meeting_key: race.meeting_key, session_name: 'Race'})
-        const quali_key = _.find(raceSessionData, {meeting_key: race.meeting_key, session_name: 'Qualifying'})
+export const getRaceByRoundController = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const parsed = z.coerce.number().int().positive().safeParse(req.params.round)
+        if (!parsed.success) return res.status(400).json({message: 'round must be a positive integer'})
 
-        if (race_key && quali_key && dataRace && meetingName && round) {
-            return {
-                circuit_key: race.circuit_key as number,
-                meeting_name: meetingName.meeting_name as string,
-                circuit_short_name: race.circuit_short_name as string,
-                country_code: race.country_code as string,
-                country_name: race.country_name as string,
-                meeting_key: race.meeting_key as number,
-                sprint_key: (sprint_key) ? sprint_key.session_key as number : undefined,
-                quali_key: quali_key.session_key,
-                race_key: race_key.session_key,
-                seasonId: seasonId as number,
-                round: round as number,
-                totalLaps: dataRace.laps as number,
-                raceId: dataRace.raceId as string
-            }
-        }
-    }))
+        const seasonId = await activeSeasonId(res)
+        if (seasonId === null) return
 
-    const raceAdded = await Promise.all(_.map(data, async race => {
-        const raceAlreadyAdded = await getRaceByCircutKey(race!.circuit_key)
-        if (raceAlreadyAdded) return {message: 'Race already added'}
-        console.log('CombinedRaceData', race)
-        return await addSeasonRace(seasonId!, race!)
-    }))
-    res.json(raceAdded)
+        const race = await getRaceByRound(seasonId, parsed.data)
+        if (!race) return res.status(404).json({message: 'Race not found'})
+        res.json(race.toJSON())
+    } catch (error) {
+        next(error)
+    }
 }
 
-export const addRaceController = async (req: Request, res: Response) => {
-    const schema = z.object({
-        meeting_key: z.number()
-    })
-    const schemaValidator = schema.safeParse(req.body)
-    if (!schemaValidator.success) return res.status(400).json({
-        message: 'Invalid request body',
-        errors: schemaValidator.error
-    })
-    const {meeting_key} = req.body
-    const currentSeason = await getActiveSeason()
-    if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason.toJSON().seasonId as number
+/** Pulls the calendar from Jolpica and upserts it. Safe to re-run. */
+export const syncScheduleController = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const seasonId = await activeSeasonId(res)
+        if (seasonId === null) return
 
-    const raceData = await getRacesByYear(seasonId)
-    const f1DataRaces = await getRaceLaps(seasonId)
-    const sordertRaces = _.orderBy(raceData, ['date_start'], ['asc'])
-    const raceSessionData = await getRaceByMeetingKey(seasonId, meeting_key)
-    if (raceSessionData.length === 0) return res.status(404).json({message: 'Race not found'})
-    const race = await Promise.all(_(raceSessionData)
-        .reject({'session_type': 'Practice'})
-        .reject({'session_name': 'Sprint Qualifying'})
-        .map(async (race) => {
-            const meetingName = _.find(raceData, {meeting_key: race.meeting_key})
-            const round = _.findIndex(sordertRaces, {meeting_key: race.meeting_key})
-            const dataRace = _.find(f1DataRaces, {round: round})
-            return {
-                circuit_key: race.circuit_key as number,
-                meeting_name: meetingName.meeting_name as string,
-                circuit_short_name: race.circuit_short_name as string,
-                country_code: race.country_code as string,
-                country_name: race.country_name as string,
-                meeting_key: race.meeting_key as number,
-                sprint_key: (race.session_name === 'Sprint') ? race.session_key as number : undefined,
-                quali_key: (race.session_name === 'Qualifying') ? race.session_key as number : undefined,
-                race_key: (race.session_name === 'Race') ? race.session_key as number : undefined,
-                seasonId: seasonId as number,
-                round: round as number,
-                totalLaps: dataRace.laps as number,
-                raceId: dataRace.raceId as string
-            }
-        }).value())
-    const combinedRaceData = _.merge(race[0], race[1], race[2])
-    console.log('Combined', combinedRaceData)
-    const raceAdded = await addSeasonRace(seasonId, combinedRaceData!)
-    res.json(raceAdded)
+        const count = await ingestSchedule(seasonId)
+        res.json({message: `Synced ${count} races`, count, success: true})
+    } catch (error) {
+        next(error)
+    }
 }
 
-export const updateCurrentSeason = async (req: Request, res: Response) => {
+export const updateRaceController = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const schema = z.object({
+            round: z.number().int().positive(),
+            raceName: z.string().optional(),
+            circuitName: z.string().optional(),
+            country: z.string().optional(),
+            locality: z.string().optional(),
+            date: z.string().optional(),
+            hasSprint: z.boolean().optional(),
+            totalLaps: z.number().int().nonnegative().optional()
+        })
+        const parsed = schema.safeParse(req.body.data)
+        if (!parsed.success) return res.status(400).json({
+            message: 'Invalid request body',
+            errors: parsed.error.issues
+        })
 
-    const currentSeason = await getActiveSeason()
-    if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason.toJSON().seasonId as number
-    console.log('SeasonId: ', seasonId)
-    const raceData = await getRacesByYear(seasonId)
-    const f1DataRaces = await getRaceLaps(seasonId)
-    const sordertRaces = _.orderBy(raceData, ['date_start'], ['asc'])
-    if (raceData.length === 0) return res.status(404).json({message: 'Race not found'})
-    const data = await Promise.all(_.map(raceData, async (race) => {
-        if (!race.meeting_key) return {message: 'no meeting key found'}
-        const raceSessionData = await getRaceByMeetingKey(seasonId, race.meeting_key)
-        return await Promise.all(_(raceSessionData)
-            .reject({'session_type': 'Practice'})
-            .reject({'session_name': 'Sprint Qualifying'})
-            .map(async (race) => {
-                const meetingName = _.find(raceData, {meeting_key: race.meeting_key})
-                const round = _.findIndex(sordertRaces, {meeting_key: race.meeting_key})
-                const dataRace = _.find(f1DataRaces, {round: round})
-                return {
-                    circuit_key: race.circuit_key as number,
-                    meeting_name: meetingName.meeting_name as string,
-                    circuit_short_name: race.circuit_short_name as string,
-                    country_code: race.country_code as string,
-                    country_name: race.country_name as string,
-                    meeting_key: race.meeting_key as number,
-                    sprint_key: (race.session_name === 'Sprint') ? race.session_key as number : undefined,
-                    quali_key: (race.session_name === 'Qualifying') ? race.session_key as number : undefined,
-                    race_key: (race.session_name === 'Race') ? race.session_key as number : undefined,
-                    seasonId: seasonId as number,
-                    round: round as number,
-                    totalLaps: dataRace.laps as number,
-                    raceId: dataRace.raceId as string
-                }
-            }).value())
-    }))
+        const seasonId = await activeSeasonId(res)
+        if (seasonId === null) return
 
-    // @ts-ignore data is an array of arrays so its resulst will have eleeement of array of objects.
-    const combinedRaceData = _.map(data, race => _.merge(race[0], race[1], race[2]))
-    const racesUpdated = await updateRaceBulk(combinedRaceData)
-    if (racesUpdated.length !== 0) return res.status(200).json({message: 'Races updated', success: true})
-    else return res.status(404).json({message: 'Races failed to update', success: false})
+        const {round, ...changes} = parsed.data
+        const updated = await updateRace(seasonId, round, changes as any)
+        if (!updated) return res.status(404).json({message: 'Race not found', success: false})
 
+        res.json({message: 'Race updated', success: true, data: updated.toJSON()})
+    } catch (error) {
+        next(error)
+    }
 }
 
-export const updateRaceController = async (req: Request, res: Response) => {
-    const schema = z.object({
-        meeting_key: z.number(),
-        circut_key: z.number(),
-        meeting_name: z.string(),
-        circuit_short_name: z.string(),
-        country_code: z.string(),
-        country_name: z.string(),
-        sprint_key: z.number().nullish(),
-        quali_key: z.number(),
-        race_key: z.number(),
-        round: z.number(),
-        totalLaps: z.number(),
-        raceId: z.string(),
-        seasonId: z.number(),
-        createdAt: z.string(),
-        updatedAt: z.string()
-    })
-    const schemaValidator = schema.safeParse(req.body.data)
-    if (!schemaValidator.success) return res.status(400).json({
-        message: 'Invalid request body',
-        errors: schemaValidator.error.issues
-    })
-    const raceData = [req.body.data]
-    console.log('RaceDatra', raceData)
-    const raceUpdated = await updateRaceBulk(raceData)
-    if (raceUpdated.length !== 0) return res.status(200).json({message: 'Races updated', success: true})
-    else return res.status(404).json({message: 'Races failed to update', success: false})
-}
+export const deleteRaceController = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const parsed = z.coerce.number().int().positive().safeParse(req.params.round)
+        if (!parsed.success) return res.status(400).json({message: 'round must be a positive integer'})
 
-export const deleteRaceController = async (req: Request, res: Response) => {
-    const meeting_key = req.params.meeting_key
-    if (_.isNil(meeting_key)) throw new Error('Meeting key parameter is required')
-    const raceDeleted = await deleteRace(+meeting_key)
-    if (!raceDeleted) return res.status(404).json({message: 'Race failed to delete', success: false})
-    res.status(200).json({message: 'Race deleted', success: true})
+        const seasonId = await activeSeasonId(res)
+        if (seasonId === null) return
+
+        const deleted = await deleteRace(seasonId, parsed.data)
+        if (!deleted) return res.status(404).json({message: 'Race not found', success: false})
+        res.status(200).json({message: 'Race deleted', success: true})
+    } catch (error) {
+        next(error)
+    }
 }

@@ -1,11 +1,11 @@
 import {Request, Response} from 'express'
 import z from 'zod'
-import {addUser, getAllById, getUserByEmail, updateToAdmin, updateUser} from '../services/user.service'
+import {addUser, deleteUser, getAllById, getUserByEmail, updateToAdmin, updateUser} from '../services/user.service'
+import logger from '../shared/logger.util'
 import {generateAdminToken, generateToken, verifyToken} from '../shared/auth.util'
 import {addToken, deleteTokens, getToken} from '../services/token.service'
 import {sendConfirmationEmail, sendForgotPasswordEmail} from '../shared/email.util'
 import bcrypt from 'bcrypt'
-import {getUsers} from './user.controller'
 
 const passwordZodRules = z.string().min(6).max(100).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, {
     message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number'
@@ -29,17 +29,27 @@ export const registerController = async (req: Request, res: Response) => {
     const existingUser = await getUserByEmail(email)
     if (existingUser) return res.status(400).json({message: 'User already exists'})
 
-    const hash = await bcrypt.hash(password,  10)
+    const hash = await bcrypt.hash(password, 10)
     const user = await addUser(email, hash)
     const userId = user.get('userId')
-    console.log('user id', userId)
-    const token = await generateToken(userId)
-    await addToken(token, 'activation', userId)
-    const emailSent = await sendConfirmationEmail(email, token)
-    console.log('email sent', emailSent)
-    if (!emailSent.data) return res.status(500).json({message: 'Failed to send email'})
-    return res.status(201).json({message: 'User registered successfully'})
 
+    // If the confirmation email cannot be sent, the account is rolled back.
+    // Previously the row survived a send failure, leaving the user pending with
+    // no link and unable to register again — "User already exists" with no way
+    // through it.
+    try {
+        const token = await generateToken(userId)
+        await addToken(token, 'activation', userId)
+        const emailSent = await sendConfirmationEmail(email, token)
+        if (!emailSent.data) throw new Error('email provider returned no id')
+    } catch (error) {
+        await deleteTokens(userId)
+        await deleteUser(userId)
+        logger.error(`register: rolled back ${email} — ${error instanceof Error ? error.message : String(error)}`)
+        return res.status(502).json({message: 'Could not send the confirmation email. Please try again.'})
+    }
+
+    return res.status(201).json({message: 'User registered successfully'})
 }
 
 export const loginController = async (req: Request, res: Response) => {
@@ -66,7 +76,7 @@ export const loginController = async (req: Request, res: Response) => {
     await deleteTokens(user.get('userId')!)
     let adminToken = null
     if (user.get('role') === 'admin') {
-        adminToken = await generateAdminToken(user.get('userId')!, password)
+        adminToken = await generateAdminToken(user.get('userId')!)
         await addToken(adminToken, 'admin', user.get('userId')!)
     }
     await addToken(refreshToken, 'refresh', user.get('userId')!)
@@ -108,9 +118,10 @@ export const refreshTokenController = async (req: Request, res: Response) => {
     const newRefreshToken = await generateToken(userId, '7d')
 
     await deleteTokens(userId)
+    let adminToken: string | null = null
     if (user && user.get('role') === 'admin') {
-        const newAdmin = await generateAdminToken(userId, user.get('password'))
-        await addToken(newAdmin, 'admin', userId)
+        adminToken = await generateAdminToken(userId)
+        await addToken(adminToken, 'admin', userId)
     }
 
     await addToken(newRefreshToken, 'refresh', userId)
@@ -119,6 +130,7 @@ export const refreshTokenController = async (req: Request, res: Response) => {
     const session = {
         accessToken,
         refreshToken: newRefreshToken,
+        adminToken,
         user: user?.toJSON()
     }
 
@@ -238,33 +250,34 @@ export const getUserRoleController = async (req: Request, res: Response) => {
     return res.status(200).json({role})
 }
 
+/**
+ * Promotes another account to admin. Admin-only (see auth.routes) and keyed by
+ * userId — it previously took an email and password, verified them against that
+ * same account, and promoted it, which let any registered user hand over their
+ * own credentials and become an admin.
+ *
+ * The promoted user receives their admin token on their next login; this
+ * endpoint deliberately does not mint one for somebody else's session.
+ */
 export const addUserAdminController = async (req: Request, res: Response) => {
     const schema = z.object({
-        email: z.string().email(),
-        password: passwordZodRules,
-        role: z.enum(['admin', 'user'])
+        userId: z.number().int().positive()
     })
     const parsedData = schema.safeParse(req.body)
     if (!parsedData.success) return res.status(400).json({
         message: 'Invalid request body',
-        errors: JSON.parse(parsedData.error.message)
+        errors: parsedData.error.issues
     })
-    const {email, password} = parsedData.data
-    let existingUser = await getUserByEmail(email)
-    if (!existingUser) return res.status(400).json({message: 'User does not exist'})
-    const match = await bcrypt.compare(password, existingUser.get('password'))
-    if (!match) return res.status(400).json({message: 'Invalid credentials'})
+    const {userId} = parsedData.data
 
-    existingUser = existingUser.toJSON()
-    // @ts-ignore
-    delete existingUser.password
+    const target = await getAllById(userId)
+    if (!target) return res.status(404).json({message: 'User not found'})
+    if (target.get('status') !== 'active') {
+        return res.status(400).json({message: 'User must confirm their email before becoming an admin'})
+    }
 
-    const token = await generateAdminToken(existingUser.userId!, password)
-    await addToken(token, 'admin', existingUser.userId!)
-    let adminUser = await updateToAdmin(existingUser.userId!)
-    adminUser = adminUser.toJSON()
-    // @ts-ignore
-    delete adminUser.password
+    const adminUser = (await updateToAdmin(userId)).toJSON()
+    delete (adminUser as Partial<Record<'password', string>>).password
 
     return res.status(201).json(adminUser)
 }

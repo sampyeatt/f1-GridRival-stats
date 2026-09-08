@@ -5,8 +5,17 @@
   "main": "index.js",
   "scripts": {
     "build": "npx tsc",
-    "start": "node dist/index.js",
-    "dev": "nodemon src/index.ts"
+    "start": "node dist/scripts/migrate.js && node dist/index.js",
+    "dev": "nodemon src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "fixtures:refresh": "node test/refresh-fixtures.mjs",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
+    "migrate": "ts-node src/scripts/migrate.ts",
+    "backfill": "ts-node src/scripts/backfill.ts",
+    "grant-admin": "ts-node src/scripts/grant-admin.ts",
+    "migrate:built": "node dist/scripts/migrate.js"
   },
   "keywords": [],
   "author": "",
@@ -18,25 +27,33 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.7.0",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
+    "node-cron": "^4.6.0",
     "pg": "^8.16.3",
     "reflect-metadata": "^0.2.2",
     "resend": "^4.8.0",
     "sequelize": "^6.37.7",
     "sequelize-typescript": "^2.1.6",
+    "umzug": "^3.8.3",
     "winston": "^3.17.0",
     "zod": "^4.0.14"
   },
   "devDependencies": {
+    "@swc/core": "^1.16.2",
     "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/lodash": "^4.17.20",
     "@types/node": "^24.2.0",
+    "@types/node-cron": "^3.0.11",
     "@types/validator": "^13.15.2",
+    "@vitest/coverage-v8": "^4.1.11",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "unplugin-swc": "^1.5.11",
+    "vitest": "^4.1.11"
   }
 }

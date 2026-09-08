@@ -1,8 +1,11 @@
 import {Router} from 'express'
 import {
-    addRaceBulkController,
-    addRaceController, deleteRaceController, getAllRacesController, getRacesByMeetingKeyController,
-    getRacesListController, updateCurrentSeason, updateRaceController
+    deleteRaceController,
+    getAllRacesController,
+    getRaceByRoundController,
+    getRacesListController,
+    syncScheduleController,
+    updateRaceController
 } from '../controllers/race.controller'
 import {authenticateJWT, authenticateJWTAdmin} from '../shared/auth.util'
 
@@ -10,11 +13,9 @@ const router = Router()
 
 router.get('/list', authenticateJWT, getRacesListController)
 router.get('/all', authenticateJWTAdmin, getAllRacesController)
-router.get('/bykey/:meeting_key', authenticateJWTAdmin, getRacesByMeetingKeyController)
-router.post('/addRace', authenticateJWTAdmin, addRaceController)
-router.post('/addRaceBulk', authenticateJWTAdmin, addRaceBulkController)
-router.put('/bullkUpdate', authenticateJWTAdmin, updateCurrentSeason)
+router.get('/round/:round', authenticateJWTAdmin, getRaceByRoundController)
+router.post('/sync', authenticateJWTAdmin, syncScheduleController)
 router.put('/update', authenticateJWTAdmin, updateRaceController)
-router.delete('/delete/:meeting_key', authenticateJWTAdmin, deleteRaceController)
+router.delete('/delete/:round', authenticateJWTAdmin, deleteRaceController)
 
 export default router

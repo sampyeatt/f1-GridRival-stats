@@ -1,0 +1,137 @@
+<div class="p-6 flex flex-col gap-6">
+
+  <div class="flex flex-wrap items-center justify-center gap-3">
+    <p-button
+      label="Run due checks now"
+      icon="pi pi-play"
+      [disabled]="busy"
+      [loading]="busy"
+      (onClick)="runNow()"
+      pTooltip="Runs whatever the schedule already owes, instead of waiting for the next tick."/>
+
+    <p-button
+      label="Rebuild season"
+      icon="pi pi-database"
+      severity="secondary"
+      [outlined]="true"
+      [disabled]="busy"
+      [loading]="busy"
+      (onClick)="rebuildSeason()"
+      pTooltip="Pulls the calendar, drivers, teams and every round's results for the current season, then re-scores them. Start here on a new season. Takes a few minutes."/>
+
+    <p-button
+      label="Sync calendar &amp; drivers"
+      icon="pi pi-calendar"
+      severity="secondary"
+      [outlined]="true"
+      [disabled]="busy"
+      (onClick)="syncSeason()"
+      pTooltip="Refreshes the season schedule and the driver line-up."/>
+
+    <p-button
+      label="Refresh"
+      icon="pi pi-refresh"
+      [text]="true"
+      [disabled]="busy"
+      (onClick)="reload()"/>
+  </div>
+
+  @if (message) {
+    <p-message severity="success" [text]="message"/>
+  }
+  @if (errorMessage) {
+    <p-message severity="error" [text]="errorMessage"/>
+  }
+
+  @if (status) {
+    <section class="flex flex-col gap-2">
+      <h2 class="text-lg font-semibold">Due now</h2>
+      @if (status.due.length) {
+        <p-table [value]="status.due" [tableStyle]="{ 'min-width': '30rem' }">
+          <ng-template pTemplate="header">
+            <tr><th>Round</th><th>Checkpoint</th><th></th></tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-row>
+            <tr>
+              <td>{{ row.round }}</td>
+              <td><p-tag [value]="row.trigger" severity="warn"/></td>
+              <td>
+                <p-button label="Run" size="small" [text]="true"
+                          [disabled]="busy" (onClick)="runRound(row.round)"/>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      } @else {
+        <p class="opacity-70">Nothing due. The next check runs when a race finishes.</p>
+      }
+    </section>
+
+    <section class="flex flex-col gap-2">
+      <h2 class="text-lg font-semibold">Rounds</h2>
+      <p-table [value]="status.rounds" scrollable [scrollHeight]="'22rem'"
+               [tableStyle]="{ 'min-width': '45rem' }">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Round</th><th>Starts</th><th>Last ingested</th><th>State</th><th></th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-row>
+          <tr>
+            <td>{{ row.round }}</td>
+            <td>{{ row.startsAt ? (row.startsAt | date:'short':'UTC') : '—' }}</td>
+            <td>{{ row.lastIngestedAt ? (row.lastIngestedAt | date:'short':'UTC') : 'never' }}</td>
+            <td>
+              @if (!row.lastIngestedAt) {
+                <p-tag value="not ingested" severity="secondary"/>
+              } @else if (row.provisional) {
+                <p-tag value="provisional" severity="warn"/>
+              } @else {
+                <p-tag value="final" severity="success"/>
+              }
+            </td>
+            <td>
+              <p-button label="Run" size="small" [text]="true"
+                        [disabled]="busy" (onClick)="runRound(row.round)"/>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </section>
+  }
+
+  @if (runs) {
+    <section class="flex flex-col gap-2">
+      <h2 class="text-lg font-semibold">Recent runs</h2>
+      @if (runs.length) {
+        <p-table [value]="runs" scrollable [scrollHeight]="'26rem'"
+                 [tableStyle]="{ 'min-width': '55rem' }">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>When</th><th>Kind</th><th>Round</th><th>Trigger</th>
+              <th>Outcome</th><th>Took</th><th>Detail</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-run>
+            <tr>
+              <td>{{ run.startedAt | date:'short':'UTC' }}</td>
+              <td>{{ run.kind }}</td>
+              <td>{{ run.round ?? '—' }}</td>
+              <td>{{ run.trigger }}</td>
+              <td>
+                <p-tag [value]="run.outcome" [severity]="outcomeSeverity(run.outcome)"/>
+                @if (run.classificationChanged) {
+                  <p-tag value="changed" severity="info" class="ml-1"/>
+                }
+              </td>
+              <td>{{ run.durationMs }} ms</td>
+              <td class="opacity-70">{{ run.detail ?? '' }}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      } @else {
+        <p class="opacity-70">No runs recorded yet.</p>
+      }
+    </section>
+  }
+</div>

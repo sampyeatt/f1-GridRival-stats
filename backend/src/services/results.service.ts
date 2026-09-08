@@ -1,276 +1,164 @@
 import {Results} from '../models/Results'
-import _, {rest} from 'lodash'
-import {
-    BaseSalaryDriver,
-    BeatingTeammatePoints,
-    ImprovedPoints,
-    QualiPointsDriver,
-    RacePointsDriver,
-    SprintPointsDriver
-} from '../shared/constants'
+import _ from 'lodash'
 import {Op} from 'sequelize'
-import {getRaceDataByMeetingKey} from './race.services'
-import {getCurrentRaceResults} from '../shared/f1api.util'
-import {getActiveDrivers} from './driver.service'
-
+import {BaseSalaryDriver} from '../shared/constants'
+import {getRaceByRound} from './race.services'
+import {
+    DriverScoreBreakdown,
+    MAX_DRIVER_SALARY_MOVE,
+    ROLLING_WINDOW,
+    RoundRow,
+    scoreRoundRows
+} from './scoring'
 
 export async function getResutls(seasonId: number) {
     return await Results.findAll({
-        where: {
-            seasonId: seasonId
-        },
+        where: {seasonId},
         order: [['cost', 'DESC']],
         include: ['driver']
     })
 }
 
-
 export async function getResutlsByRound(seasonId: number, round: number) {
     return await Results.findAll({
-        where: {
-            seasonId: seasonId,
-            round: round
-        },
+        where: {seasonId, round},
         order: [['cost', 'DESC']]
     })
 }
 
+export async function getResult(seasonId: number, round: number, driverId: string) {
+    return await Results.findOne({where: {seasonId, round, driverId}})
+}
 
-export async function getResultByRaceIdDriverId(raceId: string, driverId: string) {
-    return await Results.findOne({
+const SALARY_ENTRIES = Object.values(BaseSalaryDriver).map(Number)
+
+/**
+ * Finishing positions from the trailing window, keyed by driver and in round
+ * order.
+ *
+ * One query for the whole grid. The previous version issued a findAll per
+ * driver from inside the points calculation, and then a findOne per driver for
+ * the salary — roughly 40 queries per round instead of 2.
+ */
+async function previousFinishesByDriver(
+    seasonId: number,
+    round: number
+): Promise<Map<string, number[]>> {
+    const rows = await Results.findAll({
+        attributes: ['driverId', 'round', 'racePosition'],
         where: {
-            raceId: raceId,
-            driverId: driverId
-        }
+            seasonId,
+            round: {[Op.between]: [Math.max(round - ROLLING_WINDOW, 1), round - 1]}
+        },
+        order: [['round', 'ASC']]
     })
-}
 
-export async function addResults(raceData: Partial<Results>) {
-    if (raceData.driverId === 'antonelli') console.log('whats happening', raceData)
-
-    const result = new Results()
-    result.set(raceData)
-    return await result.save()
-}
-
-export async function getTotalPointsDriver(driverId: string, teamId: string, qualiPos: number, racePos: number, sprintPos = 0, teammatePos: number, lapsCompleted: number, totalLaps: number, seasonId: number, round: number, dqed: boolean, qualidqed: boolean) {
-
-    let eightRaceDB = (await Results.findAll({
-        attributes: ['finishPosition', 'raceId', 'round'],
-        where: {
-            driverId: driverId,
-            seasonId: seasonId,
-            round: {
-                [Op.between]: [Math.max(round - 8, 0), round - 1]
-            }
-        }
-    }) ?? 0).map(item => item.toJSON())
-    let eightRaceAvg = Math.ceil(_.sumBy(eightRaceDB, 'finishPosition') / 8)
-    if (round < 8) {
-        const originalPos = _.minBy(eightRaceDB, 'round')
-        if (!originalPos) return 0
-        eightRaceDB = _.reject(eightRaceDB, (item => item.round === originalPos.round))
-        eightRaceAvg = Math.ceil((_.sumBy(eightRaceDB, 'finishPosition') + (originalPos.finishPosition! * (8 - (round - 1)))) / 8)
+    const map = new Map<string, number[]>()
+    for (const row of rows) {
+        const driverId = row.get('driverId') as string
+        const list = map.get(driverId) ?? []
+        list.push(row.get('racePosition') as number)
+        map.set(driverId, list)
     }
-    const quailPoints = (!qualidqed) ? QualiPointsDriver[String(qualiPos) as keyof typeof QualiPointsDriver] : 0
-    const sprintPoints = SprintPointsDriver[String(sprintPos) as keyof typeof SprintPointsDriver]
-    const racePoints = (!dqed) ? RacePointsDriver[String(racePos) as keyof typeof RacePointsDriver] : 0
-    const beatTeammatePoints = (!dqed) ? BeatingTeammatePoints[String(Math.max(teammatePos - racePos, 0)) as keyof typeof BeatingTeammatePoints] : 0
-    const improvedPoints = (!dqed || !qualidqed) ? ImprovedPoints[String(_.round(eightRaceAvg - racePos, 0)) as keyof typeof ImprovedPoints] : 0
-    const completionPoints = (!dqed) ? await getCompletionPoints((lapsCompleted / totalLaps) * 100) : 0
-    const overtakePoints = (!dqed) ? Math.max((qualiPos - racePos), 0) * 3 : 0
-    // if (driverId === 'ocon') {
-    //     console.log(`*********************************`)
-    //     console.log('Driver: ', driverId)
-    //     console.log('Team: ', teamId)
-    //     console.log('QualiPos: ', qualiPos)
-    //     console.log('RacePos: ', racePos)
-    //     console.log('SprintPos: ', sprintPos)
-    //     console.log('TeammatePos: ', teammatePos)
-    //     console.log('LapsCompleted: ', lapsCompleted)
-    //     console.log('TotalLaps: ', totalLaps)
-    //     console.log('SeasonId: ', seasonId)
-    //     console.log('Round: ', round)
-    //     console.log('EightRaceDB: ', eightRaceDB)
-    //     console.log('EightRaceAvg: ', eightRaceAvg)
-    //     console.log('QuailPoints: ', quailPoints)
-    //     console.log('SprintPoints: ', sprintPoints)
-    //     console.log('RacePoints: ', racePoints)
-    //     console.log('BeatTeammatePoints: ', beatTeammatePoints)
-    //     console.log('ImprovedPoints: ', improvedPoints)
-    //     console.log('CompletionPoints: ', completionPoints)
-    //     console.log('OvertakePoints: ', overtakePoints)
-    //     console.log(`*********************************`)
-    // }
-    return _.sum([quailPoints, racePoints, sprintPoints, overtakePoints, beatTeammatePoints, completionPoints, improvedPoints])
+    return map
 }
 
-async function getCompletionPoints(percentage: number): Promise<number> {
-    if (percentage < 25) return 0
-    else if (percentage < 50) return 3
-    else if (percentage < 75) return 6
-    else if (percentage < 90) return 9
-    else return 12
-}
-
-export async function getTotalSalaryAndPosDiff(driverId: string, seasonId: number, round: number, driverRankAndSalary: number) {
-    const results = await Results.findOne({
-        where: {
-            driverId: driverId,
-            seasonId: seasonId,
-            round: round - 1
-        }
+/** Previous round's cost per driver; absent means "no previous round". */
+async function previousCostByDriver(seasonId: number, round: number): Promise<Map<string, number>> {
+    if (round <= 1) return new Map()
+    const rows = await Results.findAll({
+        attributes: ['driverId', 'cost'],
+        where: {seasonId, round: round - 1}
     })
-    if (!results) return {
-        totalSalary: 0,
-        positionDifference: 0
+    return new Map(rows.map(r => [r.get('driverId') as string, r.get('cost') as number]))
+}
+
+export interface ScoredRound {
+    round: number
+    scored: number
+    breakdown: Array<{driverId: string; rank: number; points: number; cost: number} & DriverScoreBreakdown>
+}
+
+/**
+ * Scores one round from the classification already stored by ingest.
+ *
+ * Ingest writes the facts (positions, statuses, laps); this derives points,
+ * rank, cost and the two dashboard indices from them and writes those back.
+ * Safe to re-run — that is what the /rescore endpoint and Phase 4's provisional
+ * re-checks depend on.
+ */
+export async function scoreRound(seasonId: number, round: number): Promise<ScoredRound | {message: string}> {
+    const race = await getRaceByRound(seasonId, round)
+    if (!race) return {message: 'Race not found'}
+
+    const totalLaps = race.get('totalLaps') as number
+    const stored = (await getResutlsByRound(seasonId, round)).map(r => r.toJSON())
+    if (stored.length === 0) return {message: 'No results ingested for this round'}
+
+    const history = await previousFinishesByDriver(seasonId, round)
+    const previousCosts = await previousCostByDriver(seasonId, round)
+
+    const rows: RoundRow[] = stored.map(row => ({
+        driverId: row.driverId!,
+        teamId: row.teamId!,
+        qualiPosition: row.qualiPosition!,
+        racePosition: row.racePosition!,
+        sprintPosition: row.sprintPosition ?? null,
+        lapsCompleted: row.lapsCompleted!,
+        raceStatus: row.raceStatus!,
+        qualiStatus: row.qualiStatus!
+    }))
+
+    const final = scoreRoundRows(rows, {
+        totalLaps,
+        previousFinishes: history,
+        previousCosts,
+        salaryEntries: SALARY_ENTRIES,
+        maxSalaryMove: MAX_DRIVER_SALARY_MOVE
+    })
+
+    for (const row of final) {
+        await Results.update({
+            points: row.points,
+            rank: row.rank,
+            cost: row.cost,
+            positionDifference: row.positionDifference,
+            positionsForMoney: row.positionsForMoney,
+            easeToGainPoints: row.easeToGainPoints
+        } as any, {where: {seasonId, round, driverId: row.driverId}})
     }
-    const differ = _.round(BaseSalaryDriver[String(driverRankAndSalary) as keyof typeof BaseSalaryDriver] - results.get('cost')!, 1)
-    const posDiff = Math.max(-2, Math.min(2, (Math.sign(differ) * _.floor((Math.sign(differ) * differ / 4), 1))))
+
     return {
-        totalSalary: (posDiff + results.get('cost')!),
-        positionDifference: posDiff
+        round,
+        scored: final.length,
+        breakdown: final.map(row => ({
+            driverId: row.driverId!,
+            rank: row.rank,
+            points: row.points,
+            cost: row.cost,
+            ...row.breakdown
+        }))
     }
 }
 
-export async function bulkAddResults(results: Results[]) {
-    return await Results.bulkCreate(results)
-}
-
-export async function findSalaryBracket(salary: number, entries: number[]) {
-
-    const found = _.findIndex(entries, (val, i) => {
-        const prevVal = entries[i + 1]
-        return salary <= val! && salary > prevVal!
+/**
+ * Re-scores a round and every round after it.
+ *
+ * A changed classification does not only alter its own round: the rolling
+ * average feeds the next seven, and the salary ladder is a chain from one round
+ * to the next. Phase 4's provisional re-checks call this.
+ */
+export async function rescoreFrom(seasonId: number, fromRound: number) {
+    const rounds = await Results.findAll({
+        attributes: ['round'],
+        where: {seasonId, round: {[Op.gte]: fromRound}},
+        group: ['round'],
+        order: [['round', 'ASC']]
     })
 
-    return found + 1
-}
-
-export async function updateQulaiResults(driverId: string, meeting_key: number, qualiPosition: number, dns: boolean, dsq: boolean) {
-    const result = await Results.findOne({
-        where: {
-            driverId: driverId,
-            meeting_key: meeting_key
-        }
-    })
-    if (!result) return undefined
-    result.set({qualiPosition: qualiPosition, qualiDNS: dns, qualiDSQ: dsq})
-    return await result.save()
-}
-
-export async function getResultsObjToAdd(seasonId: number, meeting_key: number) {
-
-    const race = await getRaceDataByMeetingKey(meeting_key)
-    if (!race) return {message: 'Race DB not found'}
-    const raceJson = race.toJSON()
-    const round = raceJson.round as number
-    const sprint_key =raceJson.sprint_key
-    const quali_key = raceJson.quali_key as number
-    const race_key = raceJson.race_key as number
-    const laps = raceJson.totalLaps as number
-    const raceIdStr = raceJson.raceId as string
-
-    const weekendRaceResults = await getCurrentRaceResults(meeting_key)
-    if (!weekendRaceResults) return {message: 'Race not found'}
-    const filtered = _.filter(weekendRaceResults, item => _.includes([race.get('sprint_key'), race.get('quali_key'), race.get('race_key')], item.session_key))
-
-    const raceResults = _.filter(filtered, {session_key: race_key})
-    const qualiResults = _.filter(filtered, {session_key: quali_key})
-    const sprintResults = _.filter(filtered, {session_key: sprint_key})
-    const drivers = _.map(await getActiveDrivers(), driver => driver.toJSON())
-    let fullResult = await Promise.all(_(filtered)
-        .groupBy('driver_number')
-        .map(async (value, key: string) => {
-            const driver = drivers.find(driver => driver.driverNumber === +key)
-            if (!driver) return {message: `Driver not found: ${key}`}
-            const driverId = driver.driverId
-            const teamId = driver.teamId
-            const teammate = drivers.find(mate => mate.teamId === teamId && mate.driverId !== driverId)
-            if (!teammate) return {message: `Teammate not found for driver: ${key}`}
-
-            const sprint = _.find(value, {session_key: sprint_key})
-            const quali = _.find(value, {session_key: quali_key})
-            const raceR = _.find(value, {session_key: race_key})
-            const teammateResult = _.find(raceResults, {driver_number: teammate.driverNumber})
-            if (!teammateResult) return {message: `Teammate ${teammate.driverId} result not found for driver: ${driverId}`}
-            let sprintPosition = null
-            if (sprint) {
-                sprintPosition = (sprint.dnf || sprint.dns || sprint.dsq) ? _.findIndex(sprintResults, {driver_number: +key}) + 1 : sprint.position
-            }
-
-
-
-            const qualiPosition = (quali.dnf || quali.dns || quali.dsq || quali.position === null) ? _.findIndex(qualiResults, {driver_number: +key}) + 1 : quali.position
-            const racePosition = (!raceR) ? 20 : (raceR.dnf || raceR.dns || raceR.dsq) ? _.findIndex(raceResults, {driver_number: +key}) + 1 : raceR.position
-            const teammatePos = (!teammateResult) ? 20 : (teammateResult.dnf || teammateResult.dns || teammateResult.dsq) ? _.findIndex(raceResults, {driver_number: teammateResult.driver_number!}) + 1 : teammateResult.position
-
-
-            const numberOfLaps = (raceR) ? raceR.number_of_laps : teammateResult.number_of_laps
-            const dnsdsq = (raceR) ? (raceR.dsq || raceR.dns) : !raceR
-            const qualiDqed = (quali.dns || quali.dsq || quali.position === null)
-            // if (driverId === 'ocon') {
-            //     console.log(`*********************************`)
-            //     console.log('Driver: ', driverId)
-            //     console.log('Quali: ', quali)
-            //     console.log('qualiDqed: ', qualiDqed)
-            //     console.log(`*********************************`)
-            // }
-
-            const points = await getTotalPointsDriver(driverId!, teamId!, qualiPosition, racePosition, sprintPosition, teammatePos, numberOfLaps, laps, seasonId, round, dnsdsq, qualiDqed)
-
-            return {
-                driverId: driverId,
-                raceId: raceIdStr,
-                points: points,
-                cost: -1,
-                seasonId: seasonId,
-                round: round,
-                finishPosition: racePosition,
-                qualiPosition: qualiPosition,
-                teamId: teamId,
-                positionDifference: -1,
-                positionsForMoney: -1,
-                easeToGainPoints: -1,
-                rank: -1,
-                meeting_key: meeting_key
-            }
-        }).value())
-
-    const entries = Object.entries(BaseSalaryDriver)
-        .map(([key, value]) => Number(value))
-
-    fullResult = await Promise.all(_.orderBy(fullResult, ['points', 'finishPosition'], ['desc', 'asc']).map(async (value, key) => {
-        value.rank = key + 1
-        const {
-            totalSalary,
-            positionDifference
-        } = await getTotalSalaryAndPosDiff(value.driverId!, value.seasonId!, round, value.rank)
-
-        value.cost = _.round(totalSalary, 1)
-        value.positionDifference = positionDifference
-        value.positionsForMoney = await findSalaryBracket(value.cost, entries)
-
-        return value
-    }).values())
-
-    fullResult = await Promise.all(_.orderBy(fullResult, ['cost'], ['desc', 'asc']).map(async (value, key) => {
-        value.easeToGainPoints = key + 1 - value.positionsForMoney!
-        return value
-    }))
-
-    const resToCreate = await Promise.all(_.filter(fullResult, async result => {
-        const checkResult = await getResultByRaceIdDriverId(result.raceId!, result.driverId!)
-        return !checkResult
-    }))
-
-    if (_.isEmpty(resToCreate)) return {message: 'No results found'}
-
-    return resToCreate
-}
-
-export async function upsertResultsBulk(resultData: Partial<Results>) {
-    const resultInstance = new Results()
-    resultInstance.set(resultData)
-    return resultInstance.save()
+    const out = []
+    for (const row of rounds) {
+        out.push(await scoreRound(seasonId, row.get('round') as number))
+    }
+    return out
 }

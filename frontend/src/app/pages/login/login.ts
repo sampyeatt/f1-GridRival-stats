@@ -1,4 +1,4 @@
-import {Component, inject} from '@angular/core'
+import {ChangeDetectorRef, Component, inject} from '@angular/core'
 import {Router} from '@angular/router'
 import {AuthService} from '../../services/auth.service'
 import {FormsModule, NgForm, ReactiveFormsModule} from '@angular/forms'
@@ -18,24 +18,25 @@ export class LoginComponent {
 
   email: string = ''
   password: string = ''
+  errorMessage?: string
 
   private authService = inject(AuthService)
   public router = inject(Router)
+  private cdref = inject(ChangeDetectorRef)
 
   onSubmit(form: NgForm) {
+    this.errorMessage = undefined
     if (form.valid) {
       this.authService.login(this.email, this.password)
         .subscribe({
-          next: (res) => {
-            this.authService.saveToken(res.accessToken)
-            this.authService.saveUser(res)
-            if (res.adminToken !== null) this.authService.saveAdminToken(res.adminToken)
-            this.authService.currentUser.set(res)
-            this.router.navigate(['/dashboard'])
-          },
+          next: () => this.router.navigate(['/dashboard']),
           error: (err) => {
             console.error('Login failed: ', err)
-            alert('Login failed ' + (err.error.error) || 'Check credentials')
+            // `'text ' + x || 'fallback'` binds the || after the concatenation,
+            // so the fallback was dead and err.error.error threw outright on a
+            // network error, where err.error is undefined.
+            this.errorMessage = err?.error?.message ?? 'Check your email and password.'
+            this.cdref.markForCheck()
           }
         })
     }

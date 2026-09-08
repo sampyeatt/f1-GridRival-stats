@@ -15,18 +15,9 @@ export class App {
 
   private authSercices = inject(AuthService)
 
-  ngOnInit(){
-    console.log('App initialized')
-
+  ngOnInit() {
     if (this.authSercices.currentUser() === undefined) {
-      if (typeof window !== 'undefined')  {
-        const currUser = sessionStorage.getItem('user')
-        if (currUser) {
-          this.authSercices.currentUser.set(JSON.parse(currUser))
-        } else {
-          this.authSercices.currentUser.set(null)
-        }
-      }
+      this.authSercices.restoreSession()
     }
   }
 }

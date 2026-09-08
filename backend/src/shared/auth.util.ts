@@ -5,79 +5,105 @@ dotenv.config({
 })
 
 import jwt from 'jsonwebtoken'
-import {Request, Response} from 'express'
+import {NextFunction, Request, Response} from 'express'
 import {User} from '../models/User'
+import {getToken} from '../services/token.service'
 
-const secretKey = process.env.JWT_SECRET!
+const configuredSecret = process.env.JWT_SECRET
+if (!configuredSecret) {
+    throw new Error('JWT_SECRET is not set — refusing to start with an unsigned token scheme')
+}
+const secretKey: string = configuredSecret
 
+export interface TokenClaims {
+    userId: number
+    role?: 'admin'
+}
 
 export async function generateToken(userId: number, expiresIn = '1h'): Promise<string> {
-    const payload = {
-        userId: userId
-    }
-    return jwt.sign(payload, secretKey, {expiresIn: expiresIn as any})
+    return jwt.sign({userId}, secretKey, {expiresIn: expiresIn as any})
 }
 
-export async function generateAdminToken(userId: number, password: string, expiresIn = '1h'): Promise<string> {
-    const payload = {
-        userId: userId,
-        role: 'admin',
-        status: 'active',
-        password: password
-    }
-    return jwt.sign(payload, secretKey, {expiresIn: expiresIn as any})
+/**
+ * The admin token carries only the role claim. It deliberately does NOT carry
+ * the password — a JWT payload is base64, not encryption, and this token is
+ * both persisted to the Tokens table and stored in the browser.
+ */
+export async function generateAdminToken(userId: number, expiresIn = '1h'): Promise<string> {
+    return jwt.sign({userId, role: 'admin'}, secretKey, {expiresIn: expiresIn as any})
 }
 
-export async function encryptPassword(password: string): Promise<string> {
-    return jwt.sign(password, secretKey)
-}
-
-export async function verifyToken(token: string) {
+export async function verifyToken(token: string): Promise<TokenClaims | null> {
     try {
-        return jwt.verify(token, secretKey)
-    } catch (error) {
+        return jwt.verify(token, secretKey) as TokenClaims
+    } catch {
         return null
     }
 }
 
-export async function authenticateJWT(req: Request, res: Response, next: Function) {
-    const token = req.header('Authorization')?.replace('Bearer ', '')
-    if (!token) {
-        return res.status(401).json({message: 'Unauthorized'})
-    }
-    const verified = await verifyToken(token)
-    if (!verified) {
-        return res.status(401).json({message: 'Invalid token'})
-    }
+/**
+ * Resolves a bearer token to its user, or null. A token is only accepted if it
+ * still has a row in the Tokens table, so logout actually revokes rather than
+ * leaving the token live until it expires.
+ */
+async function resolveUser(token: string | undefined): Promise<User | null> {
+    if (!token) return null
+    const claims = await verifyToken(token)
+    if (!claims) return null
 
-    User.findByPk((verified as any).userId).then(user => {
-        if (user) {
-            (req as any).user = user
-        } else {
-            return res.status(401).json({message: 'User not found'})
-        }
-        next()
-    })
+    const stored = await getToken(token)
+    if (!stored) return null
+
+    return User.findByPk(claims.userId)
 }
 
-export async function authenticateJWTAdmin(req: Request, res: Response, next: Function) {
-    const token = req.header('Authorization')?.replace('Bearer ', '')
-    const adminToken = req.header('AdminAuth')?.replace('Bearer ', '')
-    if (!token || !adminToken) {
-        return res.status(401).json({message: 'Unauthorized'})
-    }
-    const verified = await verifyToken(token)
-    const adminVerified = await verifyToken(adminToken)
-    if (!verified || !adminVerified) {
-        return res.status(401).json({message: 'Invalid token'})
-    }
+function bearer(req: Request, header: string): string | undefined {
+    return req.header(header)?.replace('Bearer ', '')
+}
 
-    User.findByPk((verified as any).userId).then(user => {
-        if (user) {
-            (req as any).user = user
-        } else {
-            return res.status(401).json({message: 'User not found'})
-        }
+export async function authenticateJWT(req: Request, res: Response, next: NextFunction) {
+    try {
+        const user = await resolveUser(bearer(req, 'Authorization'))
+        if (!user) return res.status(401).json({message: 'Unauthorized'})
+
+        ;(req as any).user = user
         next()
-    })
+    } catch (error) {
+        next(error)
+    }
+}
+
+export async function authenticateJWTAdmin(req: Request, res: Response, next: NextFunction) {
+    try {
+        const user = await resolveUser(bearer(req, 'Authorization'))
+        if (!user) return res.status(401).json({message: 'Unauthorized'})
+
+        const adminToken = bearer(req, 'AdminAuth')
+        if (!adminToken) return res.status(403).json({message: 'Forbidden'})
+
+        const adminClaims = await verifyToken(adminToken)
+
+        // All three checks matter. The role claim stops an ordinary access
+        // token being replayed in the AdminAuth header; the userId match stops
+        // one user pairing their own access token with someone else's admin
+        // token; and the live DB role means a demotion takes effect at once
+        // instead of at token expiry.
+        if (!adminClaims || adminClaims.role !== 'admin') {
+            return res.status(403).json({message: 'Forbidden'})
+        }
+        if (adminClaims.userId !== user.get('userId')) {
+            return res.status(403).json({message: 'Forbidden'})
+        }
+        if (user.get('role') !== 'admin') {
+            return res.status(403).json({message: 'Forbidden'})
+        }
+        if (!(await getToken(adminToken))) {
+            return res.status(403).json({message: 'Forbidden'})
+        }
+
+        ;(req as any).user = user
+        next()
+    } catch (error) {
+        next(error)
+    }
 }

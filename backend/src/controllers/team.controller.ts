@@ -1,53 +1,40 @@
-import {Request, Response} from 'express'
-import {getAllTeams, addTeam, getTeamById, updateTeam, deleteTeam} from '../services/team.service'
-import {getCurrentTeams} from'../shared/f1api.util'
+import {NextFunction, Request, Response} from 'express'
 import z from 'zod'
-import * as _ from 'lodash'
-import {getActiveSeason} from '../services/season.services'
+import {deleteTeam, getAllTeams, updateTeam} from '../services/team.service'
 
-export const getTeams = async (req: Request, res: Response) => {
-    const teams = await getAllTeams()
-
-    res.json(teams)
+export const getTeams = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        res.json(await getAllTeams())
+    } catch (error) {
+        next(error)
+    }
 }
 
-export const populateTeamTable = async (req: Request, res: Response) => {
-    const currentSeason = await getActiveSeason()
-    if (!currentSeason) return res.status(404).json({message: 'Active Season not found'})
-    const seasonId = currentSeason.toJSON().seasonId as number
+export const updateTeamController = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const parsed = z.object({teamId: z.string(), teamName: z.string()}).safeParse(req.body.data)
+        if (!parsed.success) return res.status(400).json({
+            message: 'Invalid request body',
+            errors: parsed.error.issues
+        })
 
-    const teams = await getCurrentTeams(seasonId!)
-
-    const teamAdded = await _.forEach(teams, async (team) => {
-        const existingTeam = await getTeamById(team.teamId)
-        if (!existingTeam) {
-            return await addTeam(team.teamId, team.teamName,)
-        }
-    })
-    res.json(teamAdded)
+        const updated = await updateTeam(parsed.data)
+        if (!updated) return res.status(404).json({message: 'Team not found'})
+        res.json({message: 'Team updated', success: true, data: updated.toJSON()})
+    } catch (error) {
+        next(error)
+    }
 }
 
-export const updateTeamController = async (req: Request, res: Response) => {
-    const schema = z.object({
-        teamId: z.string(),
-        teamName: z.string()
-    })
-    const schemaValidator = schema.safeParse(req.body.data)
-    if (!schemaValidator.success) return res.status(400).json({
-        message: 'Invalid request body',
-        errors: schemaValidator.error
-    })
-    const teamData = req.body.data
-    const teamUpdated = await updateTeam(teamData)
-    if (!teamUpdated) return res.status(404).json({message: 'Team not found'})
-    else return res.json(teamUpdated)
-}
+export const deleteTeamController = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const {teamId} = req.params
+        if (!teamId) return res.status(400).json({message: 'teamId parameter is required'})
 
-export const deleteTeamController = async (req: Request, res: Response) => {
-    const teamId = req.params.teamId
-    if (_.isNil(teamId)) throw new Error('Meeting key parameter is required')
-    const raceDeleted = await deleteTeam(teamId)
-    if (!raceDeleted) return res.status(404).json({message: 'Race failed to delete', success: false})
-    res.status(200).json({message: 'Race deleted', success: true})
+        const deleted = await deleteTeam(teamId)
+        if (!deleted) return res.status(404).json({message: 'Team not found', success: false})
+        res.status(200).json({message: 'Team deleted', success: true})
+    } catch (error) {
+        next(error)
+    }
 }
-

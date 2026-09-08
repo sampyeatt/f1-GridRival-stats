@@ -72,7 +72,8 @@ export class DriverAdminComponent implements OnInit{
       next: (data) => {
         this.cdref.markForCheck()
         console.log(data)
-        data.map(team => this.teams.push(team))
+        // Rebuilt rather than pushed onto, so a reload cannot duplicate rows.
+        this.teams = [{teamId: 'all', teamName: 'All teams'}, ...data]
         this.selectedTeam = this.teams[0]
       }
     })
@@ -98,13 +99,14 @@ export class DriverAdminComponent implements OnInit{
     delete this.clonedDriver[driver.driverId]
   }
 
-  deleteDriver(driver: Driver){
-    this.driverService.deleteDriver(driver.driverId).subscribe({
-      next: (data) => {
-        this.cdref.markForCheck()
-        console.log(data)
-        this.getDrivers()
-      },
+  /**
+   * Drivers are not deleted — a driver who leaves mid-season still owns their
+   * scored rounds. Mark them inactive instead, via the row editor.
+   */
+  deactivateDriver(driver: Driver){
+    this.driverService.updateDriver({driverId: driver.driverId, active: false}).subscribe({
+      next: () => this.getDrivers(),
+      error: (err) => console.error('Could not deactivate the driver', err)
     })
   }
 
@@ -113,12 +115,20 @@ export class DriverAdminComponent implements OnInit{
   }
 
   onRowEditCancelDriver(results: Driver, index: number) {
-    this.drivers![index] = this.clonedDriver[results.driverId]
+    const original = this.clonedDriver[results.driverId]
+    if (!original) return
+    // Restored into the array the table actually renders. Writing only into
+    // `drivers` meant cancelling did nothing visible while a team filter was
+    // active — the same defect race-admin had.
+    this.displayedDrivers[index] = original
+    const inSource = this.drivers.findIndex(d => d.driverId === results.driverId)
+    if (inSource !== -1) this.drivers[inSource] = original
     delete this.clonedDriver[results.driverId]
   }
 
-  addDriversForSeasonStart(){
-    this.driverService.addDriversNewSeason().subscribe({
+  /** Pulls drivers and constructors from the results API. Safe to re-run. */
+  syncDrivers(){
+    this.driverService.syncDrivers().subscribe({
       next: (data) => {
         this.cdref.markForCheck()
         console.log(data)

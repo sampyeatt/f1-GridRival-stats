@@ -1,4 +1,4 @@
-import {Component, inject} from '@angular/core'
+import {ChangeDetectorRef, Component, inject} from '@angular/core'
 import {AuthService} from '../../services/auth.service'
 import {Router} from '@angular/router'
 import {FormBuilder, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms'
@@ -17,6 +17,10 @@ export class RegisterComponent {
   private authService = inject(AuthService)
   public router = inject(Router)
   fb = inject(FormBuilder)
+  private cdref = inject(ChangeDetectorRef)
+
+  errorMessage?: string
+  submitted = false
 
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -24,16 +28,18 @@ export class RegisterComponent {
   })
 
   onSubmit(){
+    this.errorMessage = undefined
     if(this.form.valid){
       this.authService.register(this.form.value.email as string, this.form.value.password as string)
         .subscribe({
           next:()=>{
-            alert('Registration successful! Please check your email and log in.');
-            this.router.navigate(['/login'])
+            this.submitted = true
+            this.cdref.markForCheck()
           },
           error: (err)=>{
-            console.error('Registration failed.', err);
-            alert('Registration failed: '+(err.error?.message || "Unknown error"))
+            console.error('Registration failed.', err)
+            this.errorMessage = err?.error?.message ?? 'Registration failed. Please try again.'
+            this.cdref.markForCheck()
           }
         });
     }

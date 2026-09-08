@@ -1,132 +1,90 @@
 import {TeamResults} from '../models/TeamResults'
 import _ from 'lodash'
 import {BaseSalaryTeam, QualiPointsTeam, RacePointsTeam} from '../shared/constants'
-import {getRaceDataByMeetingKey} from './race.services'
 import {getResutlsByRound} from './results.service'
+import {getRaceByRound} from './race.services'
+import {MAX_TEAM_SALARY_MOVE, nextSalary, pointsFor, salaryBracket} from './scoring'
+
+const SALARY_ENTRIES = Object.values(BaseSalaryTeam).map(Number)
 
 export async function getTeamResults(seasonId: number) {
     return await TeamResults.findAll({
-        where: {
-            seasonId: seasonId
-        },
+        where: {seasonId},
         order: [['cost', 'DESC']],
         include: ['team']
     })
 }
 
-
 export async function getTeamResultsByRound(seasonId: number, round: number) {
     return await TeamResults.findAll({
-        where: {
-            seasonId: seasonId,
-            round: round
-        },
+        where: {seasonId, round},
         order: [['cost', 'DESC']]
     })
 }
 
-export async function bulkAddTeamResults(results: TeamResults[]) {
-    return await TeamResults.bulkCreate(results)
+async function previousCostByTeam(seasonId: number, round: number): Promise<Map<string, number>> {
+    if (round <= 1) return new Map()
+    const rows = await TeamResults.findAll({
+        attributes: ['teamId', 'cost'],
+        where: {seasonId, round: round - 1}
+    })
+    return new Map(rows.map(r => [r.get('teamId') as string, r.get('cost') as number]))
 }
 
-export async function getTotalSalaryAndPosDiffTeam(teamId: string, seasonId: number, round: number, teamRank: number) {
-    const resultsDB = await TeamResults.findOne({
-        where: {
-            teamId: teamId,
-            seasonId: seasonId,
-            round: round - 1
+/**
+ * Derives constructor results for a round by aggregating the driver results
+ * already scored for it.
+ *
+ * Shares salaryBracket and nextSalary with the driver service rather than
+ * keeping the verbatim copies it had before — both copies carried the same
+ * bracket defect (L4) and the same missing salary seed (L5).
+ */
+export async function scoreTeamRound(seasonId: number, round: number) {
+    const race = await getRaceByRound(seasonId, round)
+    if (!race) return {message: 'Race not found'}
+
+    const driverResults = (await getResutlsByRound(seasonId, round)).map(r => r.toJSON())
+    if (driverResults.length === 0) return {message: 'No driver results for this round'}
+
+    const previousCosts = await previousCostByTeam(seasonId, round)
+    const byTeam = _.groupBy(driverResults, 'teamId')
+
+    const scored = Object.entries(byTeam).map(([teamId, rows]) => {
+        const points = _.sumBy(rows, row => {
+            // A retirement still classifies; a disqualification or non-start
+            // does not. Matches the driver-side treatment.
+            const raceVoid = row.raceStatus === 'dsq' || row.raceStatus === 'dns'
+            const racePoint = raceVoid ? 0 : pointsFor(RacePointsTeam, row.racePosition)
+            const qualiPoint = row.qualiStatus !== 'classified'
+                ? 0
+                : pointsFor(QualiPointsTeam, row.qualiPosition)
+            return racePoint + qualiPoint
+        })
+        return {seasonId, round, teamId, points}
+    })
+
+    const ranked = _.orderBy(scored, ['points'], ['desc']).map((row, index) => {
+        const rank = index + 1
+        const target = BaseSalaryTeam[String(rank) as keyof typeof BaseSalaryTeam]
+            ?? SALARY_ENTRIES[SALARY_ENTRIES.length - 1]!
+        const previousCost = previousCosts.get(row.teamId) ?? null
+        const {cost, positionDifference} = nextSalary(previousCost, target, MAX_TEAM_SALARY_MOVE)
+
+        return {
+            ...row,
+            rank,
+            cost,
+            positionDifference,
+            positionsForMoney: salaryBracket(cost, SALARY_ENTRIES)
         }
     })
-    const results = resultsDB?.toJSON()
-    if (!results) return {
-        totalSalary: 0,
-        positionDifference: 0
+
+    const final = _.orderBy(ranked, ['cost'], ['desc'])
+        .map((row, index) => ({...row, easeToGainPoints: index + 1 - row.positionsForMoney}))
+
+    for (const row of final) {
+        await TeamResults.upsert({...row, provisional: true, ingestedAt: new Date()} as any)
     }
-    const differ = _.round(BaseSalaryTeam[String(teamRank) as keyof typeof BaseSalaryTeam] - results.cost, 1)
 
-    const posDiff = Math.max(-3, Math.min(3, (Math.sign(differ) * _.floor((Math.sign(differ) * differ / 4), 1))))
-    return {
-        totalSalary: (posDiff + results.cost),
-        positionDifference: posDiff
-    }
-}
-
-export async function findSalaryBracketTeamResults(salary: number, entries: number[]) {
-
-    const found = _.findIndex(entries, (val, i) => {
-        const prevVal = entries[i + 1]
-        return salary <= val! && salary > prevVal!
-    })
-
-    return found + 1
-}
-
-export async function teamResultsToAdd(seasonId: number, meeting_key: number) {
-
-    const raceres = (await getRaceDataByMeetingKey(meeting_key))
-    if (!raceres) return {message: 'Race DB not found'}
-    const race = raceres?.toJSON()
-    const round = race.round
-    const raceId = race.raceId
-    const results = _.map(await getResutlsByRound(+seasonId, +round), result => result.toJSON())
-
-    if (!results) return {message: 'Race Results not found'}
-    let teamResults = await Promise.all(_(results)
-        .groupBy('teamId')
-        .map(async (value, key: string) => {
-
-            const points = _(value).map(driverResult => {
-
-                const racePoint = (!driverResult.raceDNS && !driverResult.raceDSQ) ? RacePointsTeam[String(driverResult.finishPosition) as keyof typeof RacePointsTeam] : 0
-                const qualiPoint = (!driverResult.qualiDSQ) ? QualiPointsTeam[String(driverResult.qualiPosition) as keyof typeof QualiPointsTeam] : 0
-                if (key === 'mercedes' || key === 'red_bull') {
-                    console.log('*********************************')
-                    console.log('driverResult: ', driverResult)
-                    console.log('racePoint: ', racePoint)
-                    console.log('qualiPoint: ', qualiPoint)
-                    console.log('*********************************')
-                }
-                return (racePoint + qualiPoint)
-            }).sum()
-            return {
-                raceId: raceId,
-                points: points,
-                cost: -1,
-                seasonId: seasonId,
-                round: round,
-                teamId: key,
-                positionDifference: -1,
-                positionsForMoney: -1,
-                easeToGainPoints: -1,
-                rank: -1,
-                meeting_key: meeting_key
-            }
-        }).value())
-    const entries = Object.entries(BaseSalaryTeam)
-        .map(([key, value]) => Number(value))
-
-    teamResults = await Promise.all(_.orderBy(teamResults, ['points'], ['desc']).map(async (value, key) => {
-        value.rank = key + 1
-        const {
-            totalSalary,
-            positionDifference
-        } = await getTotalSalaryAndPosDiffTeam(value.teamId, value.seasonId, value.round, key + 1)
-        value.cost = _.round(totalSalary, 1)
-        value.positionDifference = positionDifference
-        value.positionsForMoney = await findSalaryBracketTeamResults(value.cost, entries)
-        return value
-    }))
-    teamResults = await Promise.all(_.orderBy(teamResults, ['cost'], ['desc']).map(async (value, key) => {
-        value.easeToGainPoints = key + 1 - value.positionsForMoney!
-        return value
-    }))
-
-    return teamResults
-}
-
-export function upsertTeamResultsBulk(resultData: Partial<TeamResults>) {
-    console.log('resultData: ', resultData)
-    const teamResultInstance = new TeamResults()
-    teamResultInstance.set(resultData)
-    return teamResultInstance.save()
+    return {round, scored: final.length}
 }
