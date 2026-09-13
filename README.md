@@ -24,16 +24,18 @@ docker compose up --build
 Then open <http://localhost:8080>. The backend applies any pending migrations
 before it accepts traffic.
 
-Secrets are read from `backend/src/.env` on the host at deploy time (via
-compose's `env_file`) and are **not** baked into the image:
+Secrets are read from a `.env` file next to `docker-compose.yaml` at deploy
+time and are **not** baked into the image. Start from the example:
+
+```bash
+cp .env.example .env
+```
+
+Required (compose refuses to start without them):
 
 ```
-PG_HOST=f1-grod-db
-PG_PORT=5435
-PG_USER_NAME=f1-data-user
-PG_PASSWORD=...
-PG_DATABASE=postgres
-JWT_SECRET=...            # required; the server refuses to start without it
+POSTGRES_PASSWORD=...     # used by both the db container and the backend
+JWT_SECRET=...            # signs auth tokens; e.g. `openssl rand -base64 48`
 RESEND_API_KEY=...        # confirmation and password-reset email
 ```
 
@@ -41,6 +43,11 @@ Optional:
 
 | Variable | Default | Purpose |
 |---|---|---|
+| `POSTGRES_USER` | `f1-data-user` | Database user |
+| `POSTGRES_DB` | `postgres` | Database name |
+| `POSTGRES_PORT` | `5435` | Port Postgres listens on inside the network |
+| `HTTP_PORT` | `8080` | Host port nginx is published on |
+| `JOLPICA_USER_AGENT` | `F1GridRivalStats/0.3.0` | User-Agent sent to the results API |
 | `SCHEDULER_ENABLED` | `true` | Set `false` to run the API without the ingest scheduler |
 | `SCHEDULER_TICK_CRON` | `*/15 * * * *` | How often to check for due ingests |
 | `SCHEDULER_SYNC_CRON` | `0 3 * * 1` | Weekly calendar and driver refresh |
